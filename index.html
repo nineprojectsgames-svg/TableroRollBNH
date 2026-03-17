@@ -6,220 +6,790 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
+:root {
+  --p: #f4e4b8;
+  --ps: #c8a96e;
+  --ink: #2c1a0e;
+  --ink2: #5c3d1e;
+  --red: #8b1a1a;
+  --grn: #1a4a1a;
+  --gld: #c8941a;
+  --gld2: #e8b430;
+  --tab-h: 56px;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
 
 body {
   background: #1a0f08;
   font-family: 'Crimson Text', serif;
-  color: #2c1a0e;
-  padding: 10px;
+  color: var(--ink);
   user-select: none;
-  min-height: 100vh;
-}
-
-h1 {
-  font-family: 'Cinzel', serif;
-  color: #c8941a;
-  font-size: 1.7rem;
-  letter-spacing: 4px;
-  text-align: center;
-  margin-bottom: 2px;
-  text-shadow: 2px 2px 8px rgba(0,0,0,.8);
-}
-.sub { color: #a07850; font-style: italic; font-size: .9rem; text-align: center; margin-bottom: 10px; }
-
-/* LAYOUT: 3 columnas */
-.layout {
+  height: 100%;
+  overflow: hidden;
   display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  width: 100%;
+  flex-direction: column;
 }
 
-/* PANEL */
-.panel {
-  background: #f4e4b8;
-  border: 2px solid #c8a96e;
+/* ── TOPBAR ── */
+#topbar {
+  background: #1a0f08;
+  padding: 4px 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(200,148,26,.2);
+}
+#topbar h1 {
+  font-family: 'Cinzel', serif;
+  color: var(--gld);
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,.8);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* sala inline en topbar */
+#salaBar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+#salaBar .slbl {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  letter-spacing: 2px;
+  color: var(--red);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#salaCode {
+  font-family: 'Cinzel', serif;
+  font-size: .9rem;
+  color: var(--gld);
+  letter-spacing: 2px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#salaInput {
+  padding: 4px 7px;
+  background: rgba(200,160,100,.25);
+  border: 1px solid var(--ps);
+  border-radius: 3px;
+  font-family: 'Cinzel', serif;
+  font-size: .75rem;
+  color: var(--ink);
+  outline: none;
+  text-transform: uppercase;
+  width: 110px;
+}
+#salaInput::placeholder { opacity: .5; text-transform: none; }
+#connBox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.conn-online  .conn-dot { background: #27ae60; animation: blink 2s infinite; }
+.conn-offline .conn-dot { background: #c0392b; }
+.conn-wait    .conn-dot { background: var(--gld); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+.conn-txt { font-family: 'Cinzel', serif; font-size: .65rem; color: #a07850; white-space: nowrap; }
+
+/* ── TURN + DICE BAR ── */
+#midbar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding: 0 10px 5px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* turn panel compact */
+#turnWrap {
+  flex: 1;
+  min-width: 0;
+  background: var(--p);
+  border: 2px solid var(--ps);
   border-radius: 4px;
-  padding: 10px 12px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.turn-header {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 5px;
+}
+.turn-title { font-family: 'Cinzel', serif; font-size: .7rem; letter-spacing: 2px; color: var(--red); text-transform: uppercase; flex-shrink: 0; }
+.turn-controls { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.turn-round { font-family: 'Cinzel', serif; font-size: .72rem; color: var(--gld); font-weight: 700; white-space: nowrap; }
+.turn-list { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; min-height: 0; }
+.turn-card {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 7px; border-radius: 16px;
+  border: 2px solid transparent;
+  background: rgba(200,160,100,.2);
+  font-size: .78rem; color: var(--ink); cursor: pointer;
+  transition: background .15s; white-space: nowrap;
+}
+.turn-card:hover { background: rgba(200,160,100,.4); }
+.turn-card.active { border-color: var(--gld); background: rgba(200,148,26,.22); font-weight: 700; }
+.turn-card.active .turn-num { background: var(--gld); color: var(--ink); }
+.turn-num { font-family: 'Cinzel', serif; font-size: .62rem; background: rgba(0,0,0,.12); border-radius: 8px; padding: 1px 4px; color: var(--ink2); }
+.turn-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: .6rem; font-weight: 700; flex-shrink: 0; }
+.turn-ini { font-size: .68rem; color: var(--ink2); font-style: italic; }
+.turn-arrow { color: var(--ps); font-size: .85rem; flex-shrink: 0; }
+.turn-empty { font-size: .8rem; color: #a07850; font-style: italic; }
+
+/* dice compact */
+#diceWrap {
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 4px;
+  padding: 6px 10px;
+  width: 480px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.dice-row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-bottom: 5px; }
+.dice-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  background: var(--p); border: 1px solid var(--ps); border-radius: 4px;
+  font-family: 'Cinzel', serif; font-size: .65rem; color: var(--ink2);
+  cursor: pointer; transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+.dice-btn:hover { background: #e8d490; border-color: var(--gld); }
+.dice-btn:active { transform: scale(.93); }
+.dice-btn.rolling { animation: diceShake .25s ease; }
+.dice-icon { font-size: 1.1rem; line-height: 1; }
+@keyframes diceShake {
+  0%{ transform:rotate(-8deg) scale(.95);} 30%{transform:rotate(8deg) scale(1.05);}
+  60%{transform:rotate(-4deg) scale(.98);} 100%{transform:rotate(0) scale(1);}
+}
+.dice-sep { width:1px; height:34px; background:var(--ps); flex-shrink:0; }
+.dice-custom { display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+.dice-custom-row { display:flex; align-items:center; gap:3px; }
+.dice-custom label { font-size:.68rem; color:var(--ink2); white-space:nowrap; }
+.dice-custom input[type=number] { width:40px; padding:3px 4px; text-align:center; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px; font-family:'Cinzel',serif; font-size:.75rem; color:var(--ink); outline:none; }
+.dice-mod-row { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.dice-mod-row label { font-size:.72rem; color:var(--ink2); }
+.dice-mod-row input[type=number] { width:46px; padding:2px 4px; text-align:center; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px; font-family:'Cinzel',serif; font-size:.78rem; color:var(--ink); outline:none; }
+.dice-stat-sel { padding:2px 5px; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px; font-family:'Cinzel',serif; font-size:.7rem; color:var(--ink); outline:none; cursor:pointer; }
+.dice-result-area { border-top:1px solid var(--ps); padding-top:5px; margin-top:5px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.dice-last { display:flex; align-items:center; gap:8px; }
+.dice-total { font-family:'Cinzel',serif; font-size:1.7rem; font-weight:700; color:var(--red); line-height:1; min-width:42px; text-align:center; }
+.dice-breakdown { font-size:.78rem; color:var(--ink2); line-height:1.4; }
+.dice-breakdown b { color:var(--ink); }
+.dice-history { max-height:60px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:2px; margin-top:4px; width:100%; }
+.dice-history::-webkit-scrollbar { width:3px; }
+.dice-history::-webkit-scrollbar-thumb { background:var(--ps); }
+.dhentry { font-size:.72rem; color:var(--ink2); padding:2px 5px; background:rgba(200,160,100,.12); border-radius:3px; border-left:3px solid var(--ps); }
+.dhentry.crit { border-color:#e8b430; color:#8b5a00; font-weight:700; }
+.dhentry.fail { border-color:#c0392b; color:#7a1a1a; }
+.dhtime { float:right; font-size:.65rem; color:#a07850; }
+
+/* ── PRESENCIA ── */
+#presenceWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#userNameInput {
+  padding: 3px 8px;
+  background: rgba(200,160,100,.25);
+  border: 1px solid var(--ps);
+  border-radius: 3px;
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  color: var(--p);
+  outline: none;
+  width: 100px;
+}
+#userNameInput::placeholder { opacity: .45; color: var(--p); }
+#userNameInput:focus { border-color: var(--gld); }
+#presenceList {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.presence-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  background: rgba(200,148,26,.15);
+  border: 1px solid rgba(200,148,26,.35);
+  border-radius: 12px;
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  color: var(--gld);
+  white-space: nowrap;
+}
+.presence-badge .pdot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #27ae60;
+  animation: blink 2s infinite;
+  flex-shrink: 0;
+}
+.presence-badge.me {
+  border-color: var(--gld);
+  background: rgba(200,148,26,.28);
+}
+#presenceSep {
+  color: rgba(200,148,26,.4);
+  font-size: .8rem;
+  flex-shrink: 0;
+}
+
+/* ── MODAL CONTRASEÑA ── */
+#pwModal {
+  display: none;
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.6);
+  align-items: center;
+  justify-content: center;
+}
+#pwModal.open { display: flex; }
+#pwBox {
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 6px;
+  padding: 20px 24px;
+  min-width: 260px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+}
+#pwBox h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--red);
+  font-size: .88rem;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+#pwBox p {
+  font-size: .8rem;
+  color: var(--ink2);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+#pwInput {
+  width: 100%; padding: 6px 10px;
+  background: rgba(200,160,100,.2);
+  border: 1px solid var(--ps); border-radius: 3px;
+  font-family: 'Crimson Text', serif; font-size: 1rem;
+  color: var(--ink); outline: none;
+  text-align: center; letter-spacing: 3px;
   margin-bottom: 10px;
+}
+#pwInput:focus { border-color: var(--gld); }
+#pwError {
+  font-size: .76rem; color: var(--red);
+  font-style: italic; margin-bottom: 8px;
+  min-height: 16px;
+}
+.pw-btns { display: flex; gap: 8px; justify-content: center; }
+
+/* candado en el header de stats */
+#lockBadge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: .68rem;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all .2s;
+}
+#lockBadge.locked {
+  background: rgba(139,26,26,.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+#lockBadge.unlocked {
+  background: rgba(26,74,26,.1);
+  border-color: #27ae60;
+  color: #1a4a1a;
+}
+#statsOverlay {
+  pointer-events: all;
+  opacity: 1;
+  transition: opacity .2s;
+}
+#statsOverlay.locked {
+  pointer-events: none;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+#lockedMsg {
+  display: none;
+  text-align: center;
+  padding: 20px 10px;
+  color: var(--red);
+  font-style: italic;
+  font-size: .85rem;
+  line-height: 1.8;
+}
+#lockedMsg.show { display: block; }
+
+/* ── TABLA HABILIDADES ── */
+#habilidadesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .73rem;
+  margin-bottom: 6px;
+}
+#habilidadesTable th {
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  letter-spacing: 1px;
+  color: var(--ink);
+  padding: 3px 4px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: rgba(200,148,26,.18);
+  text-align: center;
+  white-space: nowrap;
+}
+#habilidadesTable td {
+  padding: 2px 3px;
+  border: 1px solid rgba(0,0,0,.1);
+  vertical-align: top;
+}
+.hab-input {
+  width: 100%;
+  padding: 2px 3px;
+  background: rgba(200,160,100,.15);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Crimson Text', serif;
+  font-size: .75rem;
+  color: var(--ink);
+  outline: none;
+  min-width: 0;
+}
+.hab-input:focus { background: rgba(200,160,100,.35); }
+.hab-num {
+  width: 48px;
+  padding: 3px 4px;
+  background: rgba(200,160,100,.15);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Cinzel', serif;
+  font-size: .82rem;
+  color: var(--ink);
+  text-align: center;
+  outline: none;
+}
+.hab-num:focus { background: rgba(200,160,100,.35); }
+.hab-sel {
+  width: 100%;
+  padding: 2px 2px;
+  background: rgba(200,160,100,.15);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Crimson Text', serif;
+  font-size: .72rem;
+  color: var(--ink);
+  outline: none;
+}
+.hab-sel:focus { background: rgba(200,160,100,.35); }
+.hab-usar {
+  display: block;
+  width: 100%;
+  padding: 2px 4px;
+  background: var(--red);
+  color: var(--p);
+  border: none;
+  border-radius: 2px;
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.hab-usar:hover { background: #a52020; }
+.hab-usar:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+  opacity: .6;
+}
+.hab-del {
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  font-size: .9rem;
+  opacity: .4;
+  padding: 0 2px;
+  display: block;
+  margin: auto;
+}
+.hab-del:hover { opacity: 1; }
+/* resultado de usar habilidad */
+#habResult {
+  font-size: .78rem;
+  padding: 5px 8px;
+  border-radius: 3px;
+  margin-bottom: 6px;
+  display: none;
+  border-left: 3px solid var(--gld);
+  background: rgba(200,148,26,.1);
+  color: var(--ink);
+  line-height: 1.5;
+}
+#habResult.show { display: block; }
+#habResult b { color: var(--red); }
+
+/* ── EQUIPAMIENTO ── */
+.equip-table { width:100%; border-collapse:collapse; font-size:.73rem; margin-bottom:4px; }
+.equip-table th {
+  font-family:'Cinzel',serif; font-size:.58rem; letter-spacing:1px;
+  color:var(--ink); padding:3px 4px; border:1px solid rgba(0,0,0,.15);
+  background:rgba(200,148,26,.18); text-align:center; white-space:nowrap;
+}
+.equip-table td { padding:2px 3px; border:1px solid rgba(0,0,0,.1); vertical-align:middle; }
+.equip-table .slot-lbl {
+  font-family:'Cinzel',serif; font-size:.6rem; color:var(--ink2);
+  white-space:nowrap; padding:2px 5px; background:rgba(200,148,26,.08);
+}
+.equip-input {
+  width:100%; padding:2px 4px;
+  background:rgba(200,160,100,.15); border:none; border-radius:2px;
+  font-family:'Crimson Text',serif; font-size:.75rem; color:var(--ink); outline:none;
+}
+.equip-input:focus { background:rgba(200,160,100,.35); }
+.equip-bonus {
+  width:52px; padding:3px 4px; text-align:center;
+  background:rgba(200,160,100,.15); border:none; border-radius:2px;
+  font-family:'Cinzel',serif; font-size:.82rem; color:var(--ink); outline:none;
+}
+.equip-bonus:focus { background:rgba(200,160,100,.35); }
+/* columna stat key (pequeño select) */
+.equip-stat {
+  width:100%; padding:2px 2px;
+  background:rgba(200,160,100,.15); border:none; border-radius:2px;
+  font-family:'Crimson Text',serif; font-size:.68rem; color:var(--ink); outline:none;
+}
+/* stats: base + total */
+.stat-total {
+  width:42px; padding:2px 3px; text-align:center;
+  border:1px solid rgba(0,0,0,.12); border-radius:2px;
+  font-family:'Cinzel',serif; font-size:.78rem;
+  background:rgba(39,174,96,.12); color:#1a4a1a;
+  font-weight:700; pointer-events:none;
+}
+
+/* ── STATS PRINCIPALES EXPANDIDAS ── */
+.stat-main-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto auto;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,.1);
+  margin-bottom: 3px;
+}
+.stat-main-lbl { font-size:.78rem; font-weight:600; white-space:nowrap; }
+.stat-mini-lbl { font-size:.58rem; color:var(--ink2); text-align:center; margin-bottom:1px; font-family:'Cinzel',serif; letter-spacing:.5px; }
+.sval-col { display:flex; flex-direction:column; align-items:center; }
+.sval-main {
+  width:46px; padding:3px 2px; text-align:center;
+  border:1px solid rgba(0,0,0,.15); border-radius:3px;
+  font-family:'Cinzel',serif; font-size:.82rem;
+  background:rgba(255,255,255,.3); outline:none; color:var(--ink);
+}
+.sval-main:focus { border-color:rgba(0,0,0,.4); background:rgba(255,255,255,.5); }
+.mod-box {
+  width:42px; padding:3px 2px; text-align:center;
+  border-radius:3px; font-family:'Cinzel',serif; font-size:.82rem;
+  font-weight:700; pointer-events:none; border:1px solid rgba(0,0,0,.1);
+}
+.mod-base-box { background:rgba(41,128,185,.12); color:#1a4a8a; }
+.mod-final-box { background:rgba(39,174,96,.15); color:#1a4a1a; }
+/* ── BONO VITALES ── */
+.sval-bono {
+  width:58px; padding:4px 5px; text-align:center;
+  border:1px solid rgba(200,148,26,.5); border-radius:3px;
+  font-family:'Cinzel',serif; font-size:.88rem;
+  background:rgba(200,148,26,.12); outline:none; color:var(--ink);
+}
+.sval-bono:focus { border-color:var(--gld); background:rgba(200,148,26,.22); }
+.bono-lbl { font-size:.58rem; color:var(--gld); font-family:'Cinzel',serif; text-align:center; display:block; margin-bottom:1px; }
+
+/* ── ATRIBUTOS EXPANDIDOS ── */
+.attr-row {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px 42px 20px;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  border: 1px solid rgba(0,0,0,.08);
+}
+.attr-lbl { font-size:.78rem; }
+.attr-num {
+  width:100%; padding:2px 3px; text-align:center;
+  border:1px solid rgba(0,0,0,.15); border-radius:3px;
+  font-family:'Cinzel',serif; font-size:.75rem;
+  background:rgba(255,255,255,.3); outline:none; color:var(--ink);
+}
+.attr-num:focus { border-color:rgba(0,0,0,.4); }
+.attr-num.auto { background:rgba(41,128,185,.1); cursor:default; }
+.attr-total {
+  width:100%; padding:2px 3px; text-align:center;
+  border-radius:3px; font-family:'Cinzel',serif; font-size:.75rem;
+  font-weight:700; pointer-events:none; border:1px solid rgba(0,0,0,.08);
+  background:rgba(39,174,96,.12); color:#1a4a1a;
+}
+.attr-comp {
+  width:16px; height:16px;
+  cursor:pointer; accent-color:var(--gld);
+  flex-shrink:0;
+}
+/* mini header labels */
+.attr-header {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px 42px 20px;
+  gap: 4px;
+  padding: 0 6px 2px;
+}
+.attr-header span {
+  font-family:'Cinzel',serif; font-size:.55rem;
+  letter-spacing:.5px; color:var(--ink2);
+  text-align:center; text-transform:uppercase;
+}
+.attr-header span:first-child { text-align:left; }
+
+/* ── PASIVAS ── */
+.pasiva-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto auto;
+  gap: 4px;
+  align-items: start;
+  padding: 5px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(200,148,26,.25);
+  background: rgba(200,160,100,.1);
+  margin-bottom: 4px;
+  transition: background .15s;
+}
+.pasiva-row.activa {
+  background: rgba(142,68,173,.1);
+  border-color: rgba(142,68,173,.4);
+}
+.pasiva-lbl {
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  letter-spacing: 1px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.pasiva-input {
+  width: 100%; padding: 3px 5px;
+  background: rgba(200,160,100,.18); border: 1px solid var(--ps);
+  border-radius: 3px; font-family: 'Crimson Text', serif;
+  font-size: .8rem; color: var(--ink); outline: none;
+}
+.pasiva-input:focus { border-color: var(--gld); }
+.pasiva-stat-row {
+  display: flex; gap: 4px; align-items: center;
+}
+.pasiva-stat-sel {
+  flex: 1; padding: 3px 4px;
+  background: rgba(200,160,100,.18); border: 1px solid var(--ps);
+  border-radius: 3px; font-family: 'Crimson Text', serif;
+  font-size: .75rem; color: var(--ink); outline: none;
+}
+.pasiva-bono-inp {
+  width: 46px; padding: 3px 4px; text-align: center;
+  background: rgba(200,160,100,.18); border: 1px solid var(--ps);
+  border-radius: 3px; font-family: 'Cinzel', serif;
+  font-size: .8rem; color: var(--ink); outline: none;
+}
+.pasiva-toggle {
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 6px; border: none; border-radius: 4px;
+  font-family: 'Cinzel', serif; font-size: .6rem; letter-spacing: 1px;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+  background: rgba(127,140,141,.2); color: var(--ink2); border: 1px solid var(--ps);
+}
+.pasiva-toggle.on {
+  background: rgba(142,68,173,.2); color: #5a1a8a;
+  border-color: rgba(142,68,173,.6);
+}
+.pasiva-del {
+  background: none; border: none; color: var(--red);
+  cursor: pointer; font-size: 1rem; opacity: .4;
+  padding: 0 3px; align-self: center;
+}
+.pasiva-del:hover { opacity: 1; }
+.pasiva-nota {
+  grid-column: span 6;
+  font-size: .7rem; color: var(--ink2); font-style: italic;
+  padding: 2px 2px 0;
+}
+
+/* ── MAIN AREA ── */
+#mainArea {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 8px;
+  padding: 4px 10px 10px;
+  overflow: hidden;
+}
+
+/* left col */
+#leftCol {
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#leftCol::-webkit-scrollbar { width: 3px; }
+#leftCol::-webkit-scrollbar-thumb { background: var(--ps); }
+
+/* map col */
+#mapCol {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  background: #1a0f08;
+  border-radius: 4px;
+}
+
+/* right col */
+#rightCol {
+  width: 340px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+#rightCol::-webkit-scrollbar { width: 4px; }
+#rightCol::-webkit-scrollbar-thumb { background: var(--ps); }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
 }
 .ptitle {
   font-family: 'Cinzel', serif;
-  font-size: .75rem;
+  font-size: .72rem;
   letter-spacing: 2px;
-  color: #8b1a1a;
+  color: var(--red);
   text-transform: uppercase;
-  border-bottom: 1px solid #c8a96e;
+  border-bottom: 1px solid var(--ps);
   padding-bottom: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 
-/* SIDEBAR IZQ */
-.left {
-  width: 220px;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-}
-.left::-webkit-scrollbar { width: 3px; }
-.left::-webkit-scrollbar-thumb { background: #c8a96e; }
-
-label { display: block; font-size: .85rem; color: #5c3d1e; margin-bottom: 2px; }
+label { display: block; font-size: .82rem; color: var(--ink2); margin-bottom: 2px; }
 input[type=text], input[type=number] {
-  width: 100%;
-  padding: 5px 7px;
-  background: rgba(200,160,100,.2);
-  border: 1px solid #c8a96e;
-  border-radius: 3px;
-  font-family: 'Crimson Text', serif;
-  font-size: .95rem;
-  color: #2c1a0e;
-  outline: none;
-  margin-bottom: 6px;
+  width: 100%; padding: 4px 6px;
+  background: rgba(200,160,100,.2); border: 1px solid var(--ps);
+  border-radius: 3px; font-family: 'Crimson Text', serif;
+  font-size: .9rem; color: var(--ink); outline: none; margin-bottom: 5px;
 }
-input[type=text]:focus, input[type=number]:focus { border-color: #c8941a; }
+input[type=text]:focus, input[type=number]:focus { border-color: var(--gld); }
 
-.cgrid { display: grid; grid-template-columns: repeat(5,1fr); gap: 4px; margin-bottom: 8px; }
-.cdot {
-  width: 30px; height: 30px; border-radius: 50%;
-  cursor: pointer; border: 2px solid transparent;
-}
-.cdot.sel { border-color: #2c1a0e !important; }
+.cgrid { display: grid; grid-template-columns: repeat(6,1fr); gap: 4px; margin-bottom: 7px; }
+.cdot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.cdot.sel { border-color: var(--ink) !important; }
 
-.btn {
-  display: block; width: 100%; padding: 7px;
-  border: none; border-radius: 3px; cursor: pointer;
-  font-family: 'Cinzel', serif; font-size: .75rem; letter-spacing: 1px;
-  margin-bottom: 5px;
-}
-.btn-red { background: #8b1a1a; color: #f4e4b8; }
-.btn-red:hover { background: #a52020; }
-.btn-grn { background: #1a4a1a; color: #f4e4b8; }
-.btn-grn:hover { background: #255225; }
-.btn-gld { background: #c8941a; color: #2c1a0e; }
-.btn-gld:hover { background: #e8b430; }
+.btn { display:block; width:100%; padding:6px; border:none; border-radius:3px; cursor:pointer; font-family:'Cinzel',serif; font-size:.72rem; letter-spacing:1px; margin-bottom:4px; }
+.btn-red { background:var(--red); color:var(--p); }
+.btn-red:hover { background:#a52020; }
+.btn-grn { background:var(--grn); color:var(--p); }
+.btn-grn:hover { background:#255225; }
+.btn-gld { background:var(--gld); color:var(--ink); }
+.btn-gld:hover { background:var(--gld2); }
+.btn-sm { display:inline-block; width:auto; padding:4px 8px; font-size:.68rem; }
+.btn-xs { display:inline-block; width:auto; padding:3px 7px; font-size:.65rem; margin-bottom:0; }
 
-.tlist { max-height: 150px; overflow-y: auto; margin-bottom: 6px; }
+.tlist { max-height: 130px; overflow-y: auto; margin-bottom: 5px; }
 .tlist::-webkit-scrollbar { width: 3px; }
-.tlist::-webkit-scrollbar-thumb { background: #c8a96e; }
-.titem {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 6px;
-  background: rgba(200,160,100,.15);
-  border: 1px solid rgba(200,160,100,.3);
-  border-radius: 3px;
-  font-size: .88rem; color: #5c3d1e;
-  cursor: pointer; margin-bottom: 3px;
-}
-.titem:hover { background: rgba(200,160,100,.3); }
-.titem.sel { background: rgba(200,148,26,.25); border-color: #c8941a; }
-.tcolor { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,.3); flex-shrink: 0; }
-.ttext { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tdel { background: none; border: none; color: #8b1a1a; cursor: pointer; font-size: 1rem; opacity: .4; padding: 0 2px; }
-.tdel:hover { opacity: 1; }
+.tlist::-webkit-scrollbar-thumb { background: var(--ps); }
+.titem { display:flex; align-items:center; gap:5px; padding:3px 5px; background:rgba(200,160,100,.15); border:1px solid rgba(200,160,100,.3); border-radius:3px; font-size:.84rem; color:var(--ink2); cursor:pointer; margin-bottom:3px; }
+.titem:hover { background:rgba(200,160,100,.3); }
+.titem.sel { background:rgba(200,148,26,.22); border-color:var(--gld); }
+.tcolor { width:11px; height:11px; border-radius:50%; border:1px solid rgba(0,0,0,.3); flex-shrink:0; }
+.ttext { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.tdel { background:none; border:none; color:var(--red); cursor:pointer; font-size:.95rem; opacity:.4; padding:0 2px; }
+.tdel:hover { opacity:1; }
+.info { font-size:.82rem; color:var(--ink2); font-style:italic; }
 
-.info { font-size: .85rem; color: #5c3d1e; font-style: italic; }
+.mapbox { background:var(--p); border:3px solid var(--ps); box-shadow:4px 4px 12px rgba(0,0,0,.6); display:inline-block; position:relative; overflow:hidden; flex-shrink:0; }
+canvas { display:block; }
+.mapctrl { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+.mapctrl span { color:#a07850; font-style:italic; font-size:.82rem; }
 
-/* MAPA */
-.mid { flex: 1; min-width: 0; }
-.mapbox {
-  background: #f4e4b8;
-  border: 3px solid #c8a96e;
-  box-shadow: 4px 4px 12px rgba(0,0,0,.6);
-  display: inline-block;
-  position: relative;
-  overflow: hidden;
-}
-canvas { display: block; }
-.mapctrl { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-.mapctrl span { color: #a07850; font-style: italic; font-size: .88rem; }
-.btn-sm { display: inline-block; width: auto; padding: 5px 9px; font-size: .72rem; }
-
-/* STATS */
-.right {
-  width: 350px;
-  flex-shrink: 0;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  background: #f4e4b8;
-  border: 2px solid #c8a96e;
-  border-radius: 4px;
-  padding: 10px 12px;
-}
-.right::-webkit-scrollbar { width: 4px; }
-.right::-webkit-scrollbar-thumb { background: #c8a96e; }
-
-.empty-msg {
-  text-align: center;
-  padding: 30px 10px;
-  color: #5c3d1e;
-  font-style: italic;
-  font-size: .9rem;
-}
+.empty-msg { text-align:center; padding:24px 10px; color:var(--ink2); font-style:italic; font-size:.88rem; }
 
 /* Plus Ultra */
-.pu {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border-radius: 4px;
-  border: 2px solid rgba(200,148,26,.4);
-  background: rgba(200,148,26,.08);
-  cursor: pointer; margin-bottom: 10px;
-}
-.pu.on { border-color: #e8b430; background: rgba(232,180,48,.2); }
-.pubox {
-  width: 16px; height: 16px; border: 2px solid #c8941a;
-  border-radius: 2px; display: flex; align-items: center; justify-content: center;
-}
-.pu.on .pubox { background: #c8941a; }
-.puck { font-size: 10px; font-weight: 700; color: #2c1a0e; display: none; }
-.pu.on .puck { display: block; }
-.pulbl { font-family: 'Cinzel', serif; font-size: .85rem; letter-spacing: 2px; color: #5c3d1e; }
-.pu.on .pulbl { color: #c8941a; }
-.pust { font-size: .75rem; color: #5c3d1e; margin-left: auto; font-style: italic; }
-.pu.on .pust { color: #c8941a; }
+.pu { display:flex; align-items:center; gap:7px; padding:6px 9px; border-radius:4px; border:2px solid rgba(200,148,26,.4); background:rgba(200,148,26,.08); cursor:pointer; margin-bottom:8px; }
+.pu.on { border-color:var(--gld2); background:rgba(232,180,48,.2); }
+.pubox { width:15px; height:15px; border:2px solid var(--gld); border-radius:2px; display:flex; align-items:center; justify-content:center; }
+.pu.on .pubox { background:var(--gld); }
+.puck { font-size:10px; font-weight:700; color:var(--ink); display:none; }
+.pu.on .puck { display:block; }
+.pulbl { font-family:'Cinzel',serif; font-size:.82rem; letter-spacing:2px; color:var(--ink2); }
+.pu.on .pulbl { color:var(--gld); }
+.pust { font-size:.72rem; color:var(--ink2); margin-left:auto; font-style:italic; }
+.pu.on .pust { color:var(--gld); }
 
 /* Fields */
-.frow { display: flex; gap: 6px; margin-bottom: 4px; }
-.fgrp { flex: 1; }
-.flbl { font-size: .8rem; color: #5c3d1e; display: block; margin-bottom: 2px; }
-.fin {
-  width: 100%; padding: 4px 6px;
-  background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
-  border-radius: 3px; font-family: 'Crimson Text', serif;
-  font-size: .9rem; color: #2c1a0e; outline: none;
-}
-.fin:focus { border-color: #c8941a; }
-.fin.num { text-align: center; font-family: 'Cinzel', serif; }
+.frow { display:flex; gap:5px; margin-bottom:4px; }
+.fgrp { flex:1; }
+.flbl { font-size:.78rem; color:var(--ink2); display:block; margin-bottom:2px; }
+.fin { width:100%; padding:4px 6px; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px; font-family:'Crimson Text',serif; font-size:.88rem; color:var(--ink); outline:none; }
+.fin:focus { border-color:var(--gld); }
+.fin.num { text-align:center; font-family:'Cinzel',serif; }
 
 /* bars */
-.brow { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
-.blbl { font-size: .8rem; color: #5c3d1e; width: 60px; flex-shrink: 0; }
-.bnum {
-  width: 50px; padding: 3px 4px; text-align: center;
-  background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
-  border-radius: 3px; font-family: 'Cinzel', serif; font-size: .82rem;
-  color: #2c1a0e; outline: none;
-}
-.bnum:focus { border-color: #c8941a; }
-.bsep { font-size: .85rem; color: #5c3d1e; }
-.bbar { flex: 1; height: 7px; background: rgba(0,0,0,.12); border-radius: 4px; overflow: hidden; }
-.bfill { height: 100%; border-radius: 4px; transition: width .3s; }
+.brow { display:flex; align-items:center; gap:4px; margin-bottom:4px; }
+.blbl { font-size:.78rem; color:var(--ink2); width:56px; flex-shrink:0; }
+.bnum { width:46px; padding:3px 3px; text-align:center; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px; font-family:'Cinzel',serif; font-size:.8rem; color:var(--ink); outline:none; }
+.bnum:focus { border-color:var(--gld); }
+.bsep { font-size:.82rem; color:var(--ink2); }
+.bbar { flex:1; height:6px; background:rgba(0,0,0,.12); border-radius:3px; overflow:hidden; }
+.bfill { height:100%; border-radius:3px; transition:width .3s; }
 
 /* 2-col grid */
-.sg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-.sc {
-  display: flex; align-items: center; gap: 4px;
-  padding: 3px 6px; border-radius: 3px; border: 1px solid rgba(0,0,0,.1);
-}
-.sdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.slbl { font-size: .8rem; flex: 1; }
-.sval {
-  width: 50px; padding: 2px 3px; text-align: center;
-  border: 1px solid rgba(0,0,0,.15); border-radius: 3px;
-  font-family: 'Cinzel', serif; font-size: .8rem;
-  background: rgba(255,255,255,.35); outline: none;
-}
+.sg { display:grid; grid-template-columns:1fr 1fr; gap:3px; }
+.sc { display:flex; align-items:center; gap:4px; padding:3px 5px; border-radius:3px; border:1px solid rgba(0,0,0,.1); }
+.sdot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.slbl { font-size:.78rem; flex:1; }
+.sval { width:46px; padding:2px 3px; text-align:center; border:1px solid rgba(0,0,0,.15); border-radius:3px; font-family:'Cinzel',serif; font-size:.78rem; background:rgba(255,255,255,.35); outline:none; }
 .sval:focus { border-color: rgba(0,0,0,.4); }
 .s-r { background: rgba(192,57,43,.12); }
 .s-b { background: rgba(41,128,185,.12); }
@@ -231,42 +801,27 @@ canvas { display: block; }
 .s-gr { background: rgba(127,140,141,.12); }
 
 /* attr list */
-.arow { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-radius: 3px; margin-bottom: 2px; }
-.albl { font-size: .8rem; flex: 1; }
-.aval {
-  width: 50px; padding: 2px 3px; text-align: center;
-  border: 1px solid rgba(0,0,0,.15); border-radius: 3px;
-  font-family: 'Cinzel', serif; font-size: .8rem;
-  background: rgba(255,255,255,.35); outline: none;
-}
+.arow { display:flex; align-items:center; gap:4px; padding:3px 5px; border-radius:3px; margin-bottom:2px; }
+.albl { font-size:.78rem; flex:1; }
+.aval { width:46px; padding:2px 3px; text-align:center; border:1px solid rgba(0,0,0,.15); border-radius:3px; font-family:'Cinzel',serif; font-size:.78rem; background:rgba(255,255,255,.35); outline:none; }
 .aval:focus { border-color: rgba(0,0,0,.4); }
 
 /* recursos */
-.rtbl { width: 100%; border-collapse: collapse; font-size: .85rem; }
-.rtbl th { font-family: 'Cinzel', serif; font-size: .7rem; padding: 3px 6px; border: 1px solid rgba(0,0,0,.15); background: rgba(200,148,26,.15); }
-.rtbl td { padding: 3px 6px; border: 1px solid rgba(0,0,0,.1); }
+.rtbl { width:100%; border-collapse:collapse; font-size:.82rem; }
+.rtbl th { font-family:'Cinzel',serif; font-size:.68rem; padding:3px 5px; border:1px solid rgba(0,0,0,.15); background:rgba(200,148,26,.14); }
+.rtbl td { padding:3px 5px; border:1px solid rgba(0,0,0,.1); }
 .rtbl td:last-child { text-align: center; }
-.rval {
-  width: 55px; padding: 2px 3px; text-align: center;
-  border: 1px solid rgba(0,0,0,.15); border-radius: 3px;
-  font-family: 'Cinzel', serif; font-size: .8rem;
-  background: rgba(255,255,255,.35); outline: none;
-}
+.rval { width:50px; padding:2px 3px; text-align:center; border:1px solid rgba(0,0,0,.15); border-radius:3px; font-family:'Cinzel',serif; font-size:.78rem; background:rgba(255,255,255,.35); outline:none; }
 .rval:focus { border-color: rgba(0,0,0,.4); }
 .r-b { background: rgba(41,128,185,.1); }
 .r-y { background: rgba(243,156,18,.1); }
 .r-t { background: rgba(22,160,133,.1); }
 .r-p { background: rgba(142,68,173,.1); }
 
-textarea {
-  width: 100%; padding: 5px 7px; resize: vertical; min-height: 50px;
-  background: rgba(200,160,100,.15); border: 1px solid #c8a96e;
-  border-radius: 3px; font-family: 'Crimson Text', serif; font-size: .88rem;
-  color: #2c1a0e; outline: none; line-height: 1.4;
-}
-textarea:focus { border-color: #c8941a; }
+textarea { width:100%; padding:4px 6px; resize:vertical; min-height:46px; background:rgba(200,160,100,.15); border:1px solid var(--ps); border-radius:3px; font-family:'Crimson Text',serif; font-size:.85rem; color:var(--ink); outline:none; line-height:1.4; }
+textarea:focus { border-color:var(--gld); }
 
-.saved { font-size: .75rem; color: #1a4a1a; font-style: italic; text-align: right; height: 14px; }
+.saved { font-size:.72rem; color:var(--grn); font-style:italic; text-align:right; height:13px; }
 
 /* LOG */
 .loglist {
@@ -520,53 +1075,262 @@ textarea:focus { border-color: #c8941a; }
 .conn-txt { font-family: 'Cinzel', serif; font-size: .68rem; color: #5c3d1e; }
 .btn-xs { display:inline-block;width:auto;padding:3px 8px;font-size:.68rem;margin-bottom:0; }
 
+
+/* ── LOG ── */
+.loglist { max-height:140px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:3px; }
+.loglist::-webkit-scrollbar { width:3px; }
+.loglist::-webkit-scrollbar-thumb { background:var(--ps); }
+.logentry { font-size:.75rem; color:var(--ink2); padding:3px 5px; background:rgba(200,160,100,.15); border-radius:3px; border-left:3px solid var(--ps); line-height:1.4; }
+.logentry.move { border-color:#2980b9; }
+.logentry.spawn { border-color:#27ae60; }
+.logentry.del { border-color:#c0392b; }
+.logtime { font-size:.67rem; color:#a07850; float:right; }
+
+/* ── SALA inline CSS (cleanup) ── */
+.sala-panel,.sala-row,.sala-code,.sala-input { display:none; } /* replaced by topbar */
+
+/* ── TURN panel OLD (replaced) ── */
+.turn-panel { display:none; }
+.dice-panel { display:none; }
+
+/* ── ESTADOS ── */
+.estados-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.estado-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 3px; border-radius: 4px; cursor: pointer;
+  border: 2px solid rgba(0,0,0,.15);
+  background: rgba(200,160,100,.1);
+  font-size: .55rem; font-family: 'Cinzel', serif;
+  color: var(--ink2); text-align: center; line-height: 1.2;
+  transition: all .15s; user-select: none;
+}
+.estado-btn .est-icon { font-size: 1.2rem; line-height: 1; }
+.estado-btn.activo { border-width: 2px; color: #fff; font-weight: 700; }
+.estado-btn:hover { opacity: .85; transform: scale(1.04); }
+.estado-info {
+  font-size: .72rem; color: var(--ink2); font-style: italic;
+  padding: 4px 6px; background: rgba(200,160,100,.15);
+  border-radius: 3px; border-left: 3px solid var(--ps);
+  margin-bottom: 4px; line-height: 1.4; display: none;
+}
+.estado-info.show { display: block; }
+
+/* ── ZONAS ── */
+.zona-colors {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-bottom: 6px;
+}
+.zona-color-dot {
+  width: 28px; height: 28px; border-radius: 4px;
+  cursor: pointer; border: 2px solid transparent;
+  transition: transform .1s;
+}
+.zona-color-dot:hover { transform: scale(1.1); }
+.zona-color-dot.sel { border-color: var(--ink) !important; transform: scale(1.12); }
+.zona-list {
+  max-height: 100px; overflow-y: auto; margin-bottom: 5px;
+}
+.zona-list::-webkit-scrollbar { width: 3px; }
+.zona-list::-webkit-scrollbar-thumb { background: var(--ps); }
+.zona-item {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 6px; border-radius: 3px; margin-bottom: 2px;
+  cursor: pointer; font-size: .8rem; color: var(--ink2);
+  border: 1px solid rgba(200,160,100,.25);
+}
+.zona-item:hover { background: rgba(200,160,100,.2); }
+.zona-item.sel { border-color: var(--gld); background: rgba(200,148,26,.15); }
+.zona-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.2); }
+.zona-mode-row { display: flex; gap: 4px; margin-bottom: 6px; }
+.zona-mode-btn {
+  flex: 1; padding: 4px; border: 1px solid var(--ps);
+  background: rgba(200,160,100,.1); border-radius: 3px;
+  font-family: 'Cinzel', serif; font-size: .65rem;
+  cursor: pointer; text-align: center; color: var(--ink2);
+}
+.zona-mode-btn.active { background: var(--gld); color: var(--ink); border-color: var(--gld); font-weight: 700; }
+
+/* ── OBSTÁCULOS ── */
+.obs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.obs-btn {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 5px 3px;
+  background: rgba(200,160,100,.15);
+  border: 1px solid var(--ps); border-radius: 4px;
+  cursor: pointer; font-size: .62rem; color: var(--ink2);
+  font-family: 'Cinzel', serif;
+  transition: background .12s, border-color .12s;
+  user-select: none;
+}
+.obs-btn:hover { background: rgba(200,148,26,.2); border-color: var(--gld); }
+.obs-btn.sel { background: rgba(200,148,26,.3); border-color: var(--gld); color: var(--ink); font-weight:700; }
+.obs-btn .obs-icon { font-size: 1.2rem; line-height: 1; }
+.obs-list { max-height: 110px; overflow-y: auto; margin-bottom: 5px; }
+.obs-list::-webkit-scrollbar { width: 3px; }
+.obs-list::-webkit-scrollbar-thumb { background: var(--ps); }
+.obs-item {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 5px; background: rgba(200,160,100,.12);
+  border: 1px solid rgba(200,160,100,.25); border-radius: 3px;
+  font-size: .8rem; color: var(--ink2); margin-bottom: 2px;
+  cursor: pointer;
+}
+.obs-item:hover { background: rgba(200,160,100,.25); }
+.obs-item.sel { background: rgba(200,148,26,.2); border-color: var(--gld); }
+
+/* ── MOBILE TABS ── */
+#tabBar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--tab-h);
+  background: #110a04;
+  border-top: 2px solid var(--ps);
+  z-index: 50;
+  flex-direction: row;
+}
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a07850;
+  font-family: 'Cinzel', serif;
+  font-size: .55rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color .15s, background .15s;
+  padding: 6px 4px;
+}
+.tab-btn .tab-icon { font-size: 1.3rem; line-height: 1; }
+.tab-btn.active { color: var(--gld); background: rgba(200,148,26,.1); }
+.tab-btn:hover { color: var(--gld2); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  body { overflow: auto; height: auto; }
+  #mainArea { flex-direction: column; overflow: visible; padding-bottom: calc(var(--tab-h) + 10px); }
+  #leftCol { width: 100%; max-height: none; overflow: visible; }
+  #rightCol { width: 100%; }
+  #midbar { flex-direction: column; }
+  #turnWrap, #diceWrap { min-width: 0; width: 100%; }
+  #tabBar { display: flex; }
+
+  /* En móvil: ocultar sala y presencia del topbar */
+  #salaBar, #presenceSep, #presenceWrap { display: none !important; }
+  /* Mostrar panel de sala móvil */
+  #mobileSalaPanel { display: block !important; }
+
+  /* tab visibility on mobile */
+  .tab-pane { display: none !important; }
+  .tab-pane.active { display: block !important; }
+  #mapCol.tab-pane.active { display: flex !important; }
+}
+
+@media (min-width: 901px) {
+  /* all panes always visible on desktop */
+  .tab-pane { display: block !important; }
+  #mapCol { display: flex !important; }
+  #tabBar { display: none !important; }
+}
+
+/* panel sala móvil */
+#mobileSalaPanel {
+  display: none; /* oculto en desktop, mostrado en mobile por media query */
+}
+#mobileSalaPanel .sala-row-m {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+#mobileSalaPanel .sala-code-m {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--gld);
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+#mobileSalaPanel input[type=text] {
+  margin-bottom: 0;
+}
+#mobilePresenceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
 /* tooltip */
 #tip {
-  position: fixed; background: rgba(20,10,0,.9); color: #f4e4b8;
-  padding: 3px 8px; border-radius: 3px; font-size: .8rem;
-  pointer-events: none; display: none; border: 1px solid #c8941a;
-  font-family: 'Cinzel', serif; z-index: 99;
+  position:fixed; background:rgba(20,10,0,.9); color:var(--p);
+  padding:3px 8px; border-radius:3px; font-size:.78rem;
+  pointer-events:none; display:none; border:1px solid var(--gld);
+  font-family:'Cinzel',serif; z-index:99;
 }
+
 </style>
 </head>
 <body>
 
-<h1>⚔ MAPA TÁCTICO ⚔</h1>
-<p class="sub">Boku no RPG — Campo de Batalla</p>
-
-<!-- SALA ONLINE -->
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;background:#f4e4b8;border:2px solid #c8a96e;border-radius:4px;padding:8px 14px;flex-wrap:wrap;">
-  <span style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:2px;color:#8b1a1a;text-transform:uppercase;flex-shrink:0;">⚑ Sala</span>
-  <span style="font-family:'Cinzel',serif;font-size:.95rem;color:#c8941a;letter-spacing:2px;font-weight:700;min-width:80px;" id="salaCode">—</span>
-  <button class="btn btn-xs btn-grn" onclick="copySala()" style="margin-bottom:0;">Copiar código</button>
-  <input type="text" id="salaInput" class="sala-input" placeholder="Unirse a sala..." maxlength="8" style="max-width:140px;">
-  <button class="btn btn-xs btn-gld" onclick="joinSala()" style="margin-bottom:0;">Unirse</button>
-  <div style="display:flex;align-items:center;gap:5px;margin-left:auto;" id="connBox">
-    <div class="conn-dot"></div>
-    <span class="conn-txt" id="connTxt">Sin conexión (local)</span>
-  </div>
-</div>
-
-<!-- ORDEN DE TURNO -->
-<div class="turn-panel">
-  <div class="turn-header">
-    <span class="turn-title">⚔ Orden de Turno</span>
-    <div class="turn-controls">
-      <span class="turn-round" id="turnRound">Ronda 1</span>
-      <button class="btn btn-grn" onclick="prevTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">◀</button>
-      <button class="btn btn-gld" onclick="nextTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">Siguiente ▶</button>
-      <label style="display:flex;align-items:center;gap:4px;font-family:'Cinzel',serif;font-size:.68rem;color:#5c3d1e;cursor:pointer;white-space:nowrap;"><input type="checkbox" id="autoRegen" checked style="cursor:pointer;accent-color:#c8941a;"> Auto Estamina</label>
-      <button class="btn btn-red" onclick="resetTurns()" style="width:auto;padding:3px 8px;font-size:.68rem;">↺ Reset</button>
+<!-- TOPBAR -->
+<div id="topbar">
+  <h1>⚔ MAPA TÁCTICO ⚔</h1>
+  <div id="salaBar">
+    <span class="slbl">⚑ Sala</span>
+    <span id="salaCode">—</span>
+    <button class="btn btn-xs btn-grn" onclick="copySala()">Copiar</button>
+    <input type="text" id="salaInput" placeholder="Unirse..." maxlength="8">
+    <button class="btn btn-xs btn-gld" onclick="joinSala()">Unirse</button>
+    <div id="connBox" style="display:flex;align-items:center;gap:5px;">
+      <div class="conn-dot"></div>
+      <span class="conn-txt" id="connTxt">Sin conexión</span>
     </div>
   </div>
-  <div class="turn-list" id="turnList">
-    <span class="turn-empty">Añadí fichas para ver el orden de turno.</span>
+  <span id="presenceSep">|</span>
+  <div id="presenceWrap">
+    <input type="text" id="userNameInput" placeholder="Tu nombre..." maxlength="20" onchange="setUserName(this.value)" onkeydown="if(event.key==='Enter')setUserName(this.value)">
+    <div id="presenceList"></div>
   </div>
 </div>
 
-<!-- DADOS -->
-<div class="dice-panel">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+<!-- MIDBAR: turn + dice -->
+<div id="midbar">
+  <div id="turnWrap">
+    <div class="turn-header">
+      <span class="turn-title">⚔ Orden de Turno</span>
+      <div class="turn-controls">
+        <span class="turn-round" id="turnRound">Ronda 1</span>
+        <button class="btn btn-grn" onclick="prevTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">◀</button>
+        <button class="btn btn-gld" onclick="nextTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">Siguiente ▶</button>
+        <label style="display:flex;align-items:center;gap:4px;font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);cursor:pointer;white-space:nowrap;"><input type="checkbox" id="autoRegen" checked style="cursor:pointer;accent-color:var(--gld);"> Auto Estamina</label>
+        <button class="btn btn-red" onclick="resetTurns()" style="width:auto;padding:3px 8px;font-size:.68rem;">↺ Reset</button>
+      </div>
+    </div>
+    <div class="turn-list" id="turnList">
+      <span class="turn-empty">Añadí fichas para ver el orden de turno.</span>
+    </div>
+  </div>
+  <div id="diceWrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
     <span class="turn-title">🎲 Tirada de Dados</span>
     <div style="display:flex;align-items:center;gap:6px;">
       <label style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">Tirar:</label>
@@ -638,12 +1402,40 @@ textarea:focus { border-color: #c8941a; }
     </div>
     <div class="dice-history" id="diceHistory"></div>
   </div>
+  </div>
 </div>
 
-<div class="layout">
+<!-- MAIN AREA -->
+<div id="mainArea">
 
-  <!-- COLUMNA IZQ -->
-  <div class="left">
+  <!-- LEFT COL (tab: fichas) -->
+  <div id="leftCol" class="tab-pane active" data-tab="fichas">
+
+    <!-- PANEL SALA (solo visible en móvil) -->
+    <div id="mobileSalaPanel" class="panel">
+      <div class="ptitle">⚑ Sala Online</div>
+      <div class="sala-row-m">
+        <span style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);">Código:</span>
+        <span class="sala-code-m" id="salaCodeM">—</span>
+        <button class="btn btn-xs btn-grn" onclick="copySala()">Copiar</button>
+      </div>
+      <div class="sala-row-m">
+        <input type="text" id="salaInputM" placeholder="Unirse a sala..." maxlength="8" style="flex:1;text-transform:uppercase;">
+        <button class="btn btn-xs btn-gld" onclick="joinSalaM()">Unirse</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;" id="connBoxM">
+        <div class="conn-dot"></div>
+        <span class="conn-txt" id="connTxtM">Sin conexión</span>
+      </div>
+      <div style="border-top:1px solid var(--ps);padding-top:6px;">
+        <label style="margin-bottom:4px;">Tu nombre</label>
+        <input type="text" id="userNameInputM" placeholder="Ej: Midoriya" maxlength="20"
+          onchange="setUserName(this.value)"
+          onkeydown="if(event.key==='Enter')setUserName(this.value)">
+        <div style="font-size:.72rem;color:var(--ink2);margin-bottom:4px;">Conectados ahora:</div>
+        <div id="mobilePresenceList"></div>
+      </div>
+    </div>
 
     <div class="panel">
       <div class="ptitle">✦ Añadir Ficha</div>
@@ -653,6 +1445,8 @@ textarea:focus { border-color: #c8941a; }
       <input type="text" id="iSym" placeholder="M" maxlength="2" style="text-align:center;">
       <label>Color</label>
       <div class="cgrid" id="cgrid"></div>
+      <label>Contraseña <span style="color:#a07850;font-size:.72rem;">(opcional)</span></label>
+      <input type="password" id="iPassword" placeholder="Solo vos podrás editar" maxlength="32" style="letter-spacing:2px;">
       <button class="btn btn-gld" onclick="addToken()">+ Colocar en mapa</button>
     </div>
 
@@ -663,6 +1457,43 @@ textarea:focus { border-color: #c8941a; }
       </div>
       <p class="info" id="selinfo" style="margin-top:5px;">Ninguna seleccionada</p>
       <button class="btn btn-red" id="btnDel" onclick="deleteSelected()" style="display:none;margin-top:5px;">Eliminar seleccionada</button>
+      <div style="display:flex;gap:4px;margin-top:6px;">
+        <button class="btn btn-grn btn-sm" onclick="exportFicha()" style="flex:1;" title="Exportar ficha seleccionada como JSON">⬇ Exportar</button>
+        <button class="btn btn-gld btn-sm" onclick="document.getElementById('importInput').click()" style="flex:1;" title="Importar ficha desde JSON">⬆ Importar</button>
+      </div>
+      <input type="file" id="importInput" accept=".json" style="display:none;" onchange="importFicha(event)">
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🎨 Zonas / Áreas</div>
+
+      <!-- Modo: pintar / borrar / nueva zona -->
+      <div class="zona-mode-row">
+        <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
+        <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
+        <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
+      </div>
+
+      <!-- Colores -->
+      <div class="zona-colors" id="zonaColors"></div>
+
+      <!-- Nombre de zona -->
+      <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
+
+      <!-- Lista de zonas definidas -->
+      <div class="zona-list" id="zonaList"><p class="info">Sin zonas.</p></div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-red btn-sm" id="btnDelZona" onclick="deleteSelectedZona()" style="display:none;flex:1;">Eliminar zona</button>
+        <button class="btn btn-red btn-sm" onclick="clearZonas()" style="flex:1;">Limpiar todo</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">🧱 Obstáculos</div>
+      <div class="obs-grid" id="obsGrid"></div>
+      <div class="obs-list" id="obsList"><p class="info">Sin obstáculos.</p></div>
+      <button class="btn btn-red" id="btnDelObs" onclick="deleteSelectedObs()" style="display:none;">Eliminar seleccionado</button>
+      <button class="btn btn-red" onclick="clearObstacles()" style="margin-top:4px;">Limpiar todos</button>
     </div>
 
     <div class="panel">
@@ -676,14 +1507,6 @@ textarea:focus { border-color: #c8941a; }
     </div>
 
     <div class="panel">
-      <div class="ptitle">⚙ Cuadrícula</div>
-      <button class="btn btn-grn" onclick="setGrid(14,10)">14 × 10</button>
-      <button class="btn btn-grn" onclick="setGrid(20,14)">20 × 14</button>
-      <button class="btn btn-grn" onclick="setGrid(26,18)">26 × 18</button>
-      <button class="btn btn-red" onclick="clearMap()">Limpiar mapa</button>
-    </div>
-
-    <div class="panel">
       <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
         <span>📜 Registro</span>
         <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;">↩ Deshacer</button>
@@ -692,19 +1515,28 @@ textarea:focus { border-color: #c8941a; }
         <p class="info">Sin movimientos aún.</p>
       </div>
     </div>
-
   </div>
 
-  <!-- MAPA -->
-  <div class="mid">
+  <!-- MAP COL (tab: mapa) -->
+  <div id="mapCol" class="tab-pane active" data-tab="mapa">
     <div class="mapbox" id="mapbox">
       <canvas id="cv"></canvas>
     </div>
+    <div class="mapctrl">
+      <span>Cuadrícula:</span>
+      <button class="btn btn-grn btn-sm" onclick="setGrid(14,10)">14×10</button>
+      <button class="btn btn-grn btn-sm" onclick="setGrid(20,14)">20×14</button>
+      <button class="btn btn-grn btn-sm" onclick="setGrid(26,18)">26×18</button>
+      <input type="number" id="customCols" min="4" max="50" value="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink);outline:none;">
+      <span style="color:var(--ps);font-size:.85rem;">×</span>
+      <input type="number" id="customRows" min="4" max="40" value="14" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink);outline:none;">
+      <button class="btn btn-grn btn-sm" onclick="setCustomGrid()">✓</button>
+      <button class="btn btn-red btn-sm" onclick="clearMap()">Limpiar</button>
+    </div>
   </div>
 
-  <!-- COLUMNA DERECHA: stats siempre visibles -->
-  <div class="right" id="right">
-
+  <!-- RIGHT COL (tab: stats) -->
+  <div id="rightCol" class="tab-pane active" data-tab="stats">
     <div id="emptyStats" class="empty-msg">
       ⚔<br><br>Seleccioná una ficha<br>para ver sus estadísticas.
     </div>
@@ -714,11 +1546,17 @@ textarea:focus { border-color: #c8941a; }
       <!-- cabecera -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #c8a96e;">
         <div id="sAvatar" style="width:44px;height:44px;border-radius:50%;border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;flex-shrink:0;"></div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div id="sName" style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;"></div>
           <div id="sPos" style="font-size:.78rem;color:#5c3d1e;font-style:italic;"></div>
         </div>
+        <span id="lockBadge" class="locked" onclick="promptPassword()" title="Clic para desbloquear">🔒 Bloqueada</span>
       </div>
+      <div id="lockedMsg">
+        🔒<br>Esta ficha está protegida.<br>
+        <span style="font-family:'Cinzel',serif;font-size:.75rem;cursor:pointer;color:var(--gld);text-decoration:underline;" onclick="promptPassword()">Ingresar contraseña</span>
+      </div>
+      <div id="statsOverlay" class="locked">
 
       <!-- Plus Ultra -->
       <div class="pu" id="puBtn" onclick="togglePU()">
@@ -727,75 +1565,346 @@ textarea:focus { border-color: #c8941a; }
         <span class="pust" id="puSt">inactivo</span>
       </div>
 
+      <!-- Estados -->
+      <div class="ptitle" style="margin-top:0;">⚡ Estados</div>
+      <div class="estados-grid" id="estadosGrid"></div>
+      <div class="estado-info" id="estadoInfo"></div>
+
       <!-- Identidad -->
       <div class="ptitle">✦ Identidad</div>
       <div class="frow" style="margin-bottom:6px;">
         <div class="fgrp" style="max-width:65px;">
           <span class="flbl">Nivel</span>
-          <input class="fin num" type="number" min="1" id="fNivel" value="1" onchange="sf('nivel',this.value)">
+          <input class="fin num" type="number" min="1" id="fNivel" value="1" onchange="sf('nivel',this.value);updateBC();updateMainStatMods()">
+        </div>
+        <div class="fgrp" style="max-width:65px;">
+          <span class="flbl" title="Ceil(Nivel/3)+1">Bon. Comp.</span>
+          <span id="fBC" class="fin num" style="display:flex;align-items:center;justify-content:center;background:rgba(200,148,26,.18);font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:var(--gld);border-color:var(--gld);">2</span>
         </div>
         <div class="fgrp">
           <span class="flbl">Clase</span>
-          <input class="fin" type="text" id="fClase" placeholder="Ej: Héroe" onchange="sf('clase',this.value)">
+          <select class="fin" id="fClase" onchange="sf('clase',this.value)"><option value="">Sin Elegir</option><option value="Ofensivo">Ofensivo</option><option value="Defensivo">Defensivo</option><option value="Agil">Agil</option><option value="Tecnico">Tecnico</option><option value="Mental">Mental</option><option value="Apoyo">Apoyo</option></select>
         </div>
       </div>
-      <div class="brow">
-        <span class="blbl">XP</span>
-        <input class="bnum" type="number" id="fXpC" value="0" onchange="sf('xp_c',this.value);ub()">
-        <span class="bsep">/</span>
-        <input class="bnum" type="number" id="fXpM" value="100" onchange="sf('xp_m',this.value);ub()">
-        <div class="bbar"><div class="bfill" id="bXp" style="width:0%;background:#8e44ad;"></div></div>
+      <div class="frow" style="margin-bottom:6px;">
+        <div class="fgrp">
+          <span class="flbl">Especializacion</span>
+          <select class="fin" id="fEspec" onchange="sf('espec',this.value)"><option value="Sin Elegir">Sin Elegir</option><option value="Ofensiva Explosiva">Ofensiva Explosiva</option><option value="Destructor Cinetico">Destructor Cinetico</option><option value="Muro Imparable">Muro Imparable</option><option value="Reflejo Adaptativo">Reflejo Adaptativo</option><option value="Espectro Rapido">Espectro Rapido</option><option value="Vanguardia Relampago">Vanguardia Relampago</option><option value="Ingeniero de Campo">Ingeniero de Campo</option><option value="Tirador Preciso">Tirador Preciso</option><option value="Manipulador Psiquico">Manipulador Psiquico</option><option value="Estratega Analitico">Estratega Analitico</option><option value="Canalizador Vital">Canalizador Vital</option><option value="Potenciador de Campo">Potenciador de Campo</option></select>
+        </div>
+      </div>
+      <div class="frow" style="margin-bottom:6px;">
+        <div class="fgrp">
+          <span class="flbl">Subclase</span>
+          <select class="fin" id="fSubclase" onchange="sf('subclase',this.value)"><option value="">Sin Elegir</option><option value="Ofensivo">Ofensivo</option><option value="Defensivo">Defensivo</option><option value="Agil">Agil</option><option value="Tecnico">Tecnico</option><option value="Mental">Mental</option><option value="Apoyo">Apoyo</option></select>
+        </div>
+      </div>
+      <div style="margin-bottom:6px;">
+        <div class="brow" style="margin-bottom:3px;">
+          <span class="blbl">XP</span>
+          <input class="bnum" type="number" id="fXpC" value="0" onchange="sf('xp_c',this.value);ub()">
+          <span class="bsep">/</span>
+          <input class="bnum" type="number" id="fXpM" value="10" readonly title="Calculado por nivel" style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;">
+          <div id="bXp" style="height:100%;border-radius:4px;transition:width .3s;background:#27ae60;width:0%;"></div>
+        </div>
       </div>
 
       <!-- Vitales -->
       <div class="ptitle" style="margin-top:8px;">♥ Recursos Vitales</div>
-      <div class="brow">
-        <span class="blbl">Vida</span>
-        <input class="bnum" type="number" id="fVidaC" value="100" onchange="sf('vida_c',this.value);ub()">
-        <span class="bsep">/</span>
-        <input class="bnum" type="number" id="fVidaM" value="100" onchange="sf('vida_m',this.value);ub()">
-        <div class="bbar"><div class="bfill" id="bVida" style="width:100%;background:#c0392b;"></div></div>
+      <div style="margin-bottom:6px;">
+        <div class="brow" style="margin-bottom:3px;">
+          <span class="blbl">Vida</span>
+          <input class="bnum" type="number" id="fVidaC" value="100" onchange="sf('vida_c',this.value);ub()">
+          <span class="bsep">/</span>
+          <input class="bnum" type="number" id="fVidaM" value="100" readonly title="Calculado automaticamente" style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;">
+          <div id="bVida" style="height:100%;border-radius:4px;transition:width .3s;background:#e74c3c;width:100%;"></div>
+        </div>
       </div>
-      <div class="brow">
-        <span class="blbl">Estamina</span>
-        <input class="bnum" type="number" id="fEstC" value="100" onchange="sf('est_c',this.value);ub()">
-        <span class="bsep">/</span>
-        <input class="bnum" type="number" id="fEstM" value="100" onchange="sf('est_m',this.value);ub()">
-        <div class="bbar"><div class="bfill" id="bEst" style="width:100%;background:#16a085;"></div></div>
+      <div style="margin-bottom:6px;">
+        <div class="brow" style="margin-bottom:3px;">
+          <span class="blbl">Estamina</span>
+          <input class="bnum" type="number" id="fEstC" value="100" onchange="sf('est_c',this.value);ub()">
+          <span class="bsep">/</span>
+          <input class="bnum" type="number" id="fEstM" value="100" readonly title="Calculado automaticamente" style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;">
+          <div id="bEst" style="height:100%;border-radius:4px;transition:width .3s;background:#e67e22;width:100%;"></div>
+        </div>
       </div>
-      <div class="sg" style="margin-top:6px;">
-        <div class="sc s-gr"><div class="sdot" style="background:#7f8c8d;"></div><span class="slbl">Velocidad</span><input class="sval" type="number" id="fVel" value="0" onchange="sf('vel',this.value)"></div>
-        <div class="sc s-b"><div class="sdot" style="background:#2980b9;"></div><span class="slbl">Defensa</span><input class="sval" type="number" id="fDef" value="0" onchange="sf('def',this.value)"></div>
-        <div class="sc s-y"><div class="sdot" style="background:#f39c12;"></div><span class="slbl">Iniciativa</span><input class="sval" type="number" id="fIni" value="0" onchange="sf('ini',this.value)"></div>
-        <div class="sc s-t"><div class="sdot" style="background:#16a085;"></div><span class="slbl">Reg. Estam.</span><input class="sval" type="number" id="fReg" value="0" onchange="sf('reg',this.value)"></div>
+      <div class="stat-main-row s-b" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+        <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Velocidad</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fVel" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-bono" style="width:100%;" type="number" id="fBvVel" value="0" oninput="sfBonoVital('vel',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl" style="color:#27ae60;">Total</div>
+          <span class="stat-total" id="tVel">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-o" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+        <div class="sdot" style="background:#e67e22;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Defensa</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fDef" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-bono" style="width:100%;" type="number" id="fBvDef" value="0" oninput="sfBonoVital('def',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl" style="color:#27ae60;">Total</div>
+          <span class="stat-total" id="tDef">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-b" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+        <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Iniciativa</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fIni" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-bono" style="width:100%;" type="number" id="fBvIni" value="0" oninput="sfBonoVital('ini',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl" style="color:#27ae60;">Total</div>
+          <span class="stat-total" id="tIni">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-p" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+        <div class="sdot" style="background:#8e44ad;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Reg. Estam.</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fReg" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-bono" style="width:100%;" type="number" id="fBvReg" value="0" oninput="sfBonoVital('reg',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl" style="color:#27ae60;">Total</div>
+          <span class="stat-total" id="tReg">0</span>
+        </div>
       </div>
 
       <!-- Stats -->
       <div class="ptitle" style="margin-top:8px;">★ Estadísticas</div>
-      <div class="sg">
-        <div class="sc s-r"><div class="sdot" style="background:#c0392b;"></div><span class="slbl">Poder</span><input class="sval" type="number" id="fPod" value="0" onchange="sf('pod',this.value)"></div>
-        <div class="sc s-b"><div class="sdot" style="background:#2980b9;"></div><span class="slbl">Agilidad</span><input class="sval" type="number" id="fAgi" value="0" onchange="sf('agi',this.value)"></div>
-        <div class="sc s-g"><div class="sdot" style="background:#27ae60;"></div><span class="slbl">Resistencia</span><input class="sval" type="number" id="fRes" value="0" onchange="sf('res',this.value)"></div>
-        <div class="sc s-o"><div class="sdot" style="background:#e67e22;"></div><span class="slbl">Técnica</span><input class="sval" type="number" id="fTec" value="0" onchange="sf('tec',this.value)"></div>
-        <div class="sc s-p" style="grid-column:span 2;"><div class="sdot" style="background:#8e44ad;"></div><span class="slbl">Inteligencia</span><input class="sval" type="number" id="fInt" value="0" onchange="sf('int',this.value)"></div>
+      <div class="stat-main-row s-r">
+        <div class="sdot" style="background:#c0392b;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Poder</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fPod" value="0" onchange="sf('pod',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-main" type="number" id="fBPod" value="0" onchange="sfBono('pod',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Base</div>
+          <span class="mod-box mod-base-box" id="mBasePod">0</span>
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Final</div>
+          <span class="mod-box mod-final-box" id="mFinalPod">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-b">
+        <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Agilidad</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fAgi" value="0" onchange="sf('agi',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-main" type="number" id="fBAgi" value="0" onchange="sfBono('agi',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Base</div>
+          <span class="mod-box mod-base-box" id="mBaseAgi">0</span>
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Final</div>
+          <span class="mod-box mod-final-box" id="mFinalAgi">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-o">
+        <div class="sdot" style="background:#e67e22;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Resistencia</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fRes" value="0" onchange="sf('res',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-main" type="number" id="fBRes" value="0" onchange="sfBono('res',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Base</div>
+          <span class="mod-box mod-base-box" id="mBaseRes">0</span>
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Final</div>
+          <span class="mod-box mod-final-box" id="mFinalRes">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-g">
+        <div class="sdot" style="background:#27ae60;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Técnica</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fTec" value="0" onchange="sf('tec',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-main" type="number" id="fBTec" value="0" onchange="sfBono('tec',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Base</div>
+          <span class="mod-box mod-base-box" id="mBaseTec">0</span>
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Final</div>
+          <span class="mod-box mod-final-box" id="mFinalTec">0</span>
+        </div>
+      </div>
+      <div class="stat-main-row s-p">
+        <div class="sdot" style="background:#8e44ad;flex-shrink:0;"></div>
+        <span class="stat-main-lbl">Inteligencia</span>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Base</div>
+          <input class="sval-main" type="number" id="fInt" value="0" onchange="sf('int',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Bono</div>
+          <input class="sval-main" type="number" id="fBInt" value="0" onchange="sfBono('int',this.value)">
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Base</div>
+          <span class="mod-box mod-base-box" id="mBaseInt">0</span>
+        </div>
+        <div class="sval-col">
+          <div class="stat-mini-lbl">Mod Final</div>
+          <span class="mod-box mod-final-box" id="mFinalInt">0</span>
+        </div>
       </div>
 
       <!-- Atributos -->
       <div class="ptitle" style="margin-top:8px;">◆ Atributos</div>
-      <div class="arow s-r"><span class="albl">Fuerza</span><input class="aval" type="number" id="fFue" value="0" onchange="sf('fue',this.value)"></div>
-      <div class="arow s-r"><span class="albl">Intimidación</span><input class="aval" type="number" id="fIntim" value="0" onchange="sf('intim',this.value)"></div>
-      <div class="arow s-b"><span class="albl">Evasión</span><input class="aval" type="number" id="fEva" value="0" onchange="sf('eva',this.value)"></div>
-      <div class="arow s-b"><span class="albl">Acrobacia</span><input class="aval" type="number" id="fAcr" value="0" onchange="sf('acr',this.value)"></div>
-      <div class="arow s-b"><span class="albl">Sigilo</span><input class="aval" type="number" id="fSig" value="0" onchange="sf('sig',this.value)"></div>
-      <div class="arow s-g"><span class="albl">Aguante</span><input class="aval" type="number" id="fAgu" value="0" onchange="sf('agu',this.value)"></div>
-      <div class="arow s-g"><span class="albl">Voluntad</span><input class="aval" type="number" id="fVol" value="0" onchange="sf('vol',this.value)"></div>
-      <div class="arow s-o"><span class="albl">Control de Q.</span><input class="aval" type="number" id="fCtq" value="0" onchange="sf('ctq',this.value)"></div>
-      <div class="arow s-o"><span class="albl">Ingeniería</span><input class="aval" type="number" id="fIng" value="0" onchange="sf('ing',this.value)"></div>
-      <div class="arow s-y"><span class="albl">Táctica</span><input class="aval" type="number" id="fTac" value="0" onchange="sf('tac',this.value)"></div>
-      <div class="arow s-p"><span class="albl">Persuasión</span><input class="aval" type="number" id="fPer" value="0" onchange="sf('per',this.value)"></div>
-      <div class="arow s-p"><span class="albl">Engaño</span><input class="aval" type="number" id="fEng" value="0" onchange="sf('eng',this.value)"></div>
-      <div class="arow s-t"><span class="albl">Investigación</span><input class="aval" type="number" id="fInv" value="0" onchange="sf('inv',this.value)"></div>
-      <div class="arow s-t"><span class="albl">Percepción</span><input class="aval" type="number" id="fPrc" value="0" onchange="sf('prc',this.value)"></div>
+      <div class="attr-header">
+        <span>Atributo</span><span>Base</span><span>Bono</span><span>Total</span><span title="Competencia">⭐</span>
+      </div>
+      <div class="attr-row s-r">
+        <span class="attr-lbl">Fuerza</span>
+        <input class="attr-num auto" type="number" id="fAFue" value="0" readonly title="Mod Final de Pod">
+        <input class="attr-num" type="number" id="fBaFue" value="0" onchange="sfBonoAttr('fue',this.value)">
+        <span class="attr-total" id="tAFue">0</span>
+        <input class="attr-comp" type="checkbox" id="compFue" title="Competencia" onchange="toggleComp('fue',this.checked)">
+      </div>
+      <div class="attr-row s-r">
+        <span class="attr-lbl">Intimidación</span>
+        <input class="attr-num auto" type="number" id="fAIntim" value="0" readonly title="Mod Final de Pod">
+        <input class="attr-num" type="number" id="fBaIntim" value="0" onchange="sfBonoAttr('intim',this.value)">
+        <span class="attr-total" id="tAIntim">0</span>
+        <input class="attr-comp" type="checkbox" id="compIntim" title="Competencia" onchange="toggleComp('intim',this.checked)">
+      </div>
+      <div class="attr-row s-b">
+        <span class="attr-lbl">Evasión</span>
+        <input class="attr-num auto" type="number" id="fAEva" value="0" readonly title="Mod Final de Agi">
+        <input class="attr-num" type="number" id="fBaEva" value="0" onchange="sfBonoAttr('eva',this.value)">
+        <span class="attr-total" id="tAEva">0</span>
+        <input class="attr-comp" type="checkbox" id="compEva" title="Competencia" onchange="toggleComp('eva',this.checked)">
+      </div>
+      <div class="attr-row s-b">
+        <span class="attr-lbl">Acrobacia</span>
+        <input class="attr-num auto" type="number" id="fAAcr" value="0" readonly title="Mod Final de Agi">
+        <input class="attr-num" type="number" id="fBaAcr" value="0" onchange="sfBonoAttr('acr',this.value)">
+        <span class="attr-total" id="tAAcr">0</span>
+        <input class="attr-comp" type="checkbox" id="compAcr" title="Competencia" onchange="toggleComp('acr',this.checked)">
+      </div>
+      <div class="attr-row s-b">
+        <span class="attr-lbl">Sigilo</span>
+        <input class="attr-num auto" type="number" id="fASig" value="0" readonly title="Mod Final de Agi">
+        <input class="attr-num" type="number" id="fBaSig" value="0" onchange="sfBonoAttr('sig',this.value)">
+        <span class="attr-total" id="tASig">0</span>
+        <input class="attr-comp" type="checkbox" id="compSig" title="Competencia" onchange="toggleComp('sig',this.checked)">
+      </div>
+      <div class="attr-row s-o">
+        <span class="attr-lbl">Aguante</span>
+        <input class="attr-num auto" type="number" id="fAAgu" value="0" readonly title="Mod Final de Res">
+        <input class="attr-num" type="number" id="fBaAgu" value="0" onchange="sfBonoAttr('agu',this.value)">
+        <span class="attr-total" id="tAAgu">0</span>
+        <input class="attr-comp" type="checkbox" id="compAgu" title="Competencia" onchange="toggleComp('agu',this.checked)">
+      </div>
+      <div class="attr-row s-o">
+        <span class="attr-lbl">Voluntad</span>
+        <input class="attr-num auto" type="number" id="fAVol" value="0" readonly title="Mod Final de Res">
+        <input class="attr-num" type="number" id="fBaVol" value="0" onchange="sfBonoAttr('vol',this.value)">
+        <span class="attr-total" id="tAVol">0</span>
+        <input class="attr-comp" type="checkbox" id="compVol" title="Competencia" onchange="toggleComp('vol',this.checked)">
+      </div>
+      <div class="attr-row s-g">
+        <span class="attr-lbl">Control de Q.</span>
+        <input class="attr-num auto" type="number" id="fACtq" value="0" readonly title="Mod Final de Tec">
+        <input class="attr-num" type="number" id="fBaCtq" value="0" onchange="sfBonoAttr('ctq',this.value)">
+        <span class="attr-total" id="tACtq">0</span>
+        <input class="attr-comp" type="checkbox" id="compCtq" title="Competencia" onchange="toggleComp('ctq',this.checked)">
+      </div>
+      <div class="attr-row s-g">
+        <span class="attr-lbl">Ingeniería</span>
+        <input class="attr-num auto" type="number" id="fAIng" value="0" readonly title="Mod Final de Tec">
+        <input class="attr-num" type="number" id="fBaIng" value="0" onchange="sfBonoAttr('ing',this.value)">
+        <span class="attr-total" id="tAIng">0</span>
+        <input class="attr-comp" type="checkbox" id="compIng" title="Competencia" onchange="toggleComp('ing',this.checked)">
+      </div>
+      <div class="attr-row s-g">
+        <span class="attr-lbl">Táctica</span>
+        <input class="attr-num auto" type="number" id="fATac" value="0" readonly title="Mod Final de Tec">
+        <input class="attr-num" type="number" id="fBaTac" value="0" onchange="sfBonoAttr('tac',this.value)">
+        <span class="attr-total" id="tATac">0</span>
+        <input class="attr-comp" type="checkbox" id="compTac" title="Competencia" onchange="toggleComp('tac',this.checked)">
+      </div>
+      <div class="attr-row s-p">
+        <span class="attr-lbl">Persuasión</span>
+        <input class="attr-num auto" type="number" id="fAPer" value="0" readonly title="Mod Final de Int">
+        <input class="attr-num" type="number" id="fBaPer" value="0" onchange="sfBonoAttr('per',this.value)">
+        <span class="attr-total" id="tAPer">0</span>
+        <input class="attr-comp" type="checkbox" id="compPer" title="Competencia" onchange="toggleComp('per',this.checked)">
+      </div>
+      <div class="attr-row s-p">
+        <span class="attr-lbl">Engaño</span>
+        <input class="attr-num auto" type="number" id="fAEng" value="0" readonly title="Mod Final de Int">
+        <input class="attr-num" type="number" id="fBaEng" value="0" onchange="sfBonoAttr('eng',this.value)">
+        <span class="attr-total" id="tAEng">0</span>
+        <input class="attr-comp" type="checkbox" id="compEng" title="Competencia" onchange="toggleComp('eng',this.checked)">
+      </div>
+      <div class="attr-row s-p">
+        <span class="attr-lbl">Investigación</span>
+        <input class="attr-num auto" type="number" id="fAInv" value="0" readonly title="Mod Final de Int">
+        <input class="attr-num" type="number" id="fBaInv" value="0" onchange="sfBonoAttr('inv',this.value)">
+        <span class="attr-total" id="tAInv">0</span>
+        <input class="attr-comp" type="checkbox" id="compInv" title="Competencia" onchange="toggleComp('inv',this.checked)">
+      </div>
+      <div class="attr-row s-p">
+        <span class="attr-lbl">Percepción</span>
+        <input class="attr-num auto" type="number" id="fAPrc" value="0" readonly title="Mod Final de Int">
+        <input class="attr-num" type="number" id="fBaPrc" value="0" onchange="sfBonoAttr('prc',this.value)">
+        <span class="attr-total" id="tAPrc">0</span>
+        <input class="attr-comp" type="checkbox" id="compPrc" title="Competencia" onchange="toggleComp('prc',this.checked)">
+      </div>
 
       <!-- Recursos -->
       <div class="ptitle" style="margin-top:8px;">◈ Recursos</div>
@@ -808,21 +1917,114 @@ textarea:focus { border-color: #c8941a; }
       </table>
 
       <!-- Habilidades -->
-      <div class="ptitle" style="margin-top:8px;">✦ Habilidades / Quirk</div>
-      <textarea id="fHab" rows="3" placeholder="Ej: One For All..." onchange="sf('hab',this.value)"></textarea>
+      <div class="ptitle" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span>✦ Habilidades</span>
+        <button class="btn btn-grn" onclick="addHabilidad()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+      </div>
+      <div id="habResult"></div>
+      <div style="overflow-x:auto;">
+        <table id="habilidadesTable">
+          <thead>
+            <tr>
+              <th style="min-width:70px;">Nombre</th>
+              <th style="min-width:52px;">Stat</th>
+              <th style="min-width:50px;">Golpe</th>
+              <th style="min-width:36px;">Daño</th>
+              <th style="min-width:50px;">Rango</th>
+              <th style="min-width:50px;">Est.</th>
+              <th style="min-width:60px;">Desc.</th>
+              <th style="min-width:38px;">Usar</th>
+              <th style="min-width:18px;"></th>
+            </tr>
+          </thead>
+          <tbody id="habBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pasivas -->
+      <div class="ptitle" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span>✧ Habilidades Pasivas</span>
+        <button class="btn btn-grn" onclick="addPasiva()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+      </div>
+      <div id="pasivaList"></div>
 
       <!-- Equipamiento -->
       <div class="ptitle" style="margin-top:8px;">⚙ Equipamiento</div>
-      <textarea id="fEqu" rows="3" placeholder="Ej: Traje Mk-III..." onchange="sf('equ',this.value)"></textarea>
+      <div style="overflow-x:auto;">
+        <table class="equip-table" id="equipTable">
+          <thead>
+            <tr>
+              <th style="min-width:72px;">Slot</th>
+              <th style="min-width:80px;">Nombre</th>
+              <th style="min-width:100px;">Descripción</th>
+              <th style="min-width:42px;">+Stat</th>
+              <th style="min-width:36px;">Bono</th>
+            </tr>
+          </thead>
+          <tbody id="equipBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Inventario -->
+      <div class="ptitle" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span>🎒 Inventario</span>
+        <button class="btn btn-grn" onclick="addInventario()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="invTable" style="width:100%;border-collapse:collapse;font-size:.73rem;">
+          <thead>
+            <tr>
+              <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:80px;">Nombre</th>
+              <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:120px;">Descripción</th>
+              <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:46px;">Cant.</th>
+              <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:18px;"></th>
+            </tr>
+          </thead>
+          <tbody id="invBody"></tbody>
+        </table>
+      </div>
 
       <div class="saved" id="saved"></div>
+      </div><!-- /statsOverlay -->
 
     </div><!-- statsContent -->
-  </div><!-- right -->
+  </div>
 
-</div><!-- layout -->
+</div>
+
+<!-- MOBILE TAB BAR -->
+<div id="tabBar">
+  <button class="tab-btn active" data-tab="mapa" onclick="switchTab('mapa',this)">
+    <span class="tab-icon">🗺</span>Mapa
+  </button>
+  <button class="tab-btn" data-tab="fichas" onclick="switchTab('fichas',this)">
+    <span class="tab-icon">⚔</span>Fichas
+  </button>
+  <button class="tab-btn" data-tab="stats" onclick="switchTab('stats',this)">
+    <span class="tab-icon">📋</span>Stats
+  </button>
+  <button class="tab-btn" data-tab="turno" onclick="switchTab('turno',this)">
+    <span class="tab-icon">🎲</span>Turno
+  </button>
+</div>
 
 <div id="tip"></div>
+
+<!-- MODAL CONTRASEÑA -->
+<div id="pwModal">
+  <div id="pwBox">
+    <h3>🔒 FICHA PROTEGIDA</h3>
+    <p id="pwMsg">Ingresá la contraseña para editar esta ficha.</p>
+    <input type="password" id="pwInput" placeholder="Contraseña" maxlength="32"
+      onkeydown="if(event.key==='Enter')checkPassword()">
+    <div id="pwError"></div>
+    <div class="pw-btns">
+      <button class="btn btn-grn" style="width:auto;padding:6px 16px;" onclick="checkPassword()">Desbloquear</button>
+      <button class="btn btn-red" style="width:auto;padding:6px 16px;" onclick="closePwModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 // ── ESTADO ──────────────────────────────────────────────────────
@@ -833,20 +2035,36 @@ let selId = null;
 let drag = null;
 let hov = { c:-1, r:-1 };
 let dragOff = { x:0, y:0 };
-const COLORS = ['#c0392b','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#ffffff','#34495e'];
+const COLORS = ['#c0392b','#e74c3c','#e67e22','#f39c12','#f1c40f','#2ecc71','#27ae60','#1abc9c','#16a085','#3498db','#2980b9','#2c3e50','#1a5276','#9b59b6','#8e44ad','#e91e63','#ffffff','#bdc3c7','#95a5a6','#34495e','#1c2833','#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6bff','#ff9a3c','#a8ff78','#00b4d8','#f72585'];
 let selColor = COLORS[2];
 
 function blank() {
   return {
-    nivel:1, clase:'', xp_c:0, xp_m:100,
+    nivel:1, clase:'', subclase:'', espec:'', xp_c:0, xp_m:10,
     vida_c:100, vida_m:100, est_c:100, est_m:100,
     vel:0, def:0, ini:0, reg:0,
+    bvVel:0, bvDef:0, bvIni:0, bvReg:0,
     pod:0, agi:0, res:0, tec:0, int:0,
+    bPod:0, bAgi:0, bRes:0, bTec:0, bInt:0,
     fue:0, intim:0, eva:0, acr:0, sig:0,
     agu:0, vol:0, ctq:0, ing:0,
     tac:0, per:0, eng:0, inv:0, prc:0,
     cua:0, yh:0, ct:0, mer:0,
-    hab:'', equ:'', plus_ultra:false
+    habilidades:[], pasivas:[], inventario:[], plus_ultra:false,
+    estados:{},
+    baFue:0,baIntim:0,baEva:0,baAcr:0,baSig:0,baAgu:0,baVol:0,baCtq:0,baIng:0,baTac:0,baPer:0,baEng:0,baInv:0,baPrc:0,
+    compFue:false,compIntim:false,compEva:false,compAcr:false,compSig:false,compAgu:false,compVol:false,compCtq:false,compIng:false,compTac:false,compPer:false,compEng:false,compInv:false,compPrc:false,
+    equipo:{
+      cabeza:{nombre:'',desc:'',stat:'',bono:0},
+      torso:{nombre:'',desc:'',stat:'',bono:0},
+      brazos:{nombre:'',desc:'',stat:'',bono:0},
+      piernas:{nombre:'',desc:'',stat:'',bono:0},
+      acc1:{nombre:'',desc:'',stat:'',bono:0},
+      acc2:{nombre:'',desc:'',stat:'',bono:0},
+      obj1:{nombre:'',desc:'',stat:'',bono:0},
+      obj2:{nombre:'',desc:'',stat:'',bono:0},
+      obj3:{nombre:'',desc:'',stat:'',bono:0}
+    }
   };
 }
 
@@ -863,10 +2081,24 @@ function setupCanvas() {
 function redraw() {
   ctx.clearRect(0, 0, cv.width, cv.height);
 
+  // zonas / áreas
+  drawZones();
+
   // rango de movimiento — celdas alcanzables por la ficha seleccionada
   if (selId && tokens[selId]) {
     const t = tokens[selId];
-    const vel = (t.sh && t.sh.vel) ? Math.floor(t.sh.vel) : 0;
+    // Usar total de velocidad (base + bono + equipo + pasivas + PU)
+    let vel = 0;
+    if (t.sh) {
+      if (t.id === selId) {
+        const velEl = document.getElementById('tVel');
+        vel = velEl ? (parseInt(velEl.textContent)||0) : (t.sh.vel||0);
+      } else {
+        // Para fichas no seleccionadas calcular directo
+        const bvV = t.sh.bvVel||0;
+        vel = (t.sh.vel||0) + bvV;
+      }
+    }
     if (vel > 0) {
       // resaltar todas las celdas dentro del rango de Manhattan (movimiento ortogonal + diagonal)
       // usamos distancia Chebyshev: max(|dc|, |dr|) <= vel  → cuadrado de (2*vel+1) x (2*vel+1)
@@ -909,6 +2141,8 @@ function redraw() {
   for (let c = 0; c < COLS; c++) ctx.fillText(String.fromCharCode(65+c), c*CS+CS/2, 9);
   ctx.textAlign = 'right';
   for (let r = 0; r < ROWS; r++) ctx.fillText(r+1, CS-2, r*CS+CS/2+3);
+  // obstáculos
+  Object.values(obstacles).forEach(ob => drawObstacle(ob));
   // tokens
   Object.values(tokens).forEach(t => { if (!drag || drag.id !== t.id) drawTok(t); });
   if (drag && tokens[drag.id]) drawTok(tokens[drag.id], drag.x, drag.y);
@@ -925,7 +2159,7 @@ function redraw() {
 
       // distancia en casillas (Chebyshev)
       const dist = Math.max(Math.abs(hov.c - t.c), Math.abs(hov.r - t.r));
-      const vel  = (t.sh && t.sh.vel) ? Math.floor(t.sh.vel) : 0;
+      const vel  = t.sh ? ((t.sh.vel||0) + (t.sh.bvVel||0)) : 0;
       const inRange = vel === 0 || dist <= vel;
       const color = inRange ? 'rgba(255,220,50,.9)' : 'rgba(255,80,80,.9)';
 
@@ -1002,6 +2236,26 @@ function drawTok(t, ox, oy) {
   ctx.font = `bold ${Math.floor(CS*.37)}px Cinzel,serif`;
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.shadowColor='transparent';
   ctx.fillText(t.sym||t.name[0]||'?', x, y+1);
+  // Estado icons — up to 3 visible, bottom-right of token
+  if (t.sh && t.sh.estados) {
+    const activos = Object.keys(t.sh.estados).filter(k => t.sh.estados[k]);
+    if (activos.length > 0) {
+      const iconSize = Math.floor(CS * .28);
+      ctx.font = `${iconSize}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const maxShow = Math.min(activos.length, 3);
+      for (let i = 0; i < maxShow; i++) {
+        const ed = ESTADOS_DATA.find(e => e.key === activos[i]);
+        if (!ed) continue;
+        const ex = x + rd * .55 + (i - (maxShow-1)/2) * (iconSize * .9);
+        const ey = y + rd + 4;
+        // fondo pequeño
+        ctx.fillStyle = ed.color + 'cc';
+        ctx.beginPath(); ctx.arc(ex, ey, iconSize*.55, 0, Math.PI*2); ctx.fill();
+        ctx.fillText(ed.icon, ex, ey);
+      }
+    }
+  }
   // barras de vida y estamina encima de la ficha
   if (t.sh) {
     const bw = rd * 2;        // ancho de la barra = diámetro de la ficha
@@ -1040,11 +2294,34 @@ function cell(e) {
 function tokAt(c,r) { return Object.values(tokens).find(t=>t.c===c&&t.r===r); }
 
 cv.addEventListener('mousedown', e => {
-  if (e.button===2) { selId=null; refresh(); redraw(); return; }
+  if (e.button===2) {
+    // right click: deselect everything
+    selId=null; selObsId=null; placingObs=null;
+    buildObsGrid();
+buildZonaColors(); refreshObsList();
+    refresh(); redraw(); return;
+  }
   const p = cell(e);
   if (p.c<0||p.c>=COLS||p.r<0||p.r>=ROWS) return;
+  // placing zona / obstacle
+  if (zonaMode==='pintar'||zonaMode==='borrar') {
+    isPainting = true;
+    paintCell(p.c, p.r);
+    return;
+  }
+  if (placingObs) { placeObs(p.c, p.r); return; }
+  // select/deselect obstacle
+  const ob = obsAt(p.c, p.r);
+  if (ob) {
+    selObsId = selObsId===ob.id ? null : ob.id;
+    selId = null;
+    refreshObsList();
+    redraw();
+    return;
+  }
   const t = tokAt(p.c, p.r);
   if (t) {
+    selObsId = null;
     selId = t.id;
     drag = { id:t.id, x:t.c*CS+CS/2, y:t.r*CS+CS/2, sc:t.c, sr:t.r };
     dragOff = { x:p.x-(t.c*CS+CS/2), y:p.y-(t.r*CS+CS/2) };
@@ -1057,6 +2334,10 @@ cv.addEventListener('mousedown', e => {
 cv.addEventListener('mousemove', e => {
   const p = cell(e);
   hov = { c:p.c, r:p.r };
+  // drag-paint zones
+  if (isPainting && p.c>=0 && p.c<COLS && p.r>=0 && p.r<ROWS && (zonaMode==='pintar'||zonaMode==='borrar')) {
+    paintCell(p.c, p.r);
+  }
   if (drag) {
     drag.x = p.x - dragOff.x + CS/2;
     drag.y = p.y - dragOff.y + CS/2;
@@ -1070,6 +2351,7 @@ cv.addEventListener('mousemove', e => {
 });
 
 cv.addEventListener('mouseup', e => {
+  isPainting = false;
   if (!drag) return;
   const p = cell(e);
   const nc=Math.max(0,Math.min(COLS-1,p.c)), nr=Math.max(0,Math.min(ROWS-1,p.r));
@@ -1078,10 +2360,17 @@ cv.addEventListener('mouseup', e => {
 });
 
 cv.addEventListener('mouseleave', () => {
+  isPainting = false;
   document.getElementById('tip').style.display='none';
   drag=null; hov={c:-1,r:-1}; redraw();
 });
-cv.addEventListener('contextmenu', e=>e.preventDefault());
+cv.addEventListener('contextmenu', e=>{
+  e.preventDefault();
+  // right click on obstacle deletes it
+  const p = cell(e);
+  const ob = obsAt(p.c, p.r);
+  if (ob) { selObsId=ob.id; deleteSelectedObs(); }
+});
 
 // ── TOKEN OPS ────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
@@ -1089,13 +2378,19 @@ function uid() { return Date.now().toString(36)+Math.random().toString(36).slice
 function addToken() {
   const name = document.getElementById('iNombre').value.trim() || 'Héroe';
   const sym = (document.getElementById('iSym').value.trim() || name[0] || '?').toUpperCase();
+  const pw = document.getElementById('iPassword').value.trim();
   let c=0,r=0;
   outer: for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(!tokAt(cc,rr)){c=cc;r=rr;break outer;}
   const id=uid();
   tokens[id] = { id, name, sym, color:selColor, c, r, sh:blank() };
+  // Guardar hash de contraseña si se definió
+  if (pw) tokens[id].pwHash = simpleHash(pw);
   selId = id;
+  // Marcar como desbloqueada para quien la creó
+  unlockedIds.add(id);
   fbSet(id);
-  addLog('spawn', `<b>${name}</b> entró al campo en <b>${String.fromCharCode(65+c)}${r+1}</b>`);
+  document.getElementById('iPassword').value = '';
+  addLog('spawn', `<b>${name}</b> entró al campo en <b>${String.fromCharCode(65+c)}${r+1}</b>${pw?' 🔒':''}`);
   refresh(); redraw();
 }
 
@@ -1119,7 +2414,9 @@ function moveTok(id,c,r) {
 
 function deleteSelected() {
   if(!selId) return;
-  addLog('del', `<b>${tokens[selId].name}</b> fue eliminada del campo`);
+  const _dname = tokens[selId].name;
+  if(!confirm('Eliminar a "' + _dname + '" del mapa?')) return;
+  addLog('del', `<b>${_dname}</b> fue eliminada del campo`);
   fbDelete(selId);
   delete tokens[selId]; selId=null;
   refresh(); redraw();
@@ -1127,15 +2424,27 @@ function deleteSelected() {
 
 function removeTok(id,e) {
   e.stopPropagation();
-  if(tokens[id]) addLog('del', `<b>${tokens[id].name}</b> fue eliminada del campo`);
+  if(!tokens[id]) return;
+  if(!confirm('Eliminar a "' + tokens[id].name + '" del mapa?')) return;
+  addLog('del', `<b>${tokens[id].name}</b> fue eliminada del campo`);
   fbDelete(id);
   delete tokens[id];
   if(selId===id){selId=null;}
   refresh(); redraw();
 }
 
-function setGrid(c,r){COLS=c;ROWS=r;fbGrid();setupCanvas();}
-function clearMap(){if(!confirm('¿Limpiar todo el mapa?'))return;fbClear();tokens={};selId=null;refresh();redraw();}
+function setGrid(c,r){
+  COLS=c; ROWS=r;
+  document.getElementById('customCols').value=c;
+  document.getElementById('customRows').value=r;
+  fbGrid(); setupCanvas();
+}
+function setCustomGrid(){
+  const c=Math.max(4,Math.min(50,parseInt(document.getElementById('customCols').value)||20));
+  const r=Math.max(4,Math.min(40,parseInt(document.getElementById('customRows').value)||14));
+  COLS=c; ROWS=r; fbGrid(); setupCanvas();
+}
+function clearMap(){if(!confirm('¿Limpiar todo el mapa?'))return;fbClear();tokens={};selId=null;if(roomRef)roomRef.child('obstacles').remove();obstacles={};selObsId=null;refreshObsList();if(roomRef)roomRef.child('zones').remove();zones={};selZoneId=null;refreshZonaList();refresh();redraw();}
 
 // ── SIDEBAR LIST ─────────────────────────────────────────────────
 function refresh() {
@@ -1194,6 +2503,28 @@ function showStats() {
   document.getElementById('sName').textContent = t.name;
   document.getElementById('sPos').textContent = String.fromCharCode(65+t.c)+(t.r+1);
 
+  // Candado
+  const locked = !canEdit(selId);
+  const lb = document.getElementById('lockBadge');
+  const so = document.getElementById('statsOverlay');
+  const lm = document.getElementById('lockedMsg');
+  if (tokens[selId].pwHash) {
+    lb.style.display = 'inline-flex';
+    if (locked) {
+      lb.className = 'locked'; lb.textContent = '🔒 Bloqueada';
+      so.classList.add('locked');
+      lm.classList.add('show');
+    } else {
+      lb.className = 'unlocked'; lb.textContent = '🔓 Desbloqueada';
+      so.classList.remove('locked');
+      lm.classList.remove('show');
+    }
+  } else {
+    lb.style.display = 'none';
+    so.classList.remove('locked');
+    lm.classList.remove('show');
+  }
+
   // Plus Ultra
   const pu = document.getElementById('puBtn');
   if(s.plus_ultra){pu.classList.add('on');document.getElementById('puSt').textContent='¡ACTIVO!';}
@@ -1201,19 +2532,62 @@ function showStats() {
 
   // todos los campos
   const M = {
-    fNivel:s.nivel, fClase:s.clase,
+    fNivel:s.nivel, fClase:s.clase, fSubclase:s.subclase||'', fEspec:s.espec||'',
     fXpC:s.xp_c, fXpM:s.xp_m,
     fVidaC:s.vida_c, fVidaM:s.vida_m,
     fEstC:s.est_c, fEstM:s.est_m,
     fVel:s.vel, fDef:s.def, fIni:s.ini, fReg:s.reg,
+    fBvVel:s.bvVel||0, fBvDef:s.bvDef||0, fBvIni:s.bvIni||0, fBvReg:s.bvReg||0,
     fPod:s.pod, fAgi:s.agi, fRes:s.res, fTec:s.tec, fInt:s.int,
-    fFue:s.fue, fIntim:s.intim, fEva:s.eva, fAcr:s.acr, fSig:s.sig,
-    fAgu:s.agu, fVol:s.vol, fCtq:s.ctq, fIng:s.ing,
-    fTac:s.tac, fPer:s.per, fEng:s.eng, fInv:s.inv, fPrc:s.prc,
+    fBPod:s.bPod||0, fBAgi:s.bAgi||0, fBRes:s.bRes||0, fBTec:s.bTec||0, fBInt:s.bInt||0,
+    // attr bonos
+    fBaFue:s.baFue||0, fBaIntim:s.baIntim||0, fBaEva:s.baEva||0, fBaAcr:s.baAcr||0, fBaSig:s.baSig||0,
+    fBaAgu:s.baAgu||0, fBaVol:s.baVol||0, fBaCtq:s.baCtq||0, fBaIng:s.baIng||0,
+    fBaTac:s.baTac||0, fBaPer:s.baPer||0, fBaEng:s.baEng||0, fBaInv:s.baInv||0, fBaPrc:s.baPrc||0,
     fCua:s.cua, fYh:s.yh, fCt:s.ct, fMer:s.mer,
-    fHab:s.hab, fEqu:s.equ
+    // equipamiento renderizado aparte
   };
   Object.entries(M).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val??''; });
+  updateBC();
+  updateXpMax();
+  updateMainStatMods();
+  updateAttrTotals();
+  renderInventario();
+  renderEstados();
+  updateVitalTotals();
+  renderHabilidades();
+  renderPasivas();
+  renderEquipo();
+  updateStatTotals();
+  ub();
+}
+
+function updateBC() {
+  const el = document.getElementById('fBC');
+  if (!el) return;
+  const nivel = selId && tokens[selId] ? (tokens[selId].sh.nivel || 1) : 1;
+  el.textContent = Math.ceil(nivel / 3) + 1;
+  updateXpMax();
+}
+
+function updateXpMax() {
+  if (!selId || !tokens[selId]) return;
+  const nivel = tokens[selId].sh.nivel || 1;
+  // Nivel 1 = 10, cada nivel *1.5, redondeado al entero
+  let xpMax = 10;
+  for (let i = 1; i < nivel; i++) xpMax = Math.round(xpMax * 1.5);
+  tokens[selId].sh.xp_m = xpMax;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/xp_m').set(xpMax);
+  const el = document.getElementById('fXpM');
+  if (el) el.value = xpMax;
+  // Clamp xp_c al nuevo máximo
+  const xpC = tokens[selId].sh.xp_c || 0;
+  if (xpC > xpMax) {
+    tokens[selId].sh.xp_c = xpMax;
+    if (roomRef) roomRef.child('tokens/'+selId+'/sh/xp_c').set(xpMax);
+    const elC = document.getElementById('fXpC');
+    if (elC) elC.value = xpMax;
+  }
   ub();
 }
 
@@ -1227,10 +2601,211 @@ function ub() {
   redraw();
 }
 
+function sfBono(field, value) {
+  // Guardar el bono de una stat principal (campo bPod, bAgi, etc.)
+  const key = 'b' + field[0].toUpperCase() + field.slice(1);
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  tokens[selId].sh[key] = parseFloat(value) || 0;
+  fbPatch(selId, { ['sh/' + key]: tokens[selId].sh[key] });
+  updateMainStatMods();
+  const el = document.getElementById('saved');
+  el.textContent = '✓ Guardado'; el.style.opacity = '1';
+  clearTimeout(sf._t);
+  sf._t = setTimeout(() => el.style.opacity = '0', 1800);
+}
+
+// Calcula Mod Base = floor((base + bono) / 2) - 5
+// y Mod Final = ModBase + bonos equipo/pasivas/PU
+function updateMainStatMods() {
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+
+  // Calcular bonos externos (equipo + pasivas + PU) igual que updateStatTotals
+  const extBonos = {};
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat && slot.bono) extBonos[slot.stat] = (extBonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
+  });
+  (sh.pasivas || []).forEach(p => {
+    if (p.activa && p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+  });
+  const pu = sh.plus_ultra ? 2 : 0;
+
+  const MAINS = [
+    ['pod','Pod'], ['agi','Agi'], ['res','Res'], ['tec','Tec'], ['int','Int']
+  ];
+
+  MAINS.forEach(([key, Key]) => {
+    const base   = sh[key] || 0;
+    const bono   = sh['b'+Key] || 0;
+    const modBase  = Math.floor((base + bono) / 2) - 5;
+    const ext    = (extBonos[key] || 0) + pu;
+    const modFinal = modBase + ext;
+
+    const elBase  = document.getElementById('mBase'  + Key);
+    const elFinal = document.getElementById('mFinal' + Key);
+    if (elBase)  elBase.textContent  = modBase  >= 0 ? '+' + modBase  : modBase;
+    if (elFinal) {
+      elFinal.textContent = modFinal >= 0 ? '+' + modFinal : modFinal;
+      elFinal.style.background = modFinal > modBase ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
+    }
+  });
+  // Actualizar vitales y atributos automáticamente
+  autoCalcVitales();
+  updateAttrTotals();
+}
+
+function sfBonoVital(field, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const key = 'bv' + field[0].toUpperCase() + field.slice(1);
+  tokens[selId].sh[key] = parseFloat(value) || 0;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/'+key).set(tokens[selId].sh[key]);
+  updateVitalTotals();
+  const el = document.getElementById('saved');
+  el.textContent = '✓ Guardado'; el.style.opacity = '1';
+  clearTimeout(sfBonoVital._t);
+  sfBonoVital._t = setTimeout(() => el.style.opacity = '0', 1800);
+}
+
+function updateVitalTotals() {
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  // Bonos de equipo/pasivas para cada vital
+  const extBonos = {};
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat && slot.bono) extBonos[slot.stat] = (extBonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
+  });
+  (sh.pasivas || []).forEach(p => {
+    if (p.activa && p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+  });
+  if (sh.plus_ultra) ['vel','def','ini','reg'].forEach(s => extBonos[s] = (extBonos[s]||0) + 2);
+
+  ['vel','def','ini','reg'].forEach(k => {
+    const Key = k[0].toUpperCase() + k.slice(1);
+    const base = sh[k] || 0;
+    const bv   = sh['bv'+Key] || 0;
+    const ext  = extBonos[k] || 0;
+    const total = base + bv + ext;
+    const el = document.getElementById('t'+Key);
+    if (el) {
+      el.textContent = total;
+      el.style.background = (bv+ext) > 0 ? 'rgba(39,174,96,.18)' : (bv+ext) < 0 ? 'rgba(192,57,43,.13)' : 'rgba(200,160,100,.1)';
+      el.style.color = (bv+ext) > 0 ? '#1a4a1a' : (bv+ext) < 0 ? 'var(--red)' : 'var(--ink2)';
+    }
+  });
+}
+
+function getModFinal(stat) {
+  // Devuelve el Mod Final de una stat principal (ya calculado en updateMainStatMods)
+  // Para stats principales usamos el valor del span mFinalXxx
+  // Para stats secundarias usamos getStatTotal
+  const KEY = stat[0].toUpperCase() + stat.slice(1);
+  const el = document.getElementById('mFinal' + KEY);
+  if (el) {
+    const v = parseInt(el.textContent);
+    return isNaN(v) ? 0 : v;
+  }
+  return getStatTotal(stat);
+}
+
+function autoCalcVitales() {
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  const clase = (sh.clase || '').toLowerCase().trim();
+  const nivel = sh.nivel || 1;
+
+  // Mod finales
+  const mAgi = getModFinal('agi');
+  const mRes = getModFinal('res');
+  const mTec = getModFinal('tec');
+  const mInt = getModFinal('int');
+
+  // Velocidad: max(2, mAgi)
+  const vel = Math.max(2, mAgi);
+
+  // Defensa
+  let def;
+  if      (clase === 'ofensivo')  def = 10 + mRes;
+  else if (clase === 'defensivo') def = 10 + mRes;
+  else if (clase === 'agil')      def = 10 + mAgi;
+  else if (clase === 'tecnico')   def = 10 + mAgi;
+  else if (clase === 'mental')    def = 10 + mAgi;
+  else if (clase === 'apoyo')     def =  9 + mRes;
+  else                            def = 10 + mRes; // default
+
+  // Iniciativa
+  const ini = mAgi;
+
+  // Vida Max
+  let vidaM;
+  if      (clase === 'ofensivo')  vidaM = (8  * (nivel+1)) + (mRes * 2);
+  else if (clase === 'defensivo') vidaM = (12 * (nivel+1)) + (mRes * 3);
+  else if (clase === 'agil')      vidaM = (7  * (nivel+1)) + (mRes * 2);
+  else if (clase === 'tecnico')   vidaM = (6  * (nivel+1)) + (mRes * 2);
+  else if (clase === 'mental')    vidaM = (6  * (nivel+1)) + (mRes * 1);
+  else if (clase === 'apoyo')     vidaM = (9  * (nivel+1)) + (mRes * 2);
+  else                            vidaM = (8  * (nivel+1)) + (mRes * 2);
+  vidaM = Math.max(1, vidaM);
+
+  // Estamina Max
+  let estM;
+  if      (clase === 'ofensivo')  estM = (6 * nivel) + (mTec * 2);
+  else if (clase === 'defensivo') estM = (5 * nivel) + (mTec * 1);
+  else if (clase === 'agil')      estM = (6 * nivel) + (mTec * 2);
+  else if (clase === 'tecnico')   estM = (8 * nivel) + (mTec * 3);
+  else if (clase === 'mental')    estM = (7 * nivel) + (mTec * 2);
+  else if (clase === 'apoyo')     estM = (6 * nivel) + (mTec * 2);
+  else                            estM = (6 * nivel) + (mTec * 2);
+  estM = Math.max(1, estM);
+
+  // Reg Estamina
+  const reg = (clase === 'mental') ? 2 + mInt : 1 + mInt;
+
+  // Actualizar en sh y en los inputs visibles
+  const updates = { vel, def, ini, vida_m: vidaM, est_m: estM, reg };
+  Object.entries(updates).forEach(([k, v]) => {
+    sh[k] = v;
+    if (roomRef) roomRef.child('tokens/'+selId+'/sh/'+k).set(v);
+    // actualizar inputs en pantalla
+    const idMap = { vel:'fVel', def:'fDef', ini:'fIni', vida_m:'fVidaM', est_m:'fEstM', reg:'fReg' };
+    const el = document.getElementById(idMap[k]);
+    if (el) el.value = v;
+    // actualizar totales visuales
+    const tMap = { vel:'tVel', def:'tDef', ini:'tIni', reg:'tReg' };
+    if (tMap[k]) {
+      const tel = document.getElementById(tMap[k]);
+      if (tel) tel.textContent = v;
+    }
+  });
+
+  // Actualizar totales vitales (base recalculada + bono)
+  updateVitalTotals();
+  // Actualizar barras
+  ub();
+  // Redibujar (barras de vida encima de fichas)
+  redraw();
+}
+
 function sf(field,value) {
   if(!selId||!tokens[selId]) return;
-  tokens[selId].sh[field] = (value===''||isNaN(value))?value:parseFloat(value);
+  if(!canEdit(selId)) { promptPassword(); return; }
+  let v = (value===''||isNaN(value)) ? value : parseFloat(value);
+  // Vida y Estamina no pueden superar su máximo ni bajar de 0
+  if (field === 'vida_c') {
+    const max = tokens[selId].sh.vida_m || 0;
+    v = Math.max(0, Math.min(max, v));
+    const el = document.getElementById('fVidaC'); if (el) el.value = v;
+  }
+  if (field === 'est_c') {
+    const max = tokens[selId].sh.est_m || 0;
+    v = Math.max(0, Math.min(max, v));
+    const el = document.getElementById('fEstC'); if (el) el.value = v;
+  }
+  tokens[selId].sh[field] = v;
   fbPatch(selId, { ['sh/'+field]: tokens[selId].sh[field] });
+  updateStatTotals();
+  updateMainStatMods();
   ub();
   const el=document.getElementById('saved');
   el.textContent='✓ Guardado'; el.style.opacity='1';
@@ -1240,8 +2815,10 @@ function sf(field,value) {
 
 function togglePU() {
   if(!selId||!tokens[selId]) return;
+  if(!canEdit(selId)) { promptPassword(); return; }
   tokens[selId].sh.plus_ultra = !tokens[selId].sh.plus_ultra;
   fbPatch(selId, { 'sh/plus_ultra': tokens[selId].sh.plus_ultra });
+  updateStatTotals();
   showStats(); redraw();
 }
 
@@ -1267,19 +2844,28 @@ function logTime() {
   return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
 }
 
-function addLog(type, msg) {
+// Mostrar una entrada en el log local (sin publicar a Firebase)
+function showLog(type, msg, ts) {
   const list = document.getElementById('loglist');
-  // quitar mensaje vacío inicial
   const empty = list.querySelector('p.info');
   if (empty) empty.remove();
-
   const el = document.createElement('div');
   el.className = 'logentry ' + type;
-  el.innerHTML = `<span class="logtime">${logTime()}</span>${msg}`;
+  const time = ts ? (new Date(ts).getHours().toString().padStart(2,'0')+':'+new Date(ts).getMinutes().toString().padStart(2,'0')) : logTime();
+  el.innerHTML = `<span class="logtime">${time}</span>${msg}`;
   list.appendChild(el);
-
-  // máximo 50 entradas
   while (list.children.length > MAX_HISTORY) list.removeChild(list.lastChild);
+}
+
+// addLog: muestra local + publica a Firebase si hay conexión
+function addLog(type, msg) {
+  showLog(type, msg);
+  if (roomRef) {
+    const ref = roomRef.child('logs').push();
+    myLogKeys.add(ref.key);
+    ref.set({ type, msg, ts: Date.now() });
+    ref.onDisconnect().remove();
+  }
 }
 
 function undoMove() {
@@ -1288,6 +2874,8 @@ function undoMove() {
   if (!tokens[last.id]) return;
   tokens[last.id].c = last.fromC;
   tokens[last.id].r = last.fromR;
+  // sincronizar posición con Firebase para que todos vean el movimiento
+  fbPatch(last.id, { c: last.fromC, r: last.fromR });
   const pos = String.fromCharCode(65+last.fromC)+(last.fromR+1);
   addLog('move', `↩ <b>${last.name}</b> volvió a <b>${pos}</b>`);
   if (selId === last.id) document.getElementById('sPos').textContent = pos;
@@ -1302,8 +2890,8 @@ let turnRound = 1;
 function getTurnOrder() {
   // ordenar fichas por iniciativa descendente
   return Object.values(tokens).sort((a, b) => {
-    const ia = (a.sh && a.sh.ini) ? a.sh.ini : 0;
-    const ib = (b.sh && b.sh.ini) ? b.sh.ini : 0;
+    const ia = a.sh ? ((a.sh.ini||0)+(a.sh.bvIni||0)) : 0;
+    const ib = b.sh ? ((b.sh.ini||0)+(b.sh.bvIni||0)) : 0;
     return ib - ia;
   });
 }
@@ -1322,7 +2910,7 @@ function refreshTurns() {
 
   list.innerHTML = '';
   order.forEach((t, i) => {
-    const ini = (t.sh && t.sh.ini) ? t.sh.ini : 0;
+    const ini = t.sh ? ((t.sh.ini||0)+(t.sh.bvIni||0)) : 0;
     const isActive = i === turnIndex;
 
     // separador de flecha entre fichas
@@ -1364,7 +2952,7 @@ function nextTurn() {
 
   // regenerar estamina al inicio del turno (solo si está activado)
   if (t.sh && document.getElementById('autoRegen').checked) {
-    const reg  = t.sh.reg  || 0;
+    const reg  = (t.sh.reg||0) + (t.sh.bvReg||0);
     const max  = t.sh.est_m || 100;
     const prev = t.sh.est_c || 0;
     if (reg > 0) {
@@ -1454,9 +3042,16 @@ function rollDice(sides, qty, mod) {
   hist.appendChild(entry);
   while (hist.children.length > 30) hist.removeChild(hist.lastChild);
 
-  // también al log principal
   const logType = isCrit ? 'spawn' : isFail ? 'del' : 'move';
-  addLog(logType, `🎲 ${short}`);
+
+  if (roomRef) {
+    // Con Firebase: mostrar inmediatamente local Y publicar para los demás
+    addLog(logType, `🎲 ${short}`);
+    fbRoll({ type: logType, msg: short, ts: Date.now() });
+  } else {
+    // Sin Firebase: solo local
+    addLog(logType, `🎲 ${short}`);
+  }
 
   return total;
 }
@@ -1470,15 +3065,72 @@ function rollCustom() {
   rollDice(sides, getQty(), getMod());
 }
 
+function getStatTotal(stat) {
+  // Router universal — devuelve el valor final correcto de cualquier stat
+  if (!selId || !tokens[selId]) return 0;
+
+  // Stats principales: usar Mod Final (incluye fórmula mod base)
+  const MAIN_STATS = ['pod','agi','res','tec','int'];
+  if (MAIN_STATS.includes(stat)) return getModFinal(stat);
+
+  // Atributos: usar total de atributo (mod final padre + bono + comp)
+  const ATTR_STATS = ['fue','intim','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc'];
+  if (ATTR_STATS.includes(stat)) return getAttrTotal(stat);
+
+  // Vitales (vel/def/ini/reg): leer span de total
+  const VITAL_STATS = ['vel','def','ini','reg'];
+  if (VITAL_STATS.includes(stat)) {
+    const Key = stat[0].toUpperCase() + stat.slice(1);
+    const el = document.getElementById('t'+Key);
+    if (el) { const v = parseInt(el.textContent); return isNaN(v) ? 0 : v; }
+  }
+
+  // Fallback: base + equipo + pasivas + PU
+  const sh = tokens[selId].sh;
+  const base = sh[stat] || 0;
+  const bonos = {};
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat && slot.bono) bonos[slot.stat] = (bonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
+  });
+  (sh.pasivas || []).forEach(p => {
+    if (p.activa && p.stat && p.bono) bonos[p.stat] = (bonos[p.stat]||0) + (parseFloat(p.bono)||0);
+  });
+  if (sh.plus_ultra) bonos[stat] = (bonos[stat]||0) + 2;
+  return base + (bonos[stat]||0);
+}
+
+function getAttrTotal(stat) {
+  // Devuelve el total de un atributo: mod final del padre + bono + competencia
+  if (!selId || !tokens[selId]) return 0;
+  const sh = tokens[selId].sh;
+  const Key = stat[0].toUpperCase() + stat.slice(1);
+  const el = document.getElementById('tA'+Key);
+  if (el) {
+    const v = parseInt(el.textContent);
+    return isNaN(v) ? 0 : v;
+  }
+  // fallback: calcular manual
+  const ATTR_PARENT = {
+    fue:'pod',intim:'pod',eva:'agi',acr:'agi',sig:'agi',
+    agu:'res',vol:'res',ctq:'tec',ing:'tec',tac:'tec',
+    per:'int',eng:'int',inv:'int',prc:'int'
+  };
+  const parent = ATTR_PARENT[stat];
+  const base = parent ? getModFinal(parent) : 0;
+  const bono = sh['ba'+Key] || 0;
+  const bc = Math.ceil((sh.nivel||1)/3)+1;
+  const comp = sh['comp'+Key] ? bc : 0;
+  return base + bono + comp;
+}
+
 function applyStatMod() {
   const sel = document.getElementById('diceStat');
   const stat = sel.value;
   if (!stat) return;
   if (selId && tokens[selId] && tokens[selId].sh) {
-    const val = tokens[selId].sh[stat] || 0;
-    document.getElementById('diceMod').value = val;
+    document.getElementById('diceMod').value = getStatTotal(stat);
   }
-  sel.value = ''; // reset select
+  sel.value = '';
 }
 
 // ── FIREBASE ─────────────────────────────────────────────────────
@@ -1498,10 +3150,15 @@ let currentRoom = null;
 let fbReady = false;  // true cuando Firebase conectó y escucha
 
 function setConn(state) {
-  const box = document.getElementById('connBox');
-  const txt = document.getElementById('connTxt');
-  box.className = 'conn-' + state;
-  txt.textContent = state === 'online' ? 'En línea' : state === 'offline' ? 'Sin conexión (local)' : 'Conectando...';
+  const label = state === 'online' ? 'En línea' : state === 'offline' ? 'Sin conexión (local)' : 'Conectando...';
+  ['connBox','connBoxM'].forEach(id => {
+    const box = document.getElementById(id);
+    if (box) box.className = 'conn-' + state;
+  });
+  ['connTxt','connTxtM'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
 }
 
 function genCode() {
@@ -1518,6 +3175,13 @@ function joinSala() {
   connectRoom(v);
   document.getElementById('salaInput').value = '';
 }
+function joinSalaM() {
+  const v = document.getElementById('salaInputM').value.trim().toUpperCase();
+  if (v.length < 4) { alert('Código inválido.'); return; }
+  localStorage.setItem('rpg_room', v);
+  connectRoom(v);
+  document.getElementById('salaInputM').value = '';
+}
 
 function copySala() {
   if (!currentRoom) return;
@@ -1533,6 +3197,8 @@ function connectRoom(code) {
   if (!db) return;
   currentRoom = code;
   document.getElementById('salaCode').textContent = code;
+  const scm = document.getElementById('salaCodeM');
+  if (scm) scm.textContent = code;
   setConn('wait');
   if (roomRef) roomRef.off();
   roomRef = db.ref('rooms/' + code);
@@ -1543,10 +3209,31 @@ function connectRoom(code) {
     const prev = selId;
     // Reconstruir tokens desde Firebase
     tokens = data ? Object.fromEntries(
-      Object.entries(data).map(([k, v]) => [k, { ...v, id: k }])
+      Object.entries(data).map(([k, v]) => {
+        const existing = tokens[k] || {};
+        const merged = { ...v, id: k };
+        // preservar equipo local si Firebase no lo tiene aún
+        if (!merged.sh) merged.sh = blank();
+        if (!merged.sh.equipo) merged.sh.equipo = (existing.sh && existing.sh.equipo) || blank().equipo;
+        if (!merged.sh.habilidades) merged.sh.habilidades = (existing.sh && existing.sh.habilidades) || [];
+        if (!merged.sh.pasivas) merged.sh.pasivas = (existing.sh && existing.sh.pasivas) || [];
+        if (!merged.sh.inventario) merged.sh.inventario = (existing.sh && existing.sh.inventario) || [];
+        if (!merged.sh.estados) merged.sh.estados = (existing.sh && existing.sh.estados) || {};
+        if (merged.sh.subclase === undefined) merged.sh.subclase = '';
+        if (merged.sh.espec === undefined) merged.sh.espec = '';
+        ['bPod','bAgi','bRes','bTec','bInt'].forEach(k=>{ if(merged.sh[k]===undefined) merged.sh[k]=0; });
+        ['bvVel','bvDef','bvIni','bvReg'].forEach(k=>{ if(merged.sh[k]===undefined) merged.sh[k]=0; });
+        ['fue','intim','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc'].forEach(k=>{
+          const K=k[0].toUpperCase()+k.slice(1);
+          if(merged.sh['ba'+K]===undefined) merged.sh['ba'+K]=0;
+          if(merged.sh['comp'+K]===undefined) merged.sh['comp'+K]=false;
+        });
+        return [k, merged];
+      })
     ) : {};
     selId = (prev && tokens[prev]) ? prev : null;
     refresh(); redraw();
+    if (selId) updateStatTotals();
   });
 
   // Escuchar grid
@@ -1563,6 +3250,14 @@ function connectRoom(code) {
   });
 
   fbReady = true;
+  // Presencia
+  listenPresence();
+  if (userName) registerPresence();
+  // Log, dados y obstáculos
+  listenLogs();
+  listenRolls();
+  listenObstacles();
+  listenZones();
 }
 
 // Push: escribir token completo a Firebase
@@ -1592,6 +3287,18 @@ function fbClear() {
   roomRef.child('tokens').remove();
 }
 
+// publicar tirada al canal de dados de la sala
+const myRollKeys = new Set(); // keys de tiradas propias
+const myLogKeys  = new Set(); // keys de logs propios
+
+function fbRoll(entry) {
+  if (!roomRef) return;
+  const ref = roomRef.child('rolls').push();
+  myRollKeys.add(ref.key); // recordar esta key
+  ref.set(entry);
+  ref.onDisconnect().remove();
+}
+
 // Cargar Firebase sin bloquear
 function loadFirebase() {
   const s1 = document.createElement('script');
@@ -1615,13 +3322,1247 @@ function loadFirebase() {
   document.head.appendChild(s1);
 }
 
+// ── TABS (mobile) ────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  // only active on mobile
+  if (window.innerWidth > 900) return;
+  // hide all panes
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  // deactivate all tab buttons
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  // show selected
+  const pane = document.querySelector('[data-tab="' + tab + '"]');
+  if (pane) pane.classList.add('active');
+  btn.classList.add('active');
+  // special: turno tab shows midbar content
+  const midbar = document.getElementById('midbar');
+  if (tab === 'turno') {
+    midbar.style.display = 'flex';
+  } else {
+    if (window.innerWidth <= 900) midbar.style.display = 'none';
+  }
+}
+// init mobile: hide midbar on mobile until turno tab
+window.addEventListener('resize', () => {
+  const mb = document.getElementById('midbar');
+  if (window.innerWidth <= 900) {
+    const turnBtn = document.querySelector('.tab-btn.active[data-tab="turno"]');
+    mb.style.display = turnBtn ? 'flex' : 'none';
+  } else {
+    mb.style.display = '';
+  }
+});
+
+// ── HABILIDADES ──────────────────────────────────────────────────
+const STATS_LIST = [
+  {v:'',l:'—'},{v:'pod',l:'Poder'},{v:'agi',l:'Agilidad'},
+  {v:'res',l:'Resist.'},{v:'tec',l:'Técnica'},{v:'int',l:'Intelig.'},
+  {v:'fue',l:'Fuerza'},{v:'intim',l:'Intim.'},{v:'eva',l:'Evasión'},
+  {v:'acr',l:'Acrobacia'},{v:'sig',l:'Sigilo'},{v:'agu',l:'Aguante'},
+  {v:'vol',l:'Voluntad'},{v:'ctq',l:'Ctrl Q.'},{v:'ing',l:'Ingeniería'},
+  {v:'tac',l:'Táctica'},{v:'per',l:'Persuasión'},{v:'eng',l:'Engaño'},
+  {v:'inv',l:'Investig.'},{v:'prc',l:'Percepción'}
+];
+
+// Parsea expresiones tipo "2d6+3", "1d8-1", "d20", "5"
+function parseDice(expr) {
+  if (!expr) return { rolls: [], mod: 0, total: 0, str: '0' };
+  const s = String(expr).trim().toLowerCase();
+
+  // Regex: [N]d[X] [+/-] [MOD]
+  const match = s.match(/^(\d*)d(\d+)\s*([+-]\s*\d+)?$/);
+  if (match) {
+    const qty  = parseInt(match[1] || '1');
+    const sides = parseInt(match[2]);
+    const mod  = match[3] ? parseInt(match[3].replace(/\s/g,'')) : 0;
+    const rolls = [];
+    for (let i = 0; i < qty; i++) rolls.push(Math.floor(Math.random()*sides)+1);
+    const sum = rolls.reduce((a,b)=>a+b,0) + mod;
+    const rollStr = qty > 1 ? `[${rolls.join('+')}]` : `${rolls[0]}`;
+    const modStr = mod !== 0 ? (mod > 0 ? `+${mod}` : `${mod}`) : '';
+    return { rolls, mod, total: sum, str: `${rollStr}${modStr}=${sum}` };
+  }
+
+  // Solo número plano
+  const flat = parseFloat(s);
+  if (!isNaN(flat)) return { rolls: [flat], mod: 0, total: flat, str: `${flat}` };
+
+  return { rolls: [], mod: 0, total: 0, str: '?' };
+}
+
+function getHabilidades() {
+  if (!selId || !tokens[selId]) return [];
+  return tokens[selId].sh.habilidades || [];
+}
+
+function saveHabilidades() {
+  if (!selId || !tokens[selId]) return;
+  const habs = getHabilidades();
+  tokens[selId].sh.habilidades = habs;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/habilidades').set(habs);
+}
+
+function addHabilidad() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const habs = getHabilidades();
+  habs.push({ nombre:'', stat:'', golpe:0, dano:'1d6', rango:0, est:0, desc:'' });
+  tokens[selId].sh.habilidades = habs;
+  saveHabilidades();
+  renderHabilidades();
+}
+
+function updateHabilidad(idx, field, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) return;
+  const habs = getHabilidades();
+  if (!habs[idx]) return;
+  const textFields = ['nombre','desc','stat','dano'];
+  habs[idx][field] = textFields.includes(field) ? value : (value === '' ? 0 : parseFloat(value) || 0);
+  tokens[selId].sh.habilidades = habs;
+  saveHabilidades();
+}
+
+function removeHabilidad(idx) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const habs = getHabilidades();
+  habs.splice(idx, 1);
+  tokens[selId].sh.habilidades = habs;
+  saveHabilidades();
+  renderHabilidades();
+}
+
+function usarHabilidad(idx) {
+  if (!selId || !tokens[selId]) return;
+  const t = tokens[selId];
+  const habs = getHabilidades();
+  const h = habs[idx];
+  if (!h) return;
+
+  const cost = parseFloat(h.est) || 0;
+  const estActual = t.sh.est_c || 0;
+
+  if (cost > 0 && estActual < cost) {
+    const r = document.getElementById('habResult');
+    r.className = 'show';
+    r.innerHTML = `⚠ <b>${h.nombre||'Habilidad'}</b> — Sin estamina suficiente (${estActual}/${cost})`;
+    setTimeout(()=>r.classList.remove('show'), 3000);
+    return;
+  }
+
+  // Tirar dado de golpe (d20 + stat si aplica)
+  const statVal = h.stat ? getStatTotal(h.stat) : 0;
+  const golpeBase = parseFloat(h.golpe) || 0;
+  const rango     = parseFloat(h.rango) || 0;
+
+  const rollGolpe = Math.floor(Math.random()*20)+1;
+  const totalGolpe = rollGolpe + statVal + golpeBase;
+  const danoResult = h.dano ? parseDice(h.dano) : null;
+  const isCrit = rollGolpe === 20;
+  const isFail = rollGolpe === 1;
+
+  // Consumir estamina
+  if (cost > 0) {
+    t.sh.est_c = Math.max(0, estActual - cost);
+    fbPatch(selId, { 'sh/est_c': t.sh.est_c });
+    // actualizar input visible
+    const estEl = document.getElementById('fEstC');
+    if (estEl) estEl.value = t.sh.est_c;
+    ub();
+    redraw();
+  }
+
+  // Construir mensaje
+  const statLbl = h.stat ? STATS_LIST.find(s=>s.v===h.stat)?.l||h.stat : '';
+  let msg = `⚔ <b>${t.name}</b> usa <b>${h.nombre||'Habilidad'}</b>`;
+  msg += ` — Golpe: d20(${rollGolpe})${statVal?'+'+statVal+' '+statLbl:''}${golpeBase?'+'+golpeBase:''}`;
+  msg += ` = <b>${totalGolpe}</b>`;
+  if (danoResult && danoResult.total > 0) msg += ` | Daño: <b>${danoResult.str}</b>`;
+  if (rango > 0) msg += ` | Rango: ${rango}`;
+  if (cost > 0) msg += ` | Est: -${cost} (${t.sh.est_c}/${t.sh.est_m})`;
+  if (isCrit) msg += ' ✨ <b>¡CRÍTICO!</b>';
+  if (isFail) msg += ' 💀 <b>¡PIFIA!</b>';
+
+  // Mostrar resultado
+  const r = document.getElementById('habResult');
+  r.className = 'show';
+  r.innerHTML = msg;
+
+  // Al log compartido
+  addLog(isCrit?'spawn':isFail?'del':'move', msg);
+}
+
+function renderHabilidades() {
+  const body = document.getElementById('habBody');
+  if (!body) return;
+  const habs = getHabilidades();
+  const locked = !canEdit(selId);
+  body.innerHTML = '';
+
+  if (habs.length === 0) {
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#a07850;font-style:italic;padding:6px;font-size:.75rem;">Sin habilidades. Hacé clic en + Agregar.</td></tr>';
+    return;
+  }
+
+  const statOpts = STATS_LIST.map(s=>`<option value="${s.v}">${s.l}</option>`).join('');
+
+  habs.forEach((h, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="hab-input" type="text" value="${h.nombre||''}" placeholder="Nombre" ${locked?'disabled':''} onchange="updateHabilidad(${i},'nombre',this.value)"></td>
+      <td><select class="hab-sel" ${locked?'disabled':''} onchange="updateHabilidad(${i},'stat',this.value)">${statOpts}</select></td>
+      <td><input class="hab-num" type="number" value="${h.golpe||0}" ${locked?'disabled':''} onchange="updateHabilidad(${i},'golpe',this.value)"></td>
+      <td><input class="hab-input" type="text" value="${h.dano||'1d6'}" placeholder="1d6" ${locked?'disabled':''} onchange="updateHabilidad(${i},'dano',this.value)" style="min-width:44px;"></td>
+      <td><input class="hab-num" type="number" value="${h.rango||0}" ${locked?'disabled':''} onchange="updateHabilidad(${i},'rango',this.value)"></td>
+      <td><input class="hab-num" type="number" value="${h.est||0}" ${locked?'disabled':''} onchange="updateHabilidad(${i},'est',this.value)"></td>
+      <td><input class="hab-input" type="text" value="${h.desc||''}" placeholder="..." ${locked?'disabled':''} onchange="updateHabilidad(${i},'desc',this.value)"></td>
+      <td><button class="hab-usar" onclick="usarHabilidad(${i})">⚔ Usar</button></td>
+      <td><button class="hab-del" ${locked?'disabled':''} onclick="removeHabilidad(${i})">×</button></td>
+    `;
+    // Set select value after insertion
+    const sel = tr.querySelector('select');
+    if (sel) sel.value = h.stat || '';
+    body.appendChild(tr);
+  });
+}
+
+// ── INVENTARIO ───────────────────────────────────────────────────
+function getInventario() {
+  if (!selId || !tokens[selId]) return [];
+  if (!tokens[selId].sh.inventario) tokens[selId].sh.inventario = [];
+  return tokens[selId].sh.inventario;
+}
+
+function saveInventario() {
+  if (!selId || !tokens[selId]) return;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/inventario').set(tokens[selId].sh.inventario);
+}
+
+function addInventario() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const inv = getInventario();
+  inv.push({ nombre:'', desc:'', cant:1 });
+  tokens[selId].sh.inventario = inv;
+  saveInventario();
+  renderInventario();
+}
+
+function updateInventario(idx, field, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) return;
+  const inv = getInventario();
+  if (!inv[idx]) return;
+  inv[idx][field] = field === 'cant' ? (parseInt(value)||0) : value;
+  tokens[selId].sh.inventario = inv;
+  saveInventario();
+}
+
+function removeInventario(idx) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const inv = getInventario();
+  inv.splice(idx, 1);
+  tokens[selId].sh.inventario = inv;
+  saveInventario();
+  renderInventario();
+}
+
+function renderInventario() {
+  const body = document.getElementById('invBody');
+  if (!body) return;
+  const inv = getInventario();
+  const locked = !canEdit(selId);
+  body.innerHTML = '';
+
+  if (inv.length === 0) {
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a07850;font-style:italic;padding:6px;font-size:.75rem;">Inventario vacío. Hacé clic en + Agregar.</td></tr>';
+    return;
+  }
+
+  inv.forEach((item, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="padding:2px 3px;border:1px solid rgba(0,0,0,.1);">
+        <input class="hab-input" type="text" value="${item.nombre||''}" placeholder="Nombre" ${locked?'disabled':''} onchange="updateInventario(${i},'nombre',this.value)">
+      </td>
+      <td style="padding:2px 3px;border:1px solid rgba(0,0,0,.1);">
+        <input class="hab-input" type="text" value="${item.desc||''}" placeholder="Descripción" ${locked?'disabled':''} onchange="updateInventario(${i},'desc',this.value)">
+      </td>
+      <td style="padding:2px 3px;border:1px solid rgba(0,0,0,.1);">
+        <input class="hab-num" type="number" value="${item.cant||1}" min="0" ${locked?'disabled':''} onchange="updateInventario(${i},'cant',this.value)">
+      </td>
+      <td style="padding:2px 3px;border:1px solid rgba(0,0,0,.1);text-align:center;">
+        <button class="hab-del" ${locked?'disabled':''} onclick="removeInventario(${i})">×</button>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+// ── PASIVAS ───────────────────────────────────────────────────────
+function getPasivas() {
+  if (!selId || !tokens[selId]) return [];
+  if (!tokens[selId].sh.pasivas) tokens[selId].sh.pasivas = [];
+  return tokens[selId].sh.pasivas;
+}
+
+function savePasivas() {
+  if (!selId || !tokens[selId]) return;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/pasivas').set(tokens[selId].sh.pasivas);
+}
+
+function addPasiva() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const p = getPasivas();
+  p.push({ nombre:'', desc:'', condicion:'', stat:'', bono:0, activa:false });
+  tokens[selId].sh.pasivas = p;
+  savePasivas();
+  renderPasivas();
+}
+
+function updatePasiva(idx, field, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) return;
+  const p = getPasivas();
+  if (!p[idx]) return;
+  if (field === 'activa') {
+    p[idx].activa = value;
+  } else if (field === 'bono') {
+    p[idx].bono = parseFloat(value) || 0;
+  } else {
+    p[idx][field] = value;
+  }
+  tokens[selId].sh.pasivas = p;
+  savePasivas();
+  updateStatTotals(); // el toggle activa/desactiva afecta totales
+  if (field === 'activa') renderPasivas(); // actualizar estilo de la fila
+}
+
+function removePasiva(idx) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const p = getPasivas();
+  p.splice(idx, 1);
+  tokens[selId].sh.pasivas = p;
+  savePasivas();
+  renderPasivas();
+  updateStatTotals();
+}
+
+function renderPasivas() {
+  const list = document.getElementById('pasivaList');
+  if (!list) return;
+  const pasivas = getPasivas();
+  const locked = !canEdit(selId);
+  list.innerHTML = '';
+
+  if (pasivas.length === 0) {
+    list.innerHTML = '<p style="font-size:.75rem;color:#a07850;font-style:italic;padding:4px 2px;">Sin pasivas. Hacé clic en + Agregar.</p>';
+    return;
+  }
+
+  const statOpts = STATS_LIST.map(s=>`<option value="${s.v}">${s.l}</option>`).join('');
+
+  pasivas.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'pasiva-row' + (p.activa ? ' activa' : '');
+    div.innerHTML = `
+      <div>
+        <div class="pasiva-lbl">Nombre</div>
+        <input class="pasiva-input" type="text" value="${p.nombre||''}" placeholder="Ej: Piel de Acero" ${locked?'disabled':''} onchange="updatePasiva(${i},'nombre',this.value)">
+      </div>
+      <div>
+        <div class="pasiva-lbl">Descripción</div>
+        <input class="pasiva-input" type="text" value="${p.desc||''}" placeholder="Qué hace..." ${locked?'disabled':''} onchange="updatePasiva(${i},'desc',this.value)">
+      </div>
+      <div>
+        <div class="pasiva-lbl">Condición</div>
+        <input class="pasiva-input" type="text" value="${p.condicion||''}" placeholder="Ej: vida < 50%" ${locked?'disabled':''} onchange="updatePasiva(${i},'condicion',this.value)">
+      </div>
+      <div>
+        <div class="pasiva-lbl">Resultado (+Stat / Bono)</div>
+        <div class="pasiva-stat-row">
+          <select class="pasiva-stat-sel" ${locked?'disabled':''} onchange="updatePasiva(${i},'stat',this.value)">${statOpts}</select>
+          <input class="pasiva-bono-inp" type="number" value="${p.bono||0}" ${locked?'disabled':''} onchange="updatePasiva(${i},'bono',this.value)">
+        </div>
+      </div>
+      <button class="pasiva-toggle${p.activa?' on':''}" onclick="updatePasiva(${i},'activa',${!p.activa})">
+        ${p.activa ? '✓ ACTIVA' : '○ Inactiva'}
+      </button>
+      <button class="pasiva-del" ${locked?'disabled':''} onclick="removePasiva(${i})">×</button>
+    `;
+    if (p.condicion) {
+      const nota = document.createElement('div');
+      nota.className = 'pasiva-nota';
+      nota.textContent = '📋 Condición: ' + p.condicion;
+      div.appendChild(nota);
+    }
+    // set select value
+    const sel = div.querySelector('.pasiva-stat-sel');
+    if (sel) sel.value = p.stat || '';
+    list.appendChild(div);
+  });
+}
+
+// ── ATRIBUTOS ────────────────────────────────────────────────────
+const ATTR_PARENT = {
+  fue:'pod', intim:'pod',
+  eva:'agi', acr:'agi', sig:'agi',
+  agu:'res', vol:'res',
+  ctq:'tec', ing:'tec', tac:'tec',
+  per:'int', eng:'int', inv:'int', prc:'int'
+};
+
+function sfBonoAttr(key, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const field = 'ba' + key[0].toUpperCase() + key.slice(1);
+  tokens[selId].sh[field] = parseFloat(value) || 0;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/'+field).set(tokens[selId].sh[field]);
+  updateAttrTotals();
+  const el = document.getElementById('saved');
+  el.textContent = '✓ Guardado'; el.style.opacity = '1';
+  clearTimeout(sfBonoAttr._t);
+  sfBonoAttr._t = setTimeout(() => el.style.opacity = '0', 1800);
+}
+
+function toggleComp(key, checked) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const field = 'comp' + key[0].toUpperCase() + key.slice(1);
+  tokens[selId].sh[field] = checked;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/'+field).set(checked);
+  updateAttrTotals();
+}
+
+function updateAttrTotals() {
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  const bc = Math.ceil((sh.nivel || 1) / 3) + 1;
+
+  Object.entries(ATTR_PARENT).forEach(([key, parent]) => {
+    const Key = key[0].toUpperCase() + key.slice(1);
+    // Base = Mod Final de la stat padre
+    const base = getModFinal(parent);
+    const bono = sh['ba'+Key] || 0;
+    const comp = sh['comp'+Key] ? bc : 0;
+    const total = base + bono + comp;
+
+    // actualizar input base (readonly, muestra el mod final del padre)
+    const elBase = document.getElementById('fA'+Key);
+    if (elBase) elBase.value = base;
+
+    // actualizar total
+    const elTotal = document.getElementById('tA'+Key);
+    if (elTotal) {
+      elTotal.textContent = total >= 0 ? '+' + total : total;
+      elTotal.style.background = total > base ? 'rgba(39,174,96,.2)' : total < 0 ? 'rgba(192,57,43,.12)' : 'rgba(39,174,96,.1)';
+      elTotal.style.color = total >= 0 ? '#1a4a1a' : 'var(--red)';
+    }
+
+    // actualizar checkbox
+    const elComp = document.getElementById('comp'+Key);
+    if (elComp) elComp.checked = sh['comp'+Key] || false;
+  });
+}
+
+// ── EQUIPAMIENTO ─────────────────────────────────────────────────
+const EQUIP_SLOTS = [['cabeza','🪖 Cabeza'],['torso','🛡 Torso'],['brazos','🦾 Brazos'],['piernas','🦿 Piernas'],['acc1','💍 Accesorio 1'],['acc2','💎 Accesorio 2'],['obj1','🧪 Objeto 1'],['obj2','🧪 Objeto 2'],['obj3','🧪 Objeto 3']];
+
+const EQUIP_STAT_OPTS = `<option value="">—</option><option value="vel">Velocidad</option><option value="def">Defensa</option><option value="ini">Iniciativa</option><option value="reg">Reg.Estam</option><option value="pod">Poder</option><option value="agi">Agilidad</option><option value="res">Resistencia</option><option value="tec">Técnica</option><option value="int">Inteligencia</option><option value="fue">Fuerza</option><option value="intim">Intimidación</option><option value="eva">Evasión</option><option value="acr">Acrobacia</option><option value="sig">Sigilo</option><option value="agu">Aguante</option><option value="vol">Voluntad</option><option value="ctq">Control Q.</option><option value="ing">Ingeniería</option><option value="tac">Táctica</option><option value="per">Persuasión</option><option value="eng">Engaño</option><option value="inv">Investigación</option><option value="prc">Percepción</option>`;
+
+function getEquipo() {
+  if (!selId || !tokens[selId]) return null;
+  if (!tokens[selId].sh.equipo) {
+    const blankEq = blank().equipo;
+    // Merge: mantener slots existentes, agregar los que faltan
+    const existing = tokens[selId].sh.equipo || {};
+    tokens[selId].sh.equipo = {};
+    Object.keys(blankEq).forEach(k => {
+      tokens[selId].sh.equipo[k] = existing[k] || blankEq[k];
+    });
+    // subir a Firebase para que quede persistido
+    if (roomRef) roomRef.child('tokens/'+selId+'/sh/equipo').set(tokens[selId].sh.equipo);
+  }
+  return tokens[selId].sh.equipo;
+}
+
+function updateEquipSlot(slot, field, value) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) return;
+  const eq = getEquipo();
+  if (!eq || !eq[slot]) return;
+  eq[slot][field] = field === 'bono' ? (parseFloat(value)||0) : value;
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/equipo/'+slot+'/'+field).set(eq[slot][field]);
+  updateStatTotals();
+}
+
+function renderEquipo() {
+  const body = document.getElementById('equipBody');
+  if (!body) return;
+  const eq = getEquipo();
+  if (!eq) return;
+  const locked = !canEdit(selId);
+  body.innerHTML = '';
+  EQUIP_SLOTS.forEach(([key, label]) => {
+    const s = eq[key] || {nombre:'',desc:'',stat:'',bono:0};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="slot-lbl">${label}</td>
+      <td><input class="equip-input" type="text" value="${s.nombre||''}" placeholder="—" ${locked?'disabled':''} onchange="updateEquipSlot('${key}','nombre',this.value)"></td>
+      <td><input class="equip-input" type="text" value="${s.desc||''}" placeholder="Descripción" ${locked?'disabled':''} onchange="updateEquipSlot('${key}','desc',this.value)"></td>
+      <td><select class="equip-stat" ${locked?'disabled':''} onchange="updateEquipSlot('${key}','stat',this.value)">${EQUIP_STAT_OPTS}</select></td>
+      <td><input class="equip-bonus" type="number" value="${s.bono||0}" ${locked?'disabled':''} onchange="updateEquipSlot('${key}','bono',this.value)"></td>
+    `;
+    const sel = tr.querySelector('select');
+    if (sel) sel.value = s.stat || '';
+    body.appendChild(tr);
+  });
+}
+
+function updateStatTotals() {
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  const eq = sh.equipo || {};
+
+  // Sumar bonos de equipo por stat
+  const bonos = {};
+  Object.values(eq).forEach(slot => {
+    if (slot && slot.stat && slot.bono) {
+      bonos[slot.stat] = (bonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
+    }
+  });
+  // Sumar bonos de pasivas ACTIVAS
+  const pasivas = sh.pasivas || [];
+  pasivas.forEach(p => {
+    if (p.activa && p.stat && p.bono) {
+      bonos[p.stat] = (bonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    }
+  });
+  // Plus Ultra: +2 a todas las estadísticas
+  if (sh.plus_ultra) {
+    ['vel','def','ini','reg','pod','agi','res','tec','int',
+     'fue','intim','eva','acr','sig','agu','vol','ctq','ing',
+     'tac','per','eng','inv','prc'].forEach(s => {
+      bonos[s] = (bonos[s]||0) + 2;
+    });
+  }
+  // Actualizar también los Mod de stats principales
+  updateMainStatMods();
+
+  // Actualizar cada total
+  { const b=bonos['vel']||0; const base=sh['vel']||0; const el=document.getElementById('tVel'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['def']||0; const base=sh['def']||0; const el=document.getElementById('tDef'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['ini']||0; const base=sh['ini']||0; const el=document.getElementById('tIni'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['reg']||0; const base=sh['reg']||0; const el=document.getElementById('tReg'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['pod']||0; const base=sh['pod']||0; const el=document.getElementById('tPod'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['agi']||0; const base=sh['agi']||0; const el=document.getElementById('tAgi'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['res']||0; const base=sh['res']||0; const el=document.getElementById('tRes'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['tec']||0; const base=sh['tec']||0; const el=document.getElementById('tTec'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['int']||0; const base=sh['int']||0; const el=document.getElementById('tInt'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['fue']||0; const base=sh['fue']||0; const el=document.getElementById('tFue'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['intim']||0; const base=sh['intim']||0; const el=document.getElementById('tIntim'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['eva']||0; const base=sh['eva']||0; const el=document.getElementById('tEva'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['acr']||0; const base=sh['acr']||0; const el=document.getElementById('tAcr'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['sig']||0; const base=sh['sig']||0; const el=document.getElementById('tSig'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['agu']||0; const base=sh['agu']||0; const el=document.getElementById('tAgu'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['vol']||0; const base=sh['vol']||0; const el=document.getElementById('tVol'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['ctq']||0; const base=sh['ctq']||0; const el=document.getElementById('tCtq'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['ing']||0; const base=sh['ing']||0; const el=document.getElementById('tIng'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['tac']||0; const base=sh['tac']||0; const el=document.getElementById('tTac'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['per']||0; const base=sh['per']||0; const el=document.getElementById('tPer'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['eng']||0; const base=sh['eng']||0; const el=document.getElementById('tEng'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['inv']||0; const base=sh['inv']||0; const el=document.getElementById('tInv'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  { const b=bonos['prc']||0; const base=sh['prc']||0; const el=document.getElementById('tPrc'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+}
+
+// ── ZONAS / ÁREAS ────────────────────────────────────────────────
+const ZONA_COLORS = [
+  '#e74c3c','#e67e22','#f1c40f','#2ecc71','#1abc9c',
+  '#3498db','#9b59b6','#e91e63','#ffffff','#34495e',
+  '#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6bff','#a8ff78',
+];
+
+// zones: { id: { id, label, color, cells: {`c,r`: true} } }
+let zones = {};
+let selZoneId = null;
+let zonaMode = 'pintar'; // 'pintar' | 'borrar' | 'none'
+let selZoneColor = ZONA_COLORS[4]; // default teal
+let isPainting = false; // mouse held for drag-paint
+
+function buildZonaColors() {
+  const grid = document.getElementById('zonaColors');
+  if (!grid) return;
+  grid.innerHTML = '';
+  ZONA_COLORS.forEach(col => {
+    const dot = document.createElement('div');
+    dot.className = 'zona-color-dot' + (col === selZoneColor ? ' sel' : '');
+    dot.style.background = col;
+    dot.style.borderColor = col === '#ffffff' ? '#aaa' : 'transparent';
+    dot.onclick = () => {
+      selZoneColor = col;
+      // clear selected zone so next paint uses this color (new or existing same-color zone)
+      selZoneId = null;
+      buildZonaColors();
+      refreshZonaList();
+    };
+    grid.appendChild(dot);
+  });
+}
+
+function setZonaMode(mode) {
+  zonaMode = mode;
+  // also exit obstacle placing
+  if (mode !== 'none') { placingObs = null; buildObsGrid(); }
+  ['Pin','Erase','None'].forEach(m => {
+    const el = document.getElementById('zonaMode'+m);
+    if (el) el.className = 'zona-mode-btn' + (mode === m.toLowerCase() ? ' active' : '');
+  });
+}
+
+function getOrCreateZone() {
+  // Only reuse selected zone if its color matches current selZoneColor
+  if (selZoneId && zones[selZoneId] && zones[selZoneId].color === selZoneColor) {
+    return zones[selZoneId];
+  }
+  // Find existing zone with same color
+  const existing = Object.values(zones).find(z => z.color === selZoneColor);
+  if (existing) { selZoneId = existing.id; return existing; }
+  // Create new zone with current color + label
+  const id = 'z_' + Date.now().toString(36);
+  const label = (document.getElementById('zonaLabelInput')?.value || '').trim();
+  zones[id] = { id, label, color: selZoneColor, cells: {} };
+  selZoneId = id;
+  fbZoneMeta(id);
+  return zones[id];
+}
+
+function paintCell(col, row) {
+  if (zonaMode === 'borrar') {
+    // erase from any zone
+    Object.values(zones).forEach(z => {
+      const key = col+','+row;
+      if (z.cells[key]) {
+        delete z.cells[key];
+        fbZonePatchCell(z.id, key, null);
+        if (Object.keys(z.cells).length === 0) {
+          fbZoneDelete(z.id);
+          delete zones[z.id];
+          if (selZoneId === z.id) selZoneId = null;
+        }
+      }
+    });
+    refreshZonaList();
+    redraw();
+    return;
+  }
+  if (zonaMode !== 'pintar') return;
+  const z = getOrCreateZone();
+  const key = col+','+row;
+  if (!z.cells[key]) {
+    z.cells[key] = true;
+    fbZonePatchCell(z.id, key, true);
+    // save meta (label, color) too
+    fbZoneMeta(z.id);
+  }
+  refreshZonaList();
+  redraw();
+}
+
+function refreshZonaList() {
+  const list = document.getElementById('zonaList');
+  const btnDel = document.getElementById('btnDelZona');
+  if (!list) return;
+  const arr = Object.values(zones);
+  if (arr.length === 0) {
+    list.innerHTML = '<p class="info">Sin zonas.</p>';
+    if (btnDel) btnDel.style.display = 'none';
+    return;
+  }
+  list.innerHTML = '';
+  arr.forEach(z => {
+    const cells = Object.keys(z.cells||{}).length;
+    const div = document.createElement('div');
+    div.className = 'zona-item' + (z.id === selZoneId ? ' sel' : '');
+    div.innerHTML = `<div class="zona-swatch" style="background:${z.color}"></div>
+      <span style="flex:1;">${z.label||'Sin nombre'}</span>
+      <span style="font-size:.7rem;color:#a07850;">${cells} cel.</span>`;
+    div.onclick = () => {
+      selZoneId = z.id; selZoneColor = z.color;
+      const inp = document.getElementById('zonaLabelInput');
+      if (inp) inp.value = z.label||'';
+      buildZonaColors(); refreshZonaList();
+    };
+    list.appendChild(div);
+  });
+  if (btnDel) btnDel.style.display = selZoneId ? 'inline-block' : 'none';
+}
+
+function deleteSelectedZona() {
+  if (!selZoneId) return;
+  fbZoneDelete(selZoneId);
+  delete zones[selZoneId];
+  selZoneId = null;
+  refreshZonaList(); redraw();
+}
+
+function clearZonas() {
+  if (!confirm('Eliminar todas las zonas?')) return;
+  zones = {}; selZoneId = null;
+  if (roomRef) roomRef.child('zones').remove();
+  refreshZonaList(); redraw();
+}
+
+function drawZones() {
+  Object.values(zones).forEach(z => {
+    const col = z.color || '#3498db';
+    // fill cells
+    ctx.fillStyle = col + '44';
+    Object.keys(z.cells||{}).forEach(key => {
+      const [cc, rr] = key.split(',').map(Number);
+      ctx.fillRect(cc*CS+1, rr*CS+1, CS-2, CS-2);
+    });
+    // border between zone cells and outside
+    ctx.strokeStyle = col + 'cc';
+    ctx.lineWidth = 2;
+    Object.keys(z.cells||{}).forEach(key => {
+      const [cc, rr] = key.split(',').map(Number);
+      // draw border on sides that are NOT adjacent to another cell in same zone
+      [[0,-1,'top'],[0,1,'bot'],[-1,0,'left'],[1,0,'right']].forEach(([dc,dr,side]) => {
+        if (!z.cells[(cc+dc)+','+(rr+dr)]) {
+          ctx.beginPath();
+          if (side==='top')   { ctx.moveTo(cc*CS,rr*CS);       ctx.lineTo((cc+1)*CS,rr*CS); }
+          if (side==='bot')   { ctx.moveTo(cc*CS,(rr+1)*CS);   ctx.lineTo((cc+1)*CS,(rr+1)*CS); }
+          if (side==='left')  { ctx.moveTo(cc*CS,rr*CS);       ctx.lineTo(cc*CS,(rr+1)*CS); }
+          if (side==='right') { ctx.moveTo((cc+1)*CS,rr*CS);   ctx.lineTo((cc+1)*CS,(rr+1)*CS); }
+          ctx.stroke();
+        }
+      });
+    });
+    // label — centroid of cells
+    if (z.label) {
+      const keys = Object.keys(z.cells||{});
+      if (keys.length > 0) {
+        let sumC=0, sumR=0;
+        keys.forEach(k => { const [cc,rr]=k.split(',').map(Number); sumC+=cc; sumR+=rr; });
+        const cx = (sumC/keys.length)*CS + CS/2;
+        const cy = (sumR/keys.length)*CS + CS/2;
+        ctx.save();
+        ctx.font = 'bold 11px Cinzel,serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        const tw = ctx.measureText(z.label).width+8;
+        ctx.fillStyle='rgba(0,0,0,.6)';
+        ctx.beginPath(); ctx.roundRect(cx-tw/2, cy-9, tw, 18, 3); ctx.fill();
+        ctx.fillStyle = col;
+        ctx.fillText(z.label, cx, cy);
+        ctx.restore();
+      }
+    }
+  });
+}
+
+// Firebase
+function fbZoneMeta(id) {
+  if (!roomRef||!zones[id]) return;
+  const {color,label} = zones[id];
+  roomRef.child('zones/'+id+'/color').set(color);
+  roomRef.child('zones/'+id+'/label').set(label||'');
+}
+function fbZonePatchCell(zid, key, val) {
+  if (!roomRef) return;
+  if (val===null) roomRef.child('zones/'+zid+'/cells/'+key.replace(',','_')).remove();
+  else roomRef.child('zones/'+zid+'/cells/'+key.replace(',','_')).set(true);
+}
+function fbZoneDelete(id) {
+  if (!roomRef) return;
+  roomRef.child('zones/'+id).remove();
+}
+function listenZones() {
+  if (!roomRef) return;
+  roomRef.child('zones').on('value', snap => {
+    const data = snap.val()||{};
+    // rebuild zones converting cell keys back (underscore→comma)
+    zones = {};
+    Object.entries(data).forEach(([id,z]) => {
+      const cells = {};
+      Object.keys(z.cells||{}).forEach(k => cells[k.replace('_',',')] = true);
+      zones[id] = { id, label:z.label||'', color:z.color||'#3498db', cells };
+    });
+    refreshZonaList(); redraw();
+  });
+}
+
+// isPainting managed inside main canvas listeners
+
+// ── OBSTÁCULOS ───────────────────────────────────────────────────
+const OBS_TYPES = [
+  // Naturaleza
+  { id:'tree',     icon:'🌲', label:'Árbol',       color:'#2d5a1b', shape:'circle' },
+  { id:'tree2',    icon:'🌳', label:'Árbol G.',     color:'#1a4a0a', shape:'circle' },
+  { id:'bush',     icon:'🌿', label:'Arbusto',      color:'#4a7c2f', shape:'circle' },
+  { id:'rock',     icon:'🪨', label:'Roca',         color:'#7a7060', shape:'hex'    },
+  { id:'rock2',    icon:'⛰', label:'Peñasco',      color:'#5a5248', shape:'hex'    },
+  { id:'water',    icon:'💧', label:'Agua',         color:'#1a6aaa', shape:'fill'   },
+  { id:'lava',     icon:'🔥', label:'Lava',         color:'#cc3300', shape:'fill'   },
+  { id:'mud',      icon:'🟫', label:'Barro',        color:'#8b5e3c', shape:'fill'   },
+  { id:'ice',      icon:'🧊', label:'Hielo',        color:'#a8d8ea', shape:'fill'   },
+  { id:'pit',      icon:'🕳', label:'Foso',         color:'#1a1a1a', shape:'fill'   },
+  // Urbano / Estructuras
+  { id:'wall',     icon:'🧱', label:'Pared',        color:'#8b7355', shape:'square' },
+  { id:'pillar',   icon:'🏛', label:'Pilar',        color:'#c8b89a', shape:'square' },
+  { id:'box',      icon:'📦', label:'Caja',         color:'#c8941a', shape:'square' },
+  { id:'barrel',   icon:'🛢', label:'Barril',       color:'#7a4a1a', shape:'circle' },
+  { id:'fence',    icon:'🚧', label:'Valla',        color:'#e8a020', shape:'line'   },
+  { id:'door',     icon:'🚪', label:'Puerta',       color:'#8b4513', shape:'square' },
+  { id:'table',    icon:'🪑', label:'Mesa',         color:'#a0784a', shape:'square' },
+  { id:'chest',    icon:'🗃', label:'Cofre',        color:'#c8941a', shape:'square' },
+  // Vehículos / Objetos grandes
+  { id:'car',      icon:'🚗', label:'Auto',         color:'#cc2222', shape:'square' },
+  { id:'truck',    icon:'🚛', label:'Camión',       color:'#886622', shape:'square' },
+  // Peligros
+  { id:'bomb',     icon:'💣', label:'Bomba',        color:'#333333', shape:'circle' },
+  { id:'spike',    icon:'⚡', label:'Trampa',       color:'#cc8800', shape:'circle' },
+  { id:'poison',   icon:'☠', label:'Veneno',       color:'#5a1a7a', shape:'fill'   },
+  // Especiales
+  { id:'portal',   icon:'🌀', label:'Portal',       color:'#6622cc', shape:'circle' },
+  { id:'altar',    icon:'⛩', label:'Altar',        color:'#cc2244', shape:'square' },
+  { id:'crystal',  icon:'💎', label:'Cristal',      color:'#22aacc', shape:'circle' },
+  { id:'flag',     icon:'🚩', label:'Bandera',      color:'#cc2222', shape:'circle' },
+  { id:'light',    icon:'💡', label:'Luz',          color:'#ffee44', shape:'circle' },
+  { id:'shadow',   icon:'👁', label:'Sombra',       color:'#1a0a2a', shape:'circle' },
+  { id:'rune',     icon:'🔯', label:'Runa',         color:'#2244aa', shape:'circle' },
+];
+
+let obstacles = {};   // { id: { id, type, c, r } }
+let selObsId = null;
+let placingObs = null; // type id being placed
+
+function buildObsGrid() {
+  const grid = document.getElementById('obsGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  OBS_TYPES.forEach(ot => {
+    const btn = document.createElement('div');
+    btn.className = 'obs-btn' + (placingObs === ot.id ? ' sel' : '');
+    btn.dataset.id = ot.id;
+    btn.innerHTML = `<span class="obs-icon">${ot.icon}</span>${ot.label}`;
+    btn.onclick = () => {
+      placingObs = placingObs === ot.id ? null : ot.id;
+      // deselect token selection when placing obstacles
+      if (placingObs) selId = null;
+      buildObsGrid();
+      refreshObsList();
+      redraw();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function refreshObsList() {
+  const list = document.getElementById('obsList');
+  const btnDel = document.getElementById('btnDelObs');
+  if (!list) return;
+  const arr = Object.values(obstacles);
+  if (arr.length === 0) {
+    list.innerHTML = '<p class="info">Sin obstáculos.</p>';
+    if (btnDel) btnDel.style.display = 'none';
+    return;
+  }
+  list.innerHTML = '';
+  arr.forEach(ob => {
+    const ot = OBS_TYPES.find(t => t.id === ob.type) || { icon:'?', label:ob.type };
+    const div = document.createElement('div');
+    div.className = 'obs-item' + (ob.id === selObsId ? ' sel' : '');
+    div.innerHTML = `${ot.icon} <span style="flex:1;">${ot.label}</span> <span style="font-size:.72rem;color:#a07850;">${String.fromCharCode(65+ob.c)}${ob.r+1}</span>`;
+    div.onclick = () => { selObsId = ob.id; selId = null; placingObs = null; buildObsGrid(); refreshObsList(); redraw(); };
+    list.appendChild(div);
+  });
+  if (btnDel) btnDel.style.display = selObsId ? 'block' : 'none';
+}
+
+function placeObs(c, r) {
+  if (!placingObs) return false;
+  // no apilar obstáculos ni fichas
+  if (obsAt(c, r) || tokAt(c, r)) return false;
+  const id = 'ob_' + Date.now().toString(36) + Math.random().toString(36).slice(2,4);
+  obstacles[id] = { id, type: placingObs, c, r };
+  fbObsSet(id);
+  refreshObsList();
+  redraw();
+  return true;
+}
+
+function deleteSelectedObs() {
+  if (!selObsId) return;
+  fbObsDelete(selObsId);
+  delete obstacles[selObsId];
+  selObsId = null;
+  refreshObsList();
+  redraw();
+}
+
+function clearObstacles() {
+  if (!confirm('Eliminar todos los obstáculos?')) return;
+  obstacles = {};
+  selObsId = null;
+  if (roomRef) roomRef.child('obstacles').remove();
+  refreshObsList();
+  redraw();
+}
+
+function obsAt(c, r) { return Object.values(obstacles).find(o => o.c===c && o.r===r); }
+
+function drawObstacle(ob, ox, oy) {
+  const ot = OBS_TYPES.find(t => t.id === ob.type);
+  if (!ot) return;
+  const x = ox !== undefined ? ox : ob.c * CS + CS/2;
+  const y = oy !== undefined ? oy : ob.r * CS + CS/2;
+  const isSel = ob.id === selObsId;
+
+  ctx.save();
+
+  if (ot.shape === 'fill') {
+    // Fill entire cell
+    ctx.fillStyle = ot.color + '99';
+    ctx.fillRect(ob.c*CS+1, ob.r*CS+1, CS-2, CS-2);
+    if (isSel) { ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.strokeRect(ob.c*CS+1, ob.r*CS+1, CS-2, CS-2); }
+  } else if (ot.shape === 'square') {
+    const s = CS * 0.72;
+    ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4; ctx.shadowOffsetX=2; ctx.shadowOffsetY=2;
+    ctx.fillStyle = ot.color;
+    ctx.beginPath(); ctx.roundRect(x-s/2, y-s/2, s, s, 3); ctx.fill();
+    ctx.shadowColor='transparent';
+    if (isSel) { ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.stroke(); }
+  } else if (ot.shape === 'hex') {
+    const r2 = CS * 0.38;
+    ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4; ctx.shadowOffsetX=2; ctx.shadowOffsetY=2;
+    ctx.beginPath();
+    for (let i=0;i<6;i++) { const a=Math.PI/3*i-Math.PI/6; ctx.lineTo(x+r2*Math.cos(a), y+r2*Math.sin(a)); }
+    ctx.closePath(); ctx.fillStyle=ot.color; ctx.fill();
+    ctx.shadowColor='transparent';
+    if (isSel) { ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.stroke(); }
+  } else if (ot.shape === 'line') {
+    ctx.strokeStyle = ot.color; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(ob.c*CS+2, ob.r*CS+CS/2); ctx.lineTo((ob.c+1)*CS-2, ob.r*CS+CS/2);
+    ctx.stroke();
+    if (isSel) { ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.strokeRect(ob.c*CS+1, ob.r*CS+1, CS-2, CS-2); }
+  } else {
+    // circle (default)
+    const rd = CS * 0.38;
+    ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=5; ctx.shadowOffsetX=2; ctx.shadowOffsetY=2;
+    ctx.beginPath(); ctx.arc(x, y, rd, 0, Math.PI*2); ctx.fillStyle=ot.color; ctx.fill();
+    ctx.shadowColor='transparent';
+    if (isSel) { ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.stroke(); }
+  }
+
+  // Emoji icon
+  ctx.shadowColor='transparent';
+  ctx.font = `${Math.floor(CS*.52)}px serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(ot.icon, x, y+1);
+
+  ctx.restore();
+}
+
+// Firebase sync
+function fbObsSet(id) {
+  if (!roomRef || !obstacles[id]) return;
+  roomRef.child('obstacles/'+id).set(obstacles[id]);
+}
+function fbObsDelete(id) {
+  if (!roomRef) return;
+  roomRef.child('obstacles/'+id).remove();
+}
+function listenObstacles() {
+  if (!roomRef) return;
+  roomRef.child('obstacles').on('value', snap => {
+    const data = snap.val() || {};
+    obstacles = data;
+    refreshObsList();
+    redraw();
+  });
+}
+
+// ── ESTADOS ─────────────────────────────────────────────────────
+const ESTADOS_DATA = [
+  {key:'aturdido', label:'Aturdido', icon:'😵', color:'#e74c3c', desc:`Pierde próximo turno. Tirada Resist DC12. Cura: fin de turno o ayuda aliada.`},
+  {key:'derribado', label:'Derribado', icon:'🫃', color:'#e67e22', desc:`En el suelo. Ataques recibidos con ventaja. Tirada Fuerz DC10. Cura: gastar movimiento.`},
+  {key:'cegado', label:'Cegado', icon:'🙈', color:'#7f8c8d', desc:`No puede ver. Ataques fallan si dependen de visión. Tirada Resist DC14. Cura: curación mágica.`},
+  {key:'paralizado', label:'Paralizado', icon:'🧊', color:'#2980b9', desc:`No puede actuar ni moverse. Tirada Resist DC16. Cura: 2 turnos o curación mágica.`},
+  {key:'asustado', label:'Asustado', icon:'😱', color:'#9b59b6', desc:`No puede acercarse a la fuente, desventaja general. Tirada Inteli DC12. Cura: superar la tirada.`},
+  {key:'quemado', label:'Quemado', icon:'🔥', color:'#c0392b', desc:`Daño continuo 1d6 al inicio del turno. Tirada Veloci DC12. Cura: 3 turnos, agua o ayuda externa.`},
+  {key:'envenenado', label:'Envenenado', icon:'☠', color:'#27ae60', desc:`Daño 1d4 y desventaja en todas las tiradas. Tirada Resist DC15. Cura: antídoto, descanso largo o superar tirada.`},
+  {key:'silenciado', label:'Silenciado', icon:'🤐', color:'#95a5a6', desc:`No puede usar habilidades verbales ni hablar. Sin tirada. Cura: fin de batalla o lejos de la causa.`},
+  {key:'confundido', label:'Confundido', icon:'🌀', color:'#8e44ad', desc:`Comportamiento errático. Tirada Inteli DC13. Cura: luego de 1 turno.`},
+  {key:'enredado', label:'Enredado', icon:'🕸', color:'#c8941a', desc:`No puede moverse, desventaja en tiradas de ataque. Tirada Fuerz DC13. Cura: liberación por aliado.`},
+];
+
+function renderEstados() {
+  const grid = document.getElementById('estadosGrid');
+  const info = document.getElementById('estadoInfo');
+  if (!grid) return;
+  const sh = (selId && tokens[selId]) ? tokens[selId].sh : null;
+  const estados = (sh && sh.estados) ? sh.estados : {};
+  const locked = !canEdit(selId);
+
+  grid.innerHTML = '';
+  ESTADOS_DATA.forEach(e => {
+    const activo = !!estados[e.key];
+    const btn = document.createElement('div');
+    btn.className = 'estado-btn' + (activo ? ' activo' : '');
+    btn.style.borderColor = activo ? e.color : 'rgba(0,0,0,.15)';
+    btn.style.background = activo ? e.color + 'cc' : 'rgba(200,160,100,.1)';
+    btn.innerHTML = `<span class="est-icon">${e.icon}</span>${e.label}`;
+    btn.title = e.desc;
+    btn.onclick = () => {
+      // show info
+      if (info) { info.textContent = e.icon + ' ' + e.label + ': ' + e.desc; info.className = 'estado-info show'; }
+      if (!sh || locked) return;
+      toggleEstado(e.key);
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function toggleEstado(key) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const sh = tokens[selId].sh;
+  if (!sh.estados) sh.estados = {};
+  sh.estados[key] = !sh.estados[key];
+  if (!sh.estados[key]) delete sh.estados[key];
+  if (roomRef) roomRef.child('tokens/'+selId+'/sh/estados').set(sh.estados);
+  renderEstados();
+  redraw(); // update token icons on map
+}
+
+// ── EXPORTAR / IMPORTAR FICHAS ───────────────────────────────────
+function exportFicha() {
+  if (!selId || !tokens[selId]) {
+    alert('Seleccioná una ficha primero.'); return;
+  }
+  const t = tokens[selId];
+  // Export everything except id and position
+  const data = {
+    _version: 1,
+    name: t.name,
+    sym: t.sym,
+    color: t.color,
+    sh: JSON.parse(JSON.stringify(t.sh))
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (t.name || 'ficha').replace(/[^a-zA-Z0-9_-]/g,'_') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  addLog('spawn', `⬇ <b>${t.name}</b> exportada como JSON`);
+}
+
+function importFicha(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.name || !data.sh) throw new Error('Formato inválido');
+
+      // Place at first empty cell
+      let c=0, r=0;
+      outer: for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(!tokAt(cc,rr)){c=cc;r=rr;break outer;}
+
+      const id = uid();
+      // Merge with blank() to ensure all fields exist
+      const sh = { ...blank(), ...data.sh };
+      // Keep password if exported with one, ask user
+      if (sh.pwHash) {
+        if (!confirm('"' + data.name + '" tiene contraseña. ¿Importar con contraseña incluida?')) {
+          delete sh.pwHash;
+        }
+      }
+      tokens[id] = { id, name: data.name, sym: data.sym || data.name[0], color: data.color || '#f1c40f', c, r, sh };
+      selId = id;
+      unlockedIds.add(id);
+      fbSet(id);
+      addLog('spawn', `⬆ <b>${data.name}</b> importada al mapa`);
+      refresh(); redraw();
+    } catch(err) {
+      alert('Error al importar: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  // Reset input so same file can be imported again
+  event.target.value = '';
+}
+
+// ── SISTEMA DE CONTRASEÑAS ───────────────────────────────────────
+const unlockedIds = new Set(); // IDs que este usuario desbloqueó en esta sesión
+
+// Hash simple (no criptográfico, suficiente para este uso)
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+  }
+  return h.toString(36);
+}
+
+function canEdit(id) {
+  if (!tokens[id]) return false;
+  if (!tokens[id].pwHash) return true; // sin contraseña = todos pueden
+  return unlockedIds.has(id);
+}
+
+function promptPassword() {
+  if (!selId || !tokens[selId] || !tokens[selId].pwHash) return;
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwMsg').textContent =
+    `Ingresá la contraseña para editar a "${tokens[selId].name}".`;
+  document.getElementById('pwModal').classList.add('open');
+  setTimeout(() => document.getElementById('pwInput').focus(), 50);
+}
+
+function checkPassword() {
+  const input = document.getElementById('pwInput').value;
+  if (!input) return;
+  const hash = simpleHash(input);
+  if (hash === tokens[selId]?.pwHash) {
+    unlockedIds.add(selId);
+    closePwModal();
+    showStats(); // refrescar el candado
+    addLog('spawn', `🔓 <b>${tokens[selId].name}</b> desbloqueada`);
+  } else {
+    document.getElementById('pwError').textContent = '❌ Contraseña incorrecta.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function closePwModal() {
+  document.getElementById('pwModal').classList.remove('open');
+  // Revertir el valor del campo que intentó editar
+  if (selId && tokens[selId]) showStats();
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePwModal();
+});
+
+// ── DADOS COMPARTIDOS ────────────────────────────────────────────
+let lastRollTs = Date.now(); // ignorar tiradas previas al conectarse
+
+function listenLogs() {
+  if (!roomRef) return;
+  const startTs = Date.now();
+  roomRef.child('logs').orderByChild('ts').startAt(startTs + 1).on('child_added', snap => {
+    const d = snap.val();
+    if (!d) return;
+    if (myLogKeys.has(snap.key)) { myLogKeys.delete(snap.key); return; }
+    showLog(d.type, d.msg, d.ts);
+  });
+}
+
+function listenRolls() {
+  if (!roomRef) return;
+  // solo escuchar tiradas NUEVAS (posteriores a cuando conectamos)
+  roomRef.child('rolls').orderByChild('ts').startAt(lastRollTs + 1).on('child_added', snap => {
+    const d = snap.val();
+    if (!d) return;
+    // si yo tiré este dado, ya lo mostré localmente — no duplicar
+    if (myRollKeys.has(snap.key)) { myRollKeys.delete(snap.key); return; }
+    // mostrar en historial de dados
+    const hist = document.getElementById('diceHistory');
+    const entry = document.createElement('div');
+    const cls = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
+    entry.className = 'dhentry ' + cls;
+    entry.innerHTML = `<span class="dhtime">${new Date(d.ts).getHours().toString().padStart(2,'0')}:${new Date(d.ts).getMinutes().toString().padStart(2,'0')}</span>${d.msg}`;
+    hist.appendChild(entry);
+    while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+    // también al log principal
+    addLog(d.type, `🎲 ${d.msg}`);
+    // actualizar el resultado visible si es el más reciente
+    // (parseamos el total del mensaje)
+    const match = d.msg.match(/<b>(\d+)<\/b>\s*(?:✨|💀)?$/);
+    if (match) {
+      const totalEl = document.getElementById('diceTotal');
+      const bdEl = document.getElementById('diceBreakdown');
+      totalEl.textContent = match[1];
+      totalEl.style.color = d.type==='spawn'?'#c8941a':d.type==='del'?'#c0392b':'#8b1a1a';
+      bdEl.innerHTML = d.msg;
+    }
+  });
+}
+
+// ── PRESENCIA ────────────────────────────────────────────────────
+let myUserId = null;
+let myUserRef = null;
+let userName = localStorage.getItem('rpg_username') || '';
+
+function setUserName(name) {
+  name = name.trim();
+  if (!name) return;
+  userName = name;
+  localStorage.setItem('rpg_username', name);
+  // Si ya hay conexión, registrar/actualizar presencia
+  if (myUserRef) {
+    myUserRef.update({ name });
+  } else if (roomRef) {
+    registerPresence();
+  }
+}
+
+function registerPresence() {
+  if (!db || !roomRef || !userName) return;
+  // Generar ID de usuario único por sesión
+  if (!myUserId) myUserId = 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+  myUserRef = roomRef.child('presence/' + myUserId);
+  myUserRef.set({ name: userName, ts: Date.now() });
+  // onDisconnect: borrarse automáticamente al cerrar la pestaña
+  myUserRef.onDisconnect().remove();
+}
+
+function listenPresence() {
+  if (!roomRef) return;
+  roomRef.child('presence').on('value', snap => {
+    const data = snap.val() || {};
+    ['presenceList','mobilePresenceList'].forEach(listId => {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.innerHTML = '';
+      Object.entries(data).forEach(([uid, user]) => {
+        const badge = document.createElement('div');
+        badge.className = 'presence-badge' + (uid === myUserId ? ' me' : '');
+        badge.innerHTML = `<div class="pdot"></div>${user.name}${uid === myUserId ? ' (vos)' : ''}`;
+        list.appendChild(badge);
+      });
+    });
+  });
+}
+
 // ── INIT ─────────────────────────────────────────────────────────
 buildColors();
 setupCanvas();
+buildObsGrid();
+// Pre-fill nombre de usuario guardado
+if (userName) {
+  document.getElementById('userNameInput').value = userName;
+  const um = document.getElementById('userNameInputM');
+  if (um) um.value = userName;
+}
 // Mostrar código local mientras carga Firebase
 const _localCode = localStorage.getItem('rpg_room') || genCode();
 localStorage.setItem('rpg_room', _localCode);
 document.getElementById('salaCode').textContent = _localCode;
+const _scm = document.getElementById('salaCodeM');
+if (_scm) _scm.textContent = _localCode;
 currentRoom = _localCode;
 refresh();
 loadFirebase();
