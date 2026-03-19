@@ -1564,6 +1564,37 @@ textarea:focus { border-color:var(--gld); }
 .acc-btn.acc-util { border-color: rgba(39,174,96,.35); }
 .acc-btn.acc-util:hover { background: rgba(39,174,96,.1); border-color: #27ae60; }
 
+/* ── SELECTOR VENTAJA/DESVENTAJA ── */
+.adv-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+.adv-btn {
+  flex: 1;
+  padding: 4px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--ps);
+  background: rgba(200,160,100,.1);
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  color: var(--ink2);
+  cursor: pointer;
+  text-align: center;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.adv-btn:hover { border-color: var(--gld); }
+.adv-btn.adv-sel-normal  { background: rgba(200,148,26,.2); border-color: var(--gld); color: var(--ink); font-weight:700; }
+.adv-btn.adv-sel-ventaja { background: rgba(39,174,96,.2);  border-color: #27ae60; color: #1a4a1a; font-weight:700; }
+.adv-btn.adv-sel-desventaja { background: rgba(192,57,43,.2); border-color: var(--red); color: var(--red); font-weight:700; }
+
+/* ── BARRA HP TEMPORAL ── */
+.brow-temp { display:flex; align-items:center; gap:4px; margin-bottom:4px; }
+.bbar-temp { flex:1; height:6px; background:rgba(0,0,0,.12); border-radius:3px; overflow:hidden; }
+.bfill-temp { height:100%; border-radius:3px; transition:width .3s; background:#8e44ad; }
+
 /* tooltip */
 #tip {
   position:fixed; background:rgba(20,10,0,.9); color:var(--p);
@@ -1694,6 +1725,12 @@ textarea:focus { border-color:var(--gld); }
   </div>
 
   <div class="dice-row">
+    <!-- Ventaja / Normal / Desventaja -->
+    <div class="adv-row" style="width:100%;margin-bottom:6px;">
+      <button class="adv-btn" id="dAdvV" onclick="setAdvantage('ventaja','d')" title="Tirar 2d20, tomar el mayor">⬆ Ventaja</button>
+      <button class="adv-btn adv-sel-normal" id="dAdvN" onclick="setAdvantage('normal','d')" title="Tirada normal">— Normal</button>
+      <button class="adv-btn" id="dAdvD" onclick="setAdvantage('desventaja','d')" title="Tirar 2d20, tomar el menor">⬇ Desventaja</button>
+    </div>
     <!-- dados estándar -->
     <button class="dice-btn" onclick="roll(4)"  title="d4" ><span class="dice-icon">△</span>d4</button>
     <button class="dice-btn" onclick="roll(6)"  title="d6" ><span class="dice-icon">⬡</span>d6</button>
@@ -1929,6 +1966,11 @@ textarea:focus { border-color:var(--gld); }
             <span style="font-size:.78rem;color:var(--ink2);font-family:'Cinzel',serif;">d</span>
           </div>
         </div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+          <button class="adv-btn" id="mAdvV" onclick="setAdvantage('ventaja','m')" title="Tirar 2d20, tomar el mayor">⬆ Ventaja</button>
+          <button class="adv-btn adv-sel-normal" id="mAdvN" onclick="setAdvantage('normal','m')" title="Tirada normal">— Normal</button>
+          <button class="adv-btn" id="mAdvD" onclick="setAdvantage('desventaja','m')" title="Tirar 2d20, tomar el menor">⬇ Desventaja</button>
+        </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
           <button onclick="mRoll(4)"  class="mdice-btn">△ d4</button>
           <button onclick="mRoll(6)"  class="mdice-btn">⬡ d6</button>
@@ -2090,6 +2132,20 @@ textarea:focus { border-color:var(--gld); }
         </div>
         <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;">
           <div id="bVida" style="height:100%;border-radius:4px;transition:width .3s;background:#e74c3c;width:100%;"></div>
+        </div>
+      </div>
+      <!-- HP Temporal -->
+      <div style="margin-bottom:6px;">
+        <div class="brow-temp" style="margin-bottom:3px;">
+          <span class="blbl" style="color:#8e44ad;">🛡 HP Temp</span>
+          <input class="bnum" type="number" min="0" id="fHpTemp" value="0"
+            onchange="sf('hp_temp',this.value);ub()"
+            style="border-color:rgba(142,68,173,.4);background:rgba(142,68,173,.08);">
+          <span class="bsep" style="color:#8e44ad;">/</span>
+          <span class="bnum" style="display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#8e44ad;font-style:italic;border:none;background:none;padding:0 2px;">máx libre</span>
+        </div>
+        <div id="bHpTempRow" style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;display:none;">
+          <div id="bHpTemp" style="height:100%;border-radius:4px;transition:width .3s;background:#8e44ad;width:0%;"></div>
         </div>
       </div>
       <div style="margin-bottom:6px;">
@@ -2632,7 +2688,7 @@ let selColor = COLORS[2];
 function blank() {
   return {
     nivel:1, clase:'', subclase:'', espec:'', xp_c:0, xp_m:10,
-    vida_c:100, vida_m:100, est_c:100, est_m:100,
+    vida_c:100, vida_m:100, est_c:100, est_m:100, hp_temp:0,
     vel:0, def:0, ini:0, reg:0,
     bvVel:0, bvDef:0, bvIni:0, bvReg:0,
     pod:0, agi:0, res:0, tec:0, int:0,
@@ -2814,6 +2870,25 @@ function drawTok(t, ox, oy) {
   // plus ultra ring
   if (t.sh && t.sh.plus_ultra) {
     ctx.beginPath(); ctx.arc(x,y,rd+6,0,Math.PI*2); ctx.strokeStyle='rgba(232,180,48,.8)'; ctx.lineWidth=2.5; ctx.stroke();
+  }
+  // HP Temporal — arco morado exterior (solo si > 0)
+  if (t.sh && (t.sh.hp_temp || 0) > 0) {
+    const hpt = t.sh.hp_temp;
+    const maxV = t.sh.vida_m || 100;
+    const pct = Math.min(1, hpt / maxV);
+    const Rt = rd + (t.sh.plus_ultra ? 10 : 7); // fuera del plus ultra si aplica
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    // fondo completo gris
+    ctx.strokeStyle = 'rgba(142,68,173,.25)';
+    ctx.beginPath(); ctx.arc(x, y, Rt, -Math.PI, Math.PI, false); ctx.stroke();
+    // arco proporcional al hp_temp
+    ctx.strokeStyle = '#9b59b6';
+    ctx.beginPath();
+    ctx.arc(x, y, Rt, -Math.PI, -Math.PI + Math.PI * 2 * pct, false);
+    ctx.stroke();
+    ctx.restore();
   }
   // border
   ctx.beginPath(); ctx.arc(x,y,rd,0,Math.PI*2);
@@ -3315,6 +3390,7 @@ function showStats() {
     fNivel:s.nivel, fClase:s.clase, fSubclase:s.subclase||'', fEspec:s.espec||'',
     fXpC:s.xp_c, fXpM:s.xp_m,
     fVidaC:s.vida_c, fVidaM:s.vida_m,
+    fHpTemp:s.hp_temp||0,
     fEstC:s.est_c, fEstM:s.est_m,
     fVel:s.vel, fDef:s.def, fIni:s.ini, fReg:s.reg,
     fBvVel:s.bvVel||0, fBvDef:s.bvDef||0, fBvIni:s.bvIni||0, fBvReg:s.bvReg||0,
@@ -3388,6 +3464,16 @@ function ub() {
   set('bVida',s.vida_c,s.vida_m);
   set('bEst',s.est_c,s.est_m);
   set('bXp',s.xp_c,s.xp_m);
+  // HP Temporal — barra morada, solo visible si > 0
+  const hpt = s.hp_temp || 0;
+  const hptRow = document.getElementById('bHpTempRow');
+  if (hptRow) hptRow.style.display = hpt > 0 ? 'block' : 'none';
+  if (hpt > 0) {
+    // La barra muestra hp_temp relativo al vida_m como referencia visual
+    const pct = Math.min(100, Math.round(hpt / Math.max(1, s.vida_m) * 100));
+    const bEl = document.getElementById('bHpTemp');
+    if (bEl) bEl.style.width = pct + '%';
+  }
   redraw();
 }
 
@@ -3897,10 +3983,60 @@ function diceTime() {
 
 function getQty()  { return Math.max(1, Math.min(20, parseInt(document.getElementById('diceQty').value)  || 1)); }
 function getMod()  { return parseInt(document.getElementById('diceMod').value) || 0; }
+function getAdv()  { return window._diceAdv  || 'normal'; }
+function mGetAdv() { return window._mDiceAdv || 'normal'; }
+
+// Estado ventaja/desventaja por panel
+window._diceAdv  = 'normal';
+window._mDiceAdv = 'normal';
+
+function setAdvantage(mode, panel) {
+  if (panel === 'd') {
+    window._diceAdv = mode;
+    ['dAdvV','dAdvN','dAdvD'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'adv-btn';
+      if ((id==='dAdvV'&&mode==='ventaja')||(id==='dAdvN'&&mode==='normal')||(id==='dAdvD'&&mode==='desventaja'))
+        el.classList.add('adv-sel-'+mode);
+    });
+  } else {
+    window._mDiceAdv = mode;
+    ['mAdvV','mAdvN','mAdvD'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.className = 'adv-btn';
+      if ((id==='mAdvV'&&mode==='ventaja')||(id==='mAdvN'&&mode==='normal')||(id==='mAdvD'&&mode==='desventaja'))
+        el.classList.add('adv-sel-'+mode);
+    });
+  }
+}
+
+// Tirar d20 con ventaja/desventaja
+function rollD20Adv(adv) {
+  const r1 = Math.floor(Math.random()*20)+1;
+  const r2 = Math.floor(Math.random()*20)+1;
+  if (adv === 'ventaja')    return { result: Math.max(r1,r2), both: [r1,r2] };
+  if (adv === 'desventaja') return { result: Math.min(r1,r2), both: [r1,r2] };
+  return { result: r1, both: null };
+}
 
 function rollDice(sides, qty, mod) {
+  const adv = getAdv();
   const rolls = [];
-  for (let i = 0; i < qty; i++) rolls.push(Math.floor(Math.random() * sides) + 1);
+  let advLabel = '';
+
+  // Ventaja/Desventaja solo aplica para d20 con qty=1
+  if (sides === 20 && qty === 1 && adv !== 'normal') {
+    const { result, both } = rollD20Adv(adv);
+    rolls.push(result);
+    advLabel = adv === 'ventaja'
+      ? ` ⬆[${both[0]},${both[1]}]`
+      : ` ⬇[${both[0]},${both[1]}]`;
+  } else {
+    for (let i = 0; i < qty; i++) rolls.push(Math.floor(Math.random() * sides) + 1);
+  }
+
   const sum = rolls.reduce((a,b) => a+b, 0);
   const total = sum + mod;
 
@@ -3919,7 +4055,7 @@ function rollDice(sides, qty, mod) {
   const roller = (selId && tokens[selId]) ? tokens[selId].name : 'Mesa';
 
   // breakdown
-  let breakdown = `<b>${roller}</b> tiró ${qty}d${sides}`;
+  let breakdown = `<b>${roller}</b> tiró ${qty}d${sides}${advLabel}`;
   if (qty > 1) breakdown += ` → [${rolls.join(', ')}] = ${sum}`;
   else breakdown += ` → <b>${rolls[0]}</b>`;
   if (mod !== 0) breakdown += ` ${mod >= 0 ? '+' : ''}${mod} = <b>${total}</b>`;
@@ -3980,8 +4116,20 @@ function mGetMod()  { return parseInt(document.getElementById('mDiceMod')?.value
 function mRoll(sides) {
   const qty = mGetQty();
   const mod = mGetMod();
+  const adv = mGetAdv();
   const rolls = [];
-  for (let i = 0; i < qty; i++) rolls.push(Math.ceil(Math.random() * sides));
+  let advLabel = '';
+
+  if (sides === 20 && qty === 1 && adv !== 'normal') {
+    const { result, both } = rollD20Adv(adv);
+    rolls.push(result);
+    advLabel = adv === 'ventaja'
+      ? ` ⬆[${both[0]},${both[1]}]`
+      : ` ⬇[${both[0]},${both[1]}]`;
+  } else {
+    for (let i = 0; i < qty; i++) rolls.push(Math.ceil(Math.random() * sides));
+  }
+
   const sum  = rolls.reduce((a,b) => a+b, 0);
   const total = sum + mod;
   const isCrit = sides === 20 && qty === 1 && rolls[0] === 20;
@@ -4002,7 +4150,7 @@ function mRoll(sides) {
     totEl.textContent = total;
     totEl.style.color = isCrit ? '#c8941a' : isFail ? '#c0392b' : 'var(--red)';
   }
-  let breakdown = `<b>${userName||'?'}</b>: ${qty}d${sides}`;
+  let breakdown = `<b>${userName||'?'}</b>: ${qty}d${sides}${advLabel}`;
   if (qty > 1) breakdown += ` [${rolls.join('+')}]`;
   if (mod !== 0) breakdown += ` ${mod>=0?'+':''}${mod}`;
   breakdown += ` = <b>${total}</b>`;
