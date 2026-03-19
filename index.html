@@ -1252,13 +1252,13 @@ textarea:focus { border-color:var(--gld); }
 }
 #subTabBar .stab {
   flex: 1;
-  padding: 10px 4px 8px;
+  padding: 8px 2px 7px;
   background: none;
   border: none;
   color: #a07850;
   font-family: 'Cinzel', serif;
-  font-size: .58rem;
-  letter-spacing: 1px;
+  font-size: .52rem;
+  letter-spacing: .5px;
   text-transform: uppercase;
   cursor: pointer;
   display: flex;
@@ -1269,7 +1269,7 @@ textarea:focus { border-color:var(--gld); }
   transition: color .15s, border-color .15s;
   -webkit-tap-highlight-color: transparent;
 }
-#subTabBar .stab .stab-icon { font-size: 1.25rem; line-height: 1; }
+#subTabBar .stab .stab-icon { font-size: 1.15rem; line-height: 1; }
 #subTabBar .stab.active {
   color: var(--gld);
   border-bottom-color: var(--gld);
@@ -1586,7 +1586,10 @@ textarea:focus { border-color:var(--gld); }
       <div class="dice-total" id="diceTotal">—</div>
       <div class="dice-breakdown" id="diceBreakdown" style="color:#a07850;font-style:italic;">Tirá un dado para empezar</div>
     </div>
-    <div class="dice-history" id="diceHistory"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:4px;">
+      <div class="dice-history" id="diceHistory" style="flex:1;"></div>
+      <button class="admin-only" onclick="clearRolls()" style="background:none;border:none;color:var(--red);font-size:.7rem;cursor:pointer;opacity:.6;white-space:nowrap;padding:2px 4px;font-family:'Cinzel',serif;" title="Solo DM — limpiar historial de dados">🗑 Limpiar</button>
+    </div>
   </div>
   </div>
 </div>
@@ -1687,7 +1690,10 @@ textarea:focus { border-color:var(--gld); }
     <div class="panel">
       <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
         <span>📜 Registro</span>
-        <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;">↩ Deshacer</button>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;">↩ Deshacer</button>
+          <button class="btn btn-red admin-only" onclick="clearLogs()" style="width:auto;padding:2px 8px;font-size:.65rem;margin-bottom:0;" title="Solo DM">🗑 Limpiar</button>
+        </div>
       </div>
       <div class="loglist" id="loglist">
         <p class="info">Sin movimientos aún.</p>
@@ -1791,7 +1797,10 @@ textarea:focus { border-color:var(--gld); }
             <span id="mDiceTotal" style="font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--red);line-height:1;min-width:46px;text-align:center;">—</span>
             <span id="mDiceBreak" style="font-size:.78rem;color:var(--ink2);flex:1;line-height:1.5;font-style:italic;">Tirá un dado...</span>
           </div>
-          <div id="mDiceHistory" style="max-height:80px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin-top:6px;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+            <div id="mDiceHistory" style="max-height:80px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;flex:1;"></div>
+            <button class="admin-only" onclick="clearRolls()" style="background:none;border:none;color:var(--red);font-size:.7rem;cursor:pointer;opacity:.6;white-space:nowrap;padding:2px 4px;font-family:'Cinzel',serif;flex-shrink:0;" title="Solo DM">🗑</button>
+          </div>
         </div>
       </div>
 
@@ -1820,6 +1829,9 @@ textarea:focus { border-color:var(--gld); }
       </button>
       <button class="stab" data-subtab="arsenal" onclick="switchSubTab('arsenal',this)">
         <span class="stab-icon">🎒</span>Arsenal
+      </button>
+      <button class="stab" data-subtab="extra" onclick="switchSubTab('extra',this)">
+        <span class="stab-icon">⚙️</span>Extra
       </button>
     </div>
 
@@ -2283,12 +2295,18 @@ textarea:focus { border-color:var(--gld); }
         </table>
       </div>
 
+      <div class="saved" id="saved"></div>
+      </div><!-- /sub-pane arsenal -->
+
+      <!-- ══ SUB-PANE: EXTRA ══ -->
+      <div class="sub-pane" data-subtab="extra">
+
       <!-- Notas -->
       <div class="ptitle" style="margin-top:8px;">📝 Notas</div>
-      <textarea id="fNotas" rows="5" placeholder="Notas privadas del personaje..." style="margin-bottom:4px;" oninput="sf('notas',this.value)"></textarea>
+      <textarea id="fNotas" rows="6" placeholder="Notas privadas del personaje..." style="margin-bottom:4px;" oninput="sf('notas',this.value)"></textarea>
 
       <!-- Editar Ficha -->
-      <div class="ptitle" style="margin-top:8px;">✏ Editar Ficha</div>
+      <div class="ptitle" style="margin-top:10px;">✏ Editar Ficha</div>
       <div class="frow" style="margin-bottom:6px;">
         <div class="fgrp">
           <span class="flbl">Nombre</span>
@@ -2322,8 +2340,7 @@ textarea:focus { border-color:var(--gld); }
         </div>
       </div>
 
-      <div class="saved" id="saved"></div>
-      </div><!-- /sub-pane arsenal -->
+      </div><!-- /sub-pane extra -->
       </div><!-- /statsOverlay -->
 
     </div><!-- statsContent -->
@@ -3362,8 +3379,35 @@ function addLog(type, msg) {
     const ref = roomRef.child('logs').push();
     myLogKeys.add(ref.key);
     ref.set({ type, msg, ts: Date.now() });
-    ref.onDisconnect().remove();
+    // NO onDisconnect().remove() — los logs persisten entre sesiones
   }
+}
+
+// ── LIMPIAR HISTORIAL (solo DM) ──────────────────────────────────
+function clearLogs() {
+  if (!isAdmin()) return;
+  if (!confirm('¿Limpiar todo el registro de movimientos?')) return;
+  // Local
+  const list = document.getElementById('loglist');
+  if (list) list.innerHTML = '<p class="info">Sin movimientos aún.</p>';
+  // Firebase
+  if (roomRef) roomRef.child('logs').remove();
+  myLogKeys.clear();
+}
+
+function clearRolls() {
+  if (!isAdmin()) return;
+  if (!confirm('¿Limpiar todo el historial de dados?')) return;
+  // Local — limpiar ambos paneles
+  ['diceHistory','mDiceHistory'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='—'; });
+  ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) { el.innerHTML='Tirá un dado para empezar'; el.style.color='#a07850'; } });
+  // Firebase
+  if (roomRef) roomRef.child('rolls').remove();
+  myRollKeys.clear();
 }
 
 function undoMove() {
@@ -5141,73 +5185,99 @@ document.addEventListener('keydown', e => {
 });
 
 // ── DADOS COMPARTIDOS ────────────────────────────────────────────
-let lastRollTs = Date.now(); // ignorar tiradas previas al conectarse
+const MAX_ROLL_HISTORY = 50; // cuántas tiradas guardar en Firebase
+
+// Función auxiliar para renderizar una entrada de dado en ambos paneles
+function renderRollEntry(d, prepend) {
+  const hh  = new Date(d.ts).getHours().toString().padStart(2,'0');
+  const mm2 = new Date(d.ts).getMinutes().toString().padStart(2,'0');
+  const ts  = `${hh}:${mm2}`;
+  const cls = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
+
+  // Desktop
+  const hist = document.getElementById('diceHistory');
+  if (hist) {
+    const e = document.createElement('div');
+    e.className = 'dhentry ' + cls;
+    e.innerHTML = `<span class="dhtime">${ts}</span>${d.msg}`;
+    if (prepend) hist.insertBefore(e, hist.firstChild); else hist.appendChild(e);
+    while (hist.children.length > 50) hist.removeChild(prepend ? hist.lastChild : hist.firstChild);
+  }
+  // Mobile
+  const mHist = document.getElementById('mDiceHistory');
+  if (mHist) {
+    const e2 = document.createElement('div');
+    e2.className = 'dhentry ' + cls;
+    e2.innerHTML = `<span class="dhtime">${ts}</span>${d.msg}`;
+    mHist.insertBefore(e2, mHist.firstChild);
+    while (mHist.children.length > 30) mHist.removeChild(mHist.lastChild);
+  }
+  // Actualizar resultado visible
+  const lastB = d.msg.match(/.*<b>(\d+)<\/b>/);
+  if (lastB && prepend) { // solo actualizar el "último resultado" si es el más reciente
+    const total = lastB[1];
+    const clr = d.type==='spawn'?'#c8941a':d.type==='del'?'#c0392b':'#8b1a1a';
+    const dtEl = document.getElementById('diceTotal');
+    const dbEl = document.getElementById('diceBreakdown');
+    if (dtEl) { dtEl.textContent = total; dtEl.style.color = clr; }
+    if (dbEl) dbEl.innerHTML = d.msg;
+    const mTot = document.getElementById('mDiceTotal');
+    const mBrk = document.getElementById('mDiceBreak');
+    if (mTot) { mTot.textContent = total; mTot.style.color = clr; }
+    if (mBrk) mBrk.innerHTML = d.msg;
+  }
+}
 
 function listenLogs() {
   if (!roomRef) return;
-  const startTs = Date.now();
-  roomRef.child('logs').orderByChild('ts').startAt(startTs + 1).on('child_added', snap => {
-    const d = snap.val();
-    if (!d) return;
-    if (myLogKeys.has(snap.key)) { myLogKeys.delete(snap.key); return; }
-    showLog(d.type, d.msg, d.ts);
+  // 1. Cargar últimos 60 logs al conectar
+  roomRef.child('logs').orderByChild('ts').limitToLast(60).once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.push({ key: child.key, ...child.val() }));
+    entries.forEach(d => {
+      if (!myLogKeys.has(d.key)) showLog(d.type, d.msg, d.ts);
+    });
+    // 2. Escuchar solo los NUEVOS a partir de ahora
+    const lastTs = entries.length > 0 ? entries[entries.length-1].ts : Date.now();
+    roomRef.child('logs').orderByChild('ts').startAt(lastTs + 1).on('child_added', snap => {
+      const d = snap.val();
+      if (!d) return;
+      if (myLogKeys.has(snap.key)) { myLogKeys.delete(snap.key); return; }
+      showLog(d.type, d.msg, d.ts);
+    });
   });
 }
 
 function listenRolls() {
   if (!roomRef) return;
-  roomRef.child('rolls').orderByChild('ts').startAt(lastRollTs + 1).on('child_added', snap => {
-    const d = snap.val();
-    if (!d) return;
-    // si yo tiré este dado, ya lo mostré localmente — no duplicar
-    if (myRollKeys.has(snap.key)) { myRollKeys.delete(snap.key); return; }
-
-    const hh = new Date(d.ts).getHours().toString().padStart(2,'0');
-    const mm2 = new Date(d.ts).getMinutes().toString().padStart(2,'0');
-    const timeStamp = `${hh}:${mm2}`;
-
-    // ── Panel desktop (diceHistory) ──
-    const hist = document.getElementById('diceHistory');
-    if (hist) {
-      const entry = document.createElement('div');
-      const cls = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
-      entry.className = 'dhentry ' + cls;
-      entry.innerHTML = `<span class="dhtime">${timeStamp}</span>${d.msg}`;
-      hist.appendChild(entry);
-      while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+  // 1. Cargar últimas 30 tiradas al conectar (del más viejo al más nuevo)
+  roomRef.child('rolls').orderByChild('ts').limitToLast(30).once('value', snap => {
+    const entries = [];
+    snap.forEach(child => entries.push({ key: child.key, ...child.val() }));
+    // Renderizar del más viejo al más nuevo (append), sin actualizar el "último resultado"
+    entries.forEach(d => {
+      if (!myRollKeys.has(d.key)) renderRollEntry(d, false);
+    });
+    // Mostrar el último resultado visible
+    if (entries.length > 0) {
+      const last = entries[entries.length - 1];
+      const lastB = last.msg.match(/.*<b>(\d+)<\/b>/);
+      if (lastB) {
+        const total = lastB[1];
+        const clr = last.type==='spawn'?'#c8941a':last.type==='del'?'#c0392b':'#8b1a1a';
+        ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el){el.textContent=total;el.style.color=clr;} });
+        ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=last.msg; });
+      }
     }
-
-    // ── Panel mobile bajo el mapa (mDiceHistory) ──
-    const mHist = document.getElementById('mDiceHistory');
-    if (mHist) {
-      const mEntry = document.createElement('div');
-      const cls2 = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
-      mEntry.className = 'dhentry ' + cls2;
-      mEntry.innerHTML = `<span class="dhtime">${timeStamp}</span>${d.msg}`;
-      mHist.insertBefore(mEntry, mHist.firstChild);
-      while (mHist.children.length > 20) mHist.removeChild(mHist.lastChild);
-    }
-
-    // también al log principal
-    addLog(d.type, `🎲 ${d.msg}`);
-
-    // actualizar resultado visible (desktop + mobile)
-    const match = d.msg.match(/<b>(\d+)<\/b>\s*(?:✨|💀)?/g);
-    // extraer el último número en negrita (el total)
-    const lastB = d.msg.match(/.*<b>(\d+)<\/b>/);
-    if (lastB) {
-      const total = lastB[1];
-      const clr = d.type==='spawn'?'#c8941a':d.type==='del'?'#c0392b':'#8b1a1a';
-      const dtEl = document.getElementById('diceTotal');
-      const dbEl = document.getElementById('diceBreakdown');
-      if (dtEl) { dtEl.textContent = total; dtEl.style.color = clr; }
-      if (dbEl) dbEl.innerHTML = d.msg;
-      // mobile
-      const mTot = document.getElementById('mDiceTotal');
-      const mBrk = document.getElementById('mDiceBreak');
-      if (mTot) { mTot.textContent = total; mTot.style.color = clr; }
-      if (mBrk) mBrk.innerHTML = d.msg;
-    }
+    // 2. Escuchar solo los NUEVOS
+    const lastTs = entries.length > 0 ? entries[entries.length-1].ts : Date.now();
+    roomRef.child('rolls').orderByChild('ts').startAt(lastTs + 1).on('child_added', snap => {
+      const d = snap.val();
+      if (!d) return;
+      if (myRollKeys.has(snap.key)) { myRollKeys.delete(snap.key); return; }
+      renderRollEntry(d, true);
+      addLog(d.type, `🎲 ${d.msg}`);
+    });
   });
 }
 
