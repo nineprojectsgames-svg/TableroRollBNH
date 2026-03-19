@@ -1444,6 +1444,12 @@ textarea:focus { border-color:var(--gld); }
   }
 }
 
+/* ── MINI DADOS (bajo el mapa, solo mobile) ── */
+#miniDice { display: none; }
+@media (max-width: 900px) {
+  #miniDice { display: block; }
+}
+
 /* tooltip */
 #tip {
   position:fixed; background:rgba(20,10,0,.9); color:var(--p);
@@ -1459,6 +1465,7 @@ textarea:focus { border-color:var(--gld); }
 <!-- TOPBAR -->
 <div id="topbar">
   <h1>⚔ MAPA TÁCTICO ⚔</h1>
+  <span id="dmBadge" style="display:none;align-items:center;gap:4px;padding:2px 8px;background:rgba(139,26,26,.25);border:1px solid var(--red);border-radius:10px;font-family:'Cinzel',serif;font-size:.62rem;color:var(--red);letter-spacing:1px;flex-shrink:0;">👑 DM</span>
   <div id="salaBar">
     <span class="slbl">⚑ Sala</span>
     <span id="salaCode">—</span>
@@ -1602,7 +1609,7 @@ textarea:focus { border-color:var(--gld); }
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel admin-only">
       <div class="ptitle">✦ Añadir Ficha</div>
       <label>Nombre</label>
       <input type="text" id="iNombre" placeholder="Ej: Midoriya" maxlength="16">
@@ -1627,6 +1634,40 @@ textarea:focus { border-color:var(--gld); }
         <button class="btn btn-gld btn-sm" onclick="document.getElementById('importInput').click()" style="flex:1;" title="Importar ficha desde JSON">⬆ Importar</button>
       </div>
       <input type="file" id="importInput" accept=".json" style="display:none;" onchange="importFicha(event)">
+    </div>
+
+    <div class="panel admin-only">
+      <div class="ptitle">🎨 Zonas / Áreas</div>
+      <div class="zona-mode-row">
+        <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
+        <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
+        <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
+      </div>
+      <div class="zona-colors" id="zonaColors"></div>
+      <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
+      <div class="zona-list" id="zonaList"><p class="info">Sin zonas.</p></div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn btn-red btn-sm" id="btnDelZona" onclick="deleteSelectedZona()" style="display:none;flex:1;">Eliminar zona</button>
+        <button class="btn btn-red btn-sm" onclick="clearZonas()" style="flex:1;">Limpiar todo</button>
+      </div>
+    </div>
+
+    <div class="panel admin-only">
+      <div class="ptitle">🧱 Obstáculos</div>
+      <div class="obs-grid" id="obsGrid"></div>
+      <div class="obs-list" id="obsList"><p class="info">Sin obstáculos.</p></div>
+      <button class="btn btn-red" id="btnDelObs" onclick="deleteSelectedObs()" style="display:none;">Eliminar seleccionado</button>
+      <button class="btn btn-red" onclick="clearObstacles()" style="margin-top:4px;">Limpiar todos</button>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle">✧ Controles</div>
+      <p class="info" style="line-height:1.8;">
+        <b>Clic / Tocar ficha</b> — Seleccionar<br>
+        <b>Arrastrar</b> — Mover ficha<br>
+        <b>Clic en celda vacía</b> — Mover seleccionada<br>
+        <b>Clic derecho / Long press</b> — Deseleccionar
+      </p>
     </div>
 
     <div class="panel">
@@ -1667,39 +1708,40 @@ textarea:focus { border-color:var(--gld); }
       <button class="btn btn-red btn-sm" onclick="clearMap()">Limpiar</button>
     </div>
 
-    <!-- Extras del mapa: Zonas, Obstáculos, Controles — solo visibles en mobile -->
+    <!-- Mini dados: visible solo en mobile, debajo del mapa -->
+    <div id="miniDice">
+      <div class="panel" style="margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:2px;color:var(--red);text-transform:uppercase;">🎲 Dados</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="font-size:.7rem;color:var(--ink2);">×</span>
+            <input type="number" id="miniDiceQty" value="1" min="1" max="20" style="width:38px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+            <span style="font-size:.7rem;color:var(--ink2);">Mod:</span>
+            <input type="number" id="miniDiceMod" value="0" style="width:42px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+          </div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
+          <button onclick="miniRoll(4)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d4</button>
+          <button onclick="miniRoll(6)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d6</button>
+          <button onclick="miniRoll(8)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d8</button>
+          <button onclick="miniRoll(10)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d10</button>
+          <button onclick="miniRoll(12)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d12</button>
+          <button onclick="miniRoll(20)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--red);border:1px solid var(--red);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--p);cursor:pointer;font-weight:700;">d20</button>
+          <button onclick="miniRoll(100)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d%</button>
+        </div>
+        <!-- Resultado -->
+        <div id="miniDiceResult" style="display:none;padding:8px 10px;background:rgba(200,148,26,.12);border-radius:4px;border-left:3px solid var(--gld);display:flex;align-items:center;gap:10px;">
+          <span id="miniDiceTotal" style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:700;color:var(--red);line-height:1;min-width:38px;text-align:center;">—</span>
+          <span id="miniDiceBreak" style="font-size:.75rem;color:var(--ink2);flex:1;line-height:1.4;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extras del mapa: visible solo en mobile -->
     <div id="mapaExtras">
-      <div class="panel">
-        <div class="ptitle">🎨 Zonas / Áreas</div>
-        <div class="zona-mode-row">
-          <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
-          <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
-          <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
-        </div>
-        <div class="zona-colors" id="zonaColors"></div>
-        <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
-        <div class="zona-list" id="zonaList"><p class="info">Sin zonas.</p></div>
-        <div style="display:flex;gap:4px;">
-          <button class="btn btn-red btn-sm" id="btnDelZona" onclick="deleteSelectedZona()" style="display:none;flex:1;">Eliminar zona</button>
-          <button class="btn btn-red btn-sm" onclick="clearZonas()" style="flex:1;">Limpiar todo</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="ptitle">🧱 Obstáculos</div>
-        <div class="obs-grid" id="obsGrid"></div>
-        <div class="obs-list" id="obsList"><p class="info">Sin obstáculos.</p></div>
-        <button class="btn btn-red" id="btnDelObs" onclick="deleteSelectedObs()" style="display:none;">Eliminar seleccionado</button>
-        <button class="btn btn-red" onclick="clearObstacles()" style="margin-top:4px;">Limpiar todos</button>
-      </div>
-
-      <div class="panel">
-        <div class="ptitle">✧ Controles touch</div>
-        <p class="info" style="line-height:1.9;font-size:.88rem;">
-          <b>Tocar ficha</b> — Seleccionar<br>
-          <b>Arrastrar ficha</b> — Mover<br>
-          <b>Tocar celda vacía</b> — Mover seleccionada<br>
-          <b>Long press vacío</b> — Deseleccionar
+      <div class="panel admin-only" style="padding:10px 12px;">
+        <p class="info" style="line-height:1.9;font-size:.82rem;">
+          🎨 <b>Zonas y Obstáculos</b> disponibles en el tab <b>⚔ Fichas</b>
         </p>
       </div>
     </div>
@@ -3416,6 +3458,63 @@ function rollCustom() {
   rollDice(sides, getQty(), getMod());
 }
 
+// Mini dados (bajo el mapa en mobile) — comparte rollDice y sincroniza resultado
+function miniRoll(sides) {
+  const qty = Math.max(1, Math.min(20, parseInt(document.getElementById('miniDiceQty')?.value) || 1));
+  const mod = parseInt(document.getElementById('miniDiceMod')?.value) || 0;
+  // Tirar
+  const rolls = [];
+  for (let i = 0; i < qty; i++) rolls.push(Math.ceil(Math.random() * sides));
+  const sum = rolls.reduce((a,b) => a+b, 0);
+  const total = sum + mod;
+  const isCrit = sides === 20 && qty === 1 && rolls[0] === 20;
+  const isFail = sides === 20 && qty === 1 && rolls[0] === 1;
+  // Mostrar en mini resultado
+  const resEl = document.getElementById('miniDiceResult');
+  const totEl = document.getElementById('miniDiceTotal');
+  const brkEl = document.getElementById('miniDiceBreak');
+  if (resEl) resEl.style.display = 'flex';
+  if (totEl) {
+    totEl.textContent = total;
+    totEl.style.color = isCrit ? '#c8941a' : isFail ? '#c0392b' : 'var(--red)';
+  }
+  if (brkEl) {
+    let breakdown = qty > 1 ? `[${rolls.join('+')}]` : `d${sides}`;
+    if (mod !== 0) breakdown += ` ${mod >= 0 ? '+' : ''}${mod}`;
+    if (isCrit) breakdown += ' ✨ ¡CRÍTICO!';
+    if (isFail) breakdown += ' 💀 ¡PIFIA!';
+    brkEl.innerHTML = breakdown;
+  }
+  // También enviar al historial compartido de dados (mismo canal Firebase)
+  const ts = Date.now();
+  let msg = `<b>${userName||'?'}</b>: `;
+  msg += qty > 1 ? `${qty}d${sides} [${rolls.join('+')}]` : `d${sides} → `;
+  if (mod !== 0) msg += ` ${mod >= 0 ? '+' : ''}${mod}`;
+  msg += ` = <b>${total}</b>`;
+  if (isCrit) msg += ' ✨'; if (isFail) msg += ' 💀';
+  const type = isCrit ? 'spawn' : isFail ? 'del' : 'move';
+  addLog(type, `🎲 ${msg}`);
+  if (roomRef) {
+    const key = roomRef.child('rolls').push().key;
+    myRollKeys.add(key);
+    roomRef.child('rolls/'+key).set({ msg, type, ts });
+    // Actualizar resultado visible en diceTotal/diceBreakdown también
+    const dt = document.getElementById('diceTotal');
+    const db2 = document.getElementById('diceBreakdown');
+    if (dt) { dt.textContent = total; dt.style.color = isCrit?'#c8941a':isFail?'#c0392b':'#8b1a1a'; }
+    if (db2) db2.innerHTML = msg;
+    const hist = document.getElementById('diceHistory');
+    if (hist) {
+      const entry = document.createElement('div');
+      entry.className = 'dhentry ' + (isCrit?'crit':isFail?'fail':'');
+      const h = new Date(ts), hh = h.getHours().toString().padStart(2,'0'), mm = h.getMinutes().toString().padStart(2,'0');
+      entry.innerHTML = `<span class="dhtime">${hh}:${mm}</span>${msg}`;
+      hist.appendChild(entry);
+      while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+    }
+  }
+}
+
 function getStatTotal(stat) {
   // Router universal — devuelve el valor final correcto de cualquier stat
   if (!selId || !tokens[selId]) return 0;
@@ -4886,11 +4985,28 @@ let myUserId = null;
 let myUserRef = null;
 let userName = localStorage.getItem('rpg_username') || '';
 
+function isAdmin() {
+  return userName.trim().toUpperCase() === 'DM';
+}
+
+function applyAdminMode() {
+  const admin = isAdmin();
+  // Paneles solo para admin
+  const adminPanels = document.querySelectorAll('.admin-only');
+  adminPanels.forEach(el => {
+    el.style.display = admin ? '' : 'none';
+  });
+  // Badge DM en topbar
+  const badge = document.getElementById('dmBadge');
+  if (badge) badge.style.display = admin ? 'inline-flex' : 'none';
+}
+
 function setUserName(name) {
   name = name.trim();
   if (!name) return;
   userName = name;
   localStorage.setItem('rpg_username', name);
+  applyAdminMode();
   // Si ya hay conexión, registrar/actualizar presencia
   if (myUserRef) {
     myUserRef.update({ name });
@@ -4937,6 +5053,7 @@ if (userName) {
   const um = document.getElementById('userNameInputM');
   if (um) um.value = userName;
 }
+applyAdminMode();
 // Mostrar código local mientras carga Firebase
 const _localCode = localStorage.getItem('rpg_room') || genCode();
 localStorage.setItem('rpg_room', _localCode);
