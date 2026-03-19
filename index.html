@@ -1444,10 +1444,24 @@ textarea:focus { border-color:var(--gld); }
   }
 }
 
-/* ── MINI DADOS (bajo el mapa, solo mobile) ── */
-#miniDice { display: none; }
+/* mapaBottom: reemplaza miniDice, ver reglas en sección TURNO+DADOS */
+
+/* ── TURNO+DADOS BAJO EL MAPA (mobile) ── */
+#mapaBottom { display: none; }
 @media (max-width: 900px) {
-  #miniDice { display: block; }
+  #mapaBottom { display: block; }
+  .mdice-btn {
+    flex: 1; min-width: 38px; padding: 10px 2px;
+    background: var(--p); border: 1px solid var(--ps); border-radius: 4px;
+    font-family: 'Cinzel', serif; font-size: .68rem; color: var(--ink2);
+    cursor: pointer; text-align: center;
+    transition: background .12s, transform .1s;
+  }
+  .mdice-btn:active { transform: scale(.93); }
+  .mdice-btn.mdice-d20 {
+    background: var(--red); border-color: var(--red);
+    color: var(--p); font-weight: 700;
+  }
 }
 
 /* tooltip */
@@ -1696,7 +1710,7 @@ textarea:focus { border-color:var(--gld); }
     <div class="mapbox" id="mapbox">
       <canvas id="cv"></canvas>
     </div>
-    <div class="mapctrl">
+    <div class="mapctrl admin-only">
       <span>Cuadrícula:</span>
       <button class="btn btn-grn btn-sm" onclick="setGrid(14,10)">14×10</button>
       <button class="btn btn-grn btn-sm" onclick="setGrid(20,14)">20×14</button>
@@ -1709,33 +1723,79 @@ textarea:focus { border-color:var(--gld); }
     </div>
 
     <!-- Mini dados: visible solo en mobile, debajo del mapa -->
-    <div id="miniDice">
+    <!-- Turno + Dados completos: visible solo en mobile, debajo del mapa -->
+    <div id="mapaBottom">
+
+      <!-- ── TURNO ── -->
       <div class="panel" style="margin-top:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+          <span style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:2px;color:var(--red);text-transform:uppercase;">⚔ Turno</span>
+          <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">
+            <span style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--gld);font-weight:700;" id="mTurnRound">Ronda 1</span>
+            <button class="btn btn-grn" onclick="prevTurn()" style="width:auto;padding:5px 10px;font-size:.7rem;margin-bottom:0;">◀</button>
+            <button class="btn btn-gld" onclick="nextTurn()" style="width:auto;padding:5px 10px;font-size:.7rem;margin-bottom:0;">Sig ▶</button>
+            <button class="btn btn-red" onclick="resetTurns()" style="width:auto;padding:5px 10px;font-size:.7rem;margin-bottom:0;">↺</button>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);cursor:pointer;margin-bottom:8px;">
+          <input type="checkbox" id="mAutoRegen" checked style="cursor:pointer;accent-color:var(--gld);" onchange="document.getElementById('autoRegen').checked=this.checked"> Auto Estamina
+        </label>
+        <div class="turn-list" id="mTurnList" style="display:flex;flex-wrap:wrap;gap:5px;">
+          <span class="turn-empty">Sin fichas en el turno.</span>
+        </div>
+      </div>
+
+      <!-- ── DADOS COMPLETOS ── -->
+      <div class="panel" style="margin-top:4px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <span style="font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:2px;color:var(--red);text-transform:uppercase;">🎲 Dados</span>
           <div style="display:flex;align-items:center;gap:5px;">
-            <span style="font-size:.7rem;color:var(--ink2);">×</span>
-            <input type="number" id="miniDiceQty" value="1" min="1" max="20" style="width:38px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
-            <span style="font-size:.7rem;color:var(--ink2);">Mod:</span>
-            <input type="number" id="miniDiceMod" value="0" style="width:42px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+            <span style="font-size:.7rem;color:var(--ink2);font-family:'Cinzel',serif;">Tirar:</span>
+            <input type="number" id="mDiceQty" value="1" min="1" max="20" style="width:38px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+            <span style="font-size:.78rem;color:var(--ink2);font-family:'Cinzel',serif;">d</span>
           </div>
         </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
-          <button onclick="miniRoll(4)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d4</button>
-          <button onclick="miniRoll(6)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d6</button>
-          <button onclick="miniRoll(8)"  style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d8</button>
-          <button onclick="miniRoll(10)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d10</button>
-          <button onclick="miniRoll(12)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d12</button>
-          <button onclick="miniRoll(20)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--red);border:1px solid var(--red);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--p);cursor:pointer;font-weight:700;">d20</button>
-          <button onclick="miniRoll(100)" style="flex:1;min-width:40px;padding:9px 2px;background:var(--p);border:1px solid var(--ps);border-radius:4px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink2);cursor:pointer;">d%</button>
+          <button onclick="mRoll(4)"  class="mdice-btn">△ d4</button>
+          <button onclick="mRoll(6)"  class="mdice-btn">⬡ d6</button>
+          <button onclick="mRoll(8)"  class="mdice-btn">◇ d8</button>
+          <button onclick="mRoll(10)" class="mdice-btn">⬟ d10</button>
+          <button onclick="mRoll(12)" class="mdice-btn">⬠ d12</button>
+          <button onclick="mRoll(20)" class="mdice-btn mdice-d20">★ d20</button>
+          <button onclick="mRoll(100)" class="mdice-btn" style="font-size:.6rem;">% d100</button>
+        </div>
+        <!-- Fila: dado personalizado + modificador + stat -->
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <span style="font-size:.72rem;color:var(--ink2);">d</span>
+          <input type="number" id="mDiceCustom" value="6" min="2" max="999" style="width:46px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+          <button onclick="mRollCustom()" class="btn btn-gld" style="width:auto;padding:5px 10px;font-size:.7rem;margin-bottom:0;">Tirar</button>
+          <span style="font-size:.72rem;color:var(--ink2);">Mod:</span>
+          <input type="number" id="mDiceMod" value="0" style="width:46px;padding:3px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--ink);outline:none;">
+          <select id="mDiceStat" class="dice-stat-sel" onchange="mApplyStatMod()" style="font-size:.68rem;">
+            <option value="">+ stat</option>
+            <option value="pod">Poder</option><option value="agi">Agilidad</option>
+            <option value="res">Resist.</option><option value="tec">Técnica</option>
+            <option value="int">Intelig.</option><option value="fue">Fuerza</option>
+            <option value="intim">Intim.</option><option value="eva">Evasión</option>
+            <option value="acr">Acrobacia</option><option value="sig">Sigilo</option>
+            <option value="agu">Aguante</option><option value="vol">Voluntad</option>
+            <option value="ctq">Ctrl Q.</option><option value="ing">Ingeniería</option>
+            <option value="tac">Táctica</option><option value="per">Persuasión</option>
+            <option value="eng">Engaño</option><option value="inv">Investigación</option>
+            <option value="prc">Percepción</option>
+          </select>
         </div>
         <!-- Resultado -->
-        <div id="miniDiceResult" style="display:none;padding:8px 10px;background:rgba(200,148,26,.12);border-radius:4px;border-left:3px solid var(--gld);display:flex;align-items:center;gap:10px;">
-          <span id="miniDiceTotal" style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:700;color:var(--red);line-height:1;min-width:38px;text-align:center;">—</span>
-          <span id="miniDiceBreak" style="font-size:.75rem;color:var(--ink2);flex:1;line-height:1.4;"></span>
+        <div style="border-top:1px solid var(--ps);padding-top:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span id="mDiceTotal" style="font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--red);line-height:1;min-width:46px;text-align:center;">—</span>
+            <span id="mDiceBreak" style="font-size:.78rem;color:var(--ink2);flex:1;line-height:1.5;font-style:italic;">Tirá un dado...</span>
+          </div>
+          <div id="mDiceHistory" style="max-height:80px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:2px;margin-top:6px;"></div>
         </div>
       </div>
-    </div>
+
+    </div><!-- /mapaBottom -->
 
     <!-- Extras del mapa: visible solo en mobile -->
     <div id="mapaExtras">
@@ -2223,6 +2283,45 @@ textarea:focus { border-color:var(--gld); }
         </table>
       </div>
 
+      <!-- Notas -->
+      <div class="ptitle" style="margin-top:8px;">📝 Notas</div>
+      <textarea id="fNotas" rows="5" placeholder="Notas privadas del personaje..." style="margin-bottom:4px;" oninput="sf('notas',this.value)"></textarea>
+
+      <!-- Editar Ficha -->
+      <div class="ptitle" style="margin-top:8px;">✏ Editar Ficha</div>
+      <div class="frow" style="margin-bottom:6px;">
+        <div class="fgrp">
+          <span class="flbl">Nombre</span>
+          <div style="display:flex;gap:4px;">
+            <input type="text" id="editNombre" class="fin" placeholder="Nombre..." maxlength="24" style="margin-bottom:0;">
+            <button class="btn btn-gld" onclick="applyEditNombre()" style="width:auto;padding:4px 10px;margin-bottom:0;white-space:nowrap;">✓</button>
+          </div>
+        </div>
+      </div>
+      <div class="frow" style="margin-bottom:6px;">
+        <div class="fgrp" style="max-width:100px;">
+          <span class="flbl">Símbolo</span>
+          <div style="display:flex;gap:4px;">
+            <input type="text" id="editSym" class="fin num" placeholder="A" maxlength="2" style="margin-bottom:0;text-align:center;">
+            <button class="btn btn-gld" onclick="applyEditSym()" style="width:auto;padding:4px 10px;margin-bottom:0;white-space:nowrap;">✓</button>
+          </div>
+        </div>
+        <div class="fgrp">
+          <span class="flbl">Color</span>
+          <div class="cgrid" id="cgridEdit" style="margin-bottom:0;"></div>
+        </div>
+      </div>
+      <div class="ptitle" style="margin-top:6px;font-size:.65rem;">🔒 Contraseña</div>
+      <div class="frow" style="margin-bottom:4px;">
+        <div class="fgrp">
+          <span class="flbl">Nueva contraseña <span style="color:#a07850;font-size:.72rem;">(vacío = sin contraseña)</span></span>
+          <input type="password" id="editPw1" class="fin" placeholder="Nueva contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
+          <input type="password" id="editPw2" class="fin" placeholder="Repetir contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
+          <button class="btn btn-red" onclick="applyEditPassword()" style="margin-bottom:0;">Cambiar contraseña</button>
+          <div id="editPwMsg" style="font-size:.72rem;min-height:14px;margin-top:3px;font-style:italic;"></div>
+        </div>
+      </div>
+
       <div class="saved" id="saved"></div>
       </div><!-- /sub-pane arsenal -->
       </div><!-- /statsOverlay -->
@@ -2291,7 +2390,7 @@ function blank() {
     tac:0, per:0, eng:0, inv:0, prc:0,
     cua:0, yh:0, ct:0, mer:0,
     habilidades:[], pasivas:[], inventario:[], plus_ultra:false,
-    estados:{},
+    estados:{}, notas:'',
     baFue:0,baIntim:0,baEva:0,baAcr:0,baSig:0,baAgu:0,baVol:0,baCtq:0,baIng:0,baTac:0,baPer:0,baEng:0,baInv:0,baPrc:0,
     compFue:false,compIntim:false,compEva:false,compAcr:false,compSig:false,compAgu:false,compVol:false,compCtq:false,compIng:false,compTac:false,compPer:false,compEng:false,compInv:false,compPrc:false,
     equipo:{
@@ -2941,6 +3040,15 @@ function showStats() {
     // equipamiento renderizado aparte
   };
   Object.entries(M).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val??''; });
+  // Notas
+  const notasEl = document.getElementById('fNotas');
+  if (notasEl) notasEl.value = s.notas || '';
+  // Pre-fill editar ficha
+  const enEl = document.getElementById('editNombre');
+  if (enEl) enEl.value = t.name;
+  const esEl = document.getElementById('editSym');
+  if (esEl) esEl.value = t.sym || t.name[0] || '';
+  buildEditColorGrid();
   updateBC();
   updateXpMax();
   updateMainStatMods();
@@ -3333,6 +3441,11 @@ function refreshTurns() {
   });
 
   document.getElementById('turnRound').textContent = 'Ronda ' + turnRound;
+  // Sync mobile turn list
+  const mList = document.getElementById('mTurnList');
+  const mRound = document.getElementById('mTurnRound');
+  if (mRound) mRound.textContent = 'Ronda ' + turnRound;
+  if (mList) mList.innerHTML = list.innerHTML;
 }
 
 function nextTurn() {
@@ -3459,60 +3572,87 @@ function rollCustom() {
 }
 
 // Mini dados (bajo el mapa en mobile) — comparte rollDice y sincroniza resultado
-function miniRoll(sides) {
-  const qty = Math.max(1, Math.min(20, parseInt(document.getElementById('miniDiceQty')?.value) || 1));
-  const mod = parseInt(document.getElementById('miniDiceMod')?.value) || 0;
-  // Tirar
+// ── DADOS + TURNO BAJO EL MAPA (mobile) ──────────────────────────
+function mGetQty()  { return Math.max(1, Math.min(20, parseInt(document.getElementById('mDiceQty')?.value) || 1)); }
+function mGetMod()  { return parseInt(document.getElementById('mDiceMod')?.value) || 0; }
+
+function mRoll(sides) {
+  const qty = mGetQty();
+  const mod = mGetMod();
   const rolls = [];
   for (let i = 0; i < qty; i++) rolls.push(Math.ceil(Math.random() * sides));
-  const sum = rolls.reduce((a,b) => a+b, 0);
+  const sum  = rolls.reduce((a,b) => a+b, 0);
   const total = sum + mod;
   const isCrit = sides === 20 && qty === 1 && rolls[0] === 20;
   const isFail = sides === 20 && qty === 1 && rolls[0] === 1;
-  // Mostrar en mini resultado
-  const resEl = document.getElementById('miniDiceResult');
-  const totEl = document.getElementById('miniDiceTotal');
-  const brkEl = document.getElementById('miniDiceBreak');
-  if (resEl) resEl.style.display = 'flex';
+
+  // Mostrar resultado en el panel del mapa
+  const totEl  = document.getElementById('mDiceTotal');
+  const brkEl  = document.getElementById('mDiceBreak');
+  const histEl = document.getElementById('mDiceHistory');
   if (totEl) {
     totEl.textContent = total;
     totEl.style.color = isCrit ? '#c8941a' : isFail ? '#c0392b' : 'var(--red)';
   }
-  if (brkEl) {
-    let breakdown = qty > 1 ? `[${rolls.join('+')}]` : `d${sides}`;
-    if (mod !== 0) breakdown += ` ${mod >= 0 ? '+' : ''}${mod}`;
-    if (isCrit) breakdown += ' ✨ ¡CRÍTICO!';
-    if (isFail) breakdown += ' 💀 ¡PIFIA!';
-    brkEl.innerHTML = breakdown;
-  }
-  // También enviar al historial compartido de dados (mismo canal Firebase)
+  let breakdown = `<b>${userName||'?'}</b>: ${qty}d${sides}`;
+  if (qty > 1) breakdown += ` [${rolls.join('+')}]`;
+  if (mod !== 0) breakdown += ` ${mod>=0?'+':''}${mod}`;
+  breakdown += ` = <b>${total}</b>`;
+  if (isCrit) breakdown += ' ✨ ¡CRÍTICO!';
+  if (isFail) breakdown += ' 💀 ¡PIFIA!';
+  if (brkEl) brkEl.innerHTML = breakdown;
+
+  // Historial local
   const ts = Date.now();
-  let msg = `<b>${userName||'?'}</b>: `;
-  msg += qty > 1 ? `${qty}d${sides} [${rolls.join('+')}]` : `d${sides} → `;
-  if (mod !== 0) msg += ` ${mod >= 0 ? '+' : ''}${mod}`;
-  msg += ` = <b>${total}</b>`;
-  if (isCrit) msg += ' ✨'; if (isFail) msg += ' 💀';
+  if (histEl) {
+    const entry = document.createElement('div');
+    const isCls = isCrit ? 'crit' : isFail ? 'fail' : '';
+    entry.className = 'dhentry ' + isCls;
+    const hh = new Date(ts).getHours().toString().padStart(2,'0');
+    const mm = new Date(ts).getMinutes().toString().padStart(2,'0');
+    entry.innerHTML = `<span class="dhtime">${hh}:${mm}</span>${breakdown}`;
+    histEl.insertBefore(entry, histEl.firstChild);
+    while (histEl.children.length > 20) histEl.removeChild(histEl.lastChild);
+  }
+
+  // Sincronizar con el panel principal de dados (desktop)
+  const dtMain = document.getElementById('diceTotal');
+  const dbMain = document.getElementById('diceBreakdown');
+  if (dtMain) { dtMain.textContent = total; dtMain.style.color = isCrit?'#c8941a':isFail?'#c0392b':'#8b1a1a'; }
+  if (dbMain) dbMain.innerHTML = breakdown;
+
+  // Log y Firebase compartido
   const type = isCrit ? 'spawn' : isFail ? 'del' : 'move';
-  addLog(type, `🎲 ${msg}`);
+  addLog(type, `🎲 ${breakdown}`);
   if (roomRef) {
     const key = roomRef.child('rolls').push().key;
     myRollKeys.add(key);
-    roomRef.child('rolls/'+key).set({ msg, type, ts });
-    // Actualizar resultado visible en diceTotal/diceBreakdown también
-    const dt = document.getElementById('diceTotal');
-    const db2 = document.getElementById('diceBreakdown');
-    if (dt) { dt.textContent = total; dt.style.color = isCrit?'#c8941a':isFail?'#c0392b':'#8b1a1a'; }
-    if (db2) db2.innerHTML = msg;
-    const hist = document.getElementById('diceHistory');
-    if (hist) {
-      const entry = document.createElement('div');
-      entry.className = 'dhentry ' + (isCrit?'crit':isFail?'fail':'');
-      const h = new Date(ts), hh = h.getHours().toString().padStart(2,'0'), mm = h.getMinutes().toString().padStart(2,'0');
-      entry.innerHTML = `<span class="dhtime">${hh}:${mm}</span>${msg}`;
-      hist.appendChild(entry);
-      while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+    roomRef.child('rolls/'+key).set({ msg: breakdown, type, ts });
+    const hist2 = document.getElementById('diceHistory');
+    if (hist2) {
+      const e2 = document.createElement('div');
+      e2.className = 'dhentry ' + (isCrit?'crit':isFail?'fail':'');
+      const hh2 = new Date(ts).getHours().toString().padStart(2,'0');
+      const mm2 = new Date(ts).getMinutes().toString().padStart(2,'0');
+      e2.innerHTML = `<span class="dhtime">${hh2}:${mm2}</span>${breakdown}`;
+      hist2.appendChild(e2);
+      while (hist2.children.length > 30) hist2.removeChild(hist2.lastChild);
     }
   }
+}
+
+function mRollCustom() {
+  const sides = Math.max(2, Math.min(999, parseInt(document.getElementById('mDiceCustom')?.value) || 6));
+  mRoll(sides);
+}
+
+function mApplyStatMod() {
+  const sel = document.getElementById('mDiceStat');
+  if (!sel || !sel.value) return;
+  const val = getStatTotal(sel.value);
+  const modEl = document.getElementById('mDiceMod');
+  if (modEl) modEl.value = val;
+  sel.value = '';
 }
 
 function getStatTotal(stat) {
@@ -4820,16 +4960,14 @@ function toggleEstado(key) {
 
 // ── EXPORTAR / IMPORTAR FICHAS ───────────────────────────────────
 function exportFicha() {
-  if (!selId || !tokens[selId]) {
-    alert('Seleccioná una ficha primero.'); return;
-  }
+  if (!selId || !tokens[selId]) { alert('Seleccioná una ficha primero.'); return; }
   const t = tokens[selId];
-  // Export everything except id and position
   const data = {
     _version: 1,
     name: t.name,
     sym: t.sym,
     color: t.color,
+    pwHash: t.pwHash || null,   // ← FIX: preservar contraseña
     sh: JSON.parse(JSON.stringify(t.sh))
   };
   const json = JSON.stringify(data, null, 2);
@@ -4843,6 +4981,83 @@ function exportFicha() {
   addLog('spawn', `⬇ <b>${t.name}</b> exportada como JSON`);
 }
 
+// ── EDITAR FICHA ─────────────────────────────────────────────────
+let editSelColor = null;
+
+function buildEditColorGrid() {
+  const grid = document.getElementById('cgridEdit');
+  if (!grid) return;
+  grid.innerHTML = '';
+  COLORS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'cdot' + (c === (editSelColor || (selId && tokens[selId] ? tokens[selId].color : '')) ? ' sel' : '');
+    d.style.background = c;
+    d.onclick = () => {
+      editSelColor = c;
+      grid.querySelectorAll('.cdot').forEach(x => x.classList.remove('sel'));
+      d.classList.add('sel');
+      if (selId && tokens[selId] && canEdit(selId)) {
+        tokens[selId].color = c;
+        fbSet(selId);
+        refresh(); redraw(); showStats();
+      }
+    };
+    grid.appendChild(d);
+  });
+}
+
+function applyEditNombre() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const val = (document.getElementById('editNombre')?.value || '').trim();
+  if (!val) return;
+  const old = tokens[selId].name;
+  tokens[selId].name = val;
+  if (!tokens[selId].sym || tokens[selId].sym === old[0]) tokens[selId].sym = val[0].toUpperCase();
+  fbSet(selId);
+  addLog('spawn', `✏ <b>${old}</b> renombrada a <b>${val}</b>`);
+  refresh(); redraw(); showStats();
+}
+
+function applyEditSym() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const val = (document.getElementById('editSym')?.value || '').trim().toUpperCase();
+  if (!val) return;
+  tokens[selId].sym = val;
+  fbSet(selId);
+  refresh(); redraw(); showStats();
+}
+
+function applyEditPassword() {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const pw1 = document.getElementById('editPw1')?.value || '';
+  const pw2 = document.getElementById('editPw2')?.value || '';
+  const msg = document.getElementById('editPwMsg');
+  if (pw1 !== pw2) {
+    if (msg) { msg.style.color = 'var(--red)'; msg.textContent = '❌ Las contraseñas no coinciden.'; }
+    return;
+  }
+  if (pw1 === '') {
+    delete tokens[selId].pwHash;
+    unlockedIds.add(selId);
+    if (roomRef) roomRef.child('tokens/'+selId+'/pwHash').remove();
+    if (msg) { msg.style.color = 'var(--grn)'; msg.textContent = '✓ Contraseña eliminada.'; }
+  } else {
+    const hash = simpleHash(pw1);
+    tokens[selId].pwHash = hash;
+    unlockedIds.add(selId);
+    if (roomRef) roomRef.child('tokens/'+selId+'/pwHash').set(hash);
+    if (msg) { msg.style.color = 'var(--grn)'; msg.textContent = '✓ Contraseña actualizada.'; }
+  }
+  document.getElementById('editPw1').value = '';
+  document.getElementById('editPw2').value = '';
+  setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+  fbSet(selId);
+  refresh(); redraw(); showStats();
+}
+
 function importFicha(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -4851,21 +5066,22 @@ function importFicha(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.name || !data.sh) throw new Error('Formato inválido');
-
-      // Place at first empty cell
       let c=0, r=0;
       outer: for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(!tokAt(cc,rr)){c=cc;r=rr;break outer;}
-
       const id = uid();
-      // Merge with blank() to ensure all fields exist
       const sh = { ...blank(), ...data.sh };
-      // Keep password if exported with one, ask user
-      if (sh.pwHash) {
-        if (!confirm('"' + data.name + '" tiene contraseña. ¿Importar con contraseña incluida?')) {
-          delete sh.pwHash;
+      // Contraseña: viene en data.pwHash (nuevo formato) o en sh.pwHash (formato viejo)
+      const importedHash = data.pwHash || sh.pwHash || null;
+      delete sh.pwHash; // sacar del sh por si estaba ahí por error
+      let finalHash = null;
+      if (importedHash) {
+        if (confirm('"' + data.name + '" tiene contraseña. ¿Importar con contraseña incluida?')) {
+          finalHash = importedHash;
         }
       }
-      tokens[id] = { id, name: data.name, sym: data.sym || data.name[0], color: data.color || '#f1c40f', c, r, sh };
+      const tok = { id, name: data.name, sym: data.sym || data.name[0], color: data.color || '#f1c40f', c, r, sh };
+      if (finalHash) tok.pwHash = finalHash;
+      tokens[id] = tok;
       selId = id;
       unlockedIds.add(id);
       fbSet(id);
@@ -4876,7 +5092,6 @@ function importFicha(event) {
     }
   };
   reader.readAsText(file);
-  // Reset input so same file can be imported again
   event.target.value = '';
 }
 
