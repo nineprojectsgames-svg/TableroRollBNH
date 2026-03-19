@@ -10,28 +10,11 @@
 <meta name="theme-color" content="#1a0f08">
 <title>Mapa Táctico — Boku no RPG</title>
 <script>
-// ── PWA MANIFEST (inyectado inline para single-file) ──────────────
-(function() {
-  const manifest = {
-    name: "Mapa Táctico — Boku no RPG",
-    short_name: "Mapa Táctico",
-    description: "Mapa táctico colaborativo para sesiones de RPG",
-    start_url: ".",
-    display: "standalone",
-    orientation: "landscape",
-    background_color: "#1a0f08",
-    theme_color: "#1a0f08",
-    icons: [
-      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231a0f08'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
-      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a0f08'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
-    ]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = url;
-  document.currentScript.parentNode.appendChild(link);
+(function(){
+  const m={name:"Mapa Táctico — Boku no RPG",short_name:"Mapa Táctico",description:"Mapa táctico colaborativo para RPG",start_url:".",display:"standalone",orientation:"any",background_color:"#1a0f08",theme_color:"#1a0f08",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231a0f08'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"},{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a0f08'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
+  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
+  document.currentScript.parentNode.appendChild(l);
 })();
 </script>
 <style>
@@ -46,7 +29,7 @@
   --grn: #1a4a1a;
   --gld: #c8941a;
   --gld2: #e8b430;
-  --tab-h: 56px;
+  --tab-h: 60px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1249,42 +1232,148 @@ textarea:focus { border-color:var(--gld); }
   text-transform: uppercase;
   transition: color .15s, background .15s;
   padding: 6px 4px;
+  -webkit-tap-highlight-color: transparent;
 }
 .tab-btn .tab-icon { font-size: 1.3rem; line-height: 1; }
 .tab-btn.active { color: var(--gld); background: rgba(200,148,26,.1); }
 .tab-btn:hover { color: var(--gld2); }
 
+/* ── SUB-TAB BAR (dentro de Ficha en mobile) ── */
+#subTabBar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #1a0f08;
+  border-bottom: 2px solid var(--ps);
+  margin: -8px -10px 10px;
+  padding: 0;
+  flex-shrink: 0;
+}
+#subTabBar .stab {
+  flex: 1;
+  padding: 10px 4px 8px;
+  background: none;
+  border: none;
+  color: #a07850;
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-bottom: 3px solid transparent;
+  transition: color .15s, border-color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+#subTabBar .stab .stab-icon { font-size: 1.25rem; line-height: 1; }
+#subTabBar .stab.active {
+  color: var(--gld);
+  border-bottom-color: var(--gld);
+  background: rgba(200,148,26,.08);
+}
+
+/* sub-panes */
+.sub-pane { display: block; }
+
+/* mapa extras: zonas/obs/controles — visible solo en mobile */
+#mapaExtras { display: none; }
+#mapScrollHint { display: none; }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   body { overflow: auto; height: auto; }
-  #mainArea { flex-direction: column; overflow: visible; padding-bottom: calc(var(--tab-h) + 10px); }
-  #leftCol { width: 100%; max-height: none; overflow: visible; }
+  #mainArea {
+    flex-direction: column;
+    overflow: visible;
+    padding: 4px 8px calc(var(--tab-h) + 16px);
+    gap: 0;
+  }
+  /* columnas apiladas */
+  #leftCol  { width: 100%; max-height: none; overflow: visible; }
   #rightCol { width: 100%; }
+  #mapCol   {
+    overflow-x: auto;
+    overflow-y: visible;
+    align-items: flex-start;
+    padding: 0 0 8px;
+  }
+  /* Hint scroll del mapa */
+  #mapScrollHint {
+    display: block;
+    text-align: center;
+    font-size: .68rem;
+    color: #a07850;
+    font-style: italic;
+    padding: 3px 0 4px;
+    width: 100%;
+  }
   #midbar { flex-direction: column; }
   #turnWrap, #diceWrap { min-width: 0; width: 100%; }
-  #tabBar { display: flex; }
+  #tabBar { display: flex; height: 60px; }
+  .tab-btn { font-size: .58rem; padding: 7px 3px; }
+  .tab-btn .tab-icon { font-size: 1.35rem; }
 
-  /* En móvil: ocultar sala y presencia del topbar */
+  /* Topbar compacto */
+  #topbar h1 { font-size: .82rem; letter-spacing: 1.5px; }
   #salaBar, #presenceSep, #presenceWrap { display: none !important; }
-  /* Mostrar panel de sala móvil */
-  #mobileSalaPanel { display: block !important; }
 
-  /* tab visibility on mobile */
+  /* tab-pane hide/show */
   .tab-pane { display: none !important; }
   .tab-pane.active { display: block !important; }
   #mapCol.tab-pane.active { display: flex !important; }
+
+  /* sub-tab system */
+  #subTabBar { display: flex; }
+  .sub-pane { display: none !important; }
+  .sub-pane.active { display: block !important; }
+
+  /* mapa extras visible en mobile */
+  #mapaExtras { display: block; }
+
+  /* sala móvil */
+  #mobileSalaPanel { display: block !important; }
+
+  /* midbar se muestra solo en tab turno */
+  #midbar { display: none !important; }
+  #midbar.turno-visible {
+    display: flex !important;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: calc(var(--tab-h) + 16px);
+    max-height: calc(100vh - 52px); /* topbar */
+  }
+
+  /* inputs táctiles más grandes */
+  .bnum, .sval-main, .sval-bono { min-height: 38px; font-size: .9rem; }
+  .btn { padding: 10px 6px; font-size: .75rem; }
+  .btn-sm { padding: 7px 10px; }
+  .stat-main-row { padding: 6px 8px; gap: 6px; }
+  .attr-row { padding: 5px 8px; }
+  .attr-num { width: 44px; padding: 4px 3px; }
+  .tlist { max-height: 200px; }
+  .mapctrl { padding: 6px 0; gap: 6px; flex-wrap: wrap; }
+  /* diceWrap más compacto */
+  #diceWrap { width: 100% !important; }
 }
 
 @media (min-width: 901px) {
-  /* all panes always visible on desktop */
   .tab-pane { display: block !important; }
-  #mapCol { display: flex !important; }
-  #tabBar { display: none !important; }
+  #mapCol   { display: flex !important; }
+  #midbar   { display: flex !important; }
+  #tabBar   { display: none !important; }
+  #subTabBar { display: none !important; }
+  .sub-pane { display: block !important; }
+  #mapaExtras { display: none !important; }
+  #mapScrollHint { display: none !important; }
 }
 
 /* panel sala móvil */
 #mobileSalaPanel {
-  display: none; /* oculto en desktop, mostrado en mobile por media query */
+  display: none;
 }
 #mobileSalaPanel .sala-row-m {
   display: flex;
@@ -1300,15 +1389,8 @@ textarea:focus { border-color:var(--gld); }
   letter-spacing: 3px;
   font-weight: 700;
 }
-#mobileSalaPanel input[type=text] {
-  margin-bottom: 0;
-}
-#mobilePresenceList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
-}
+#mobileSalaPanel input[type=text] { margin-bottom: 0; }
+#mobilePresenceList { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
 
 /* tooltip */
 #tip {
@@ -1440,7 +1522,7 @@ textarea:focus { border-color:var(--gld); }
 <div id="mainArea">
 
   <!-- LEFT COL (tab: fichas) -->
-  <div id="leftCol" class="tab-pane active" data-tab="fichas">
+  <div id="leftCol" class="tab-pane" data-tab="fichas">
 
     <!-- PANEL SALA (solo visible en móvil) -->
     <div id="mobileSalaPanel" class="panel">
@@ -1496,48 +1578,6 @@ textarea:focus { border-color:var(--gld); }
     </div>
 
     <div class="panel">
-      <div class="ptitle">🎨 Zonas / Áreas</div>
-
-      <!-- Modo: pintar / borrar / nueva zona -->
-      <div class="zona-mode-row">
-        <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
-        <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
-        <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
-      </div>
-
-      <!-- Colores -->
-      <div class="zona-colors" id="zonaColors"></div>
-
-      <!-- Nombre de zona -->
-      <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
-
-      <!-- Lista de zonas definidas -->
-      <div class="zona-list" id="zonaList"><p class="info">Sin zonas.</p></div>
-      <div style="display:flex;gap:4px;">
-        <button class="btn btn-red btn-sm" id="btnDelZona" onclick="deleteSelectedZona()" style="display:none;flex:1;">Eliminar zona</button>
-        <button class="btn btn-red btn-sm" onclick="clearZonas()" style="flex:1;">Limpiar todo</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="ptitle">🧱 Obstáculos</div>
-      <div class="obs-grid" id="obsGrid"></div>
-      <div class="obs-list" id="obsList"><p class="info">Sin obstáculos.</p></div>
-      <button class="btn btn-red" id="btnDelObs" onclick="deleteSelectedObs()" style="display:none;">Eliminar seleccionado</button>
-      <button class="btn btn-red" onclick="clearObstacles()" style="margin-top:4px;">Limpiar todos</button>
-    </div>
-
-    <div class="panel">
-      <div class="ptitle">✧ Controles</div>
-      <p class="info" style="line-height:1.7;">
-        <b>Clic</b> — Seleccionar ficha<br>
-        <b>Arrastrar</b> — Mover ficha<br>
-        <b>Clic en celda vacía</b> — Mover<br>
-        <b>Clic derecho</b> — Deseleccionar
-      </p>
-    </div>
-
-    <div class="panel">
       <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
         <span>📜 Registro</span>
         <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;">↩ Deshacer</button>
@@ -1566,8 +1606,22 @@ textarea:focus { border-color:var(--gld); }
     </div>
   </div>
 
-  <!-- RIGHT COL (tab: stats) -->
-  <div id="rightCol" class="tab-pane active" data-tab="stats">
+  <!-- RIGHT COL (tab: ficha) -->
+  <div id="rightCol" class="tab-pane active" data-tab="ficha">
+
+    <!-- Sub-tab bar: solo en mobile -->
+    <div id="subTabBar">
+      <button class="stab active" data-subtab="vital" onclick="switchSubTab('vital',this)">
+        <span class="stab-icon">❤️</span>Vital
+      </button>
+      <button class="stab" data-subtab="stat" onclick="switchSubTab('stat',this)">
+        <span class="stab-icon">📊</span>Stats
+      </button>
+      <button class="stab" data-subtab="arsenal" onclick="switchSubTab('arsenal',this)">
+        <span class="stab-icon">🎒</span>Arsenal
+      </button>
+    </div>
+
     <div id="emptyStats" class="empty-msg">
       ⚔<br><br>Seleccioná una ficha<br>para ver sus estadísticas.
     </div>
@@ -1588,6 +1642,9 @@ textarea:focus { border-color:var(--gld); }
         <span style="font-family:'Cinzel',serif;font-size:.75rem;cursor:pointer;color:var(--gld);text-decoration:underline;" onclick="promptPassword()">Ingresar contraseña</span>
       </div>
       <div id="statsOverlay" class="locked">
+
+      <!-- ══ SUB-PANE: VITAL ══ -->
+      <div class="sub-pane active" data-subtab="vital">
 
       <!-- Plus Ultra -->
       <div class="pu" id="puBtn" onclick="togglePU()">
@@ -1729,6 +1786,11 @@ textarea:focus { border-color:var(--gld); }
           <span class="stat-total" id="tReg">0</span>
         </div>
       </div>
+
+      </div><!-- /sub-pane vital -->
+
+      <!-- ══ SUB-PANE: STATS ══ -->
+      <div class="sub-pane" data-subtab="stat">
 
       <!-- Stats -->
       <div class="ptitle" style="margin-top:8px;">★ Estadísticas</div>
@@ -1947,6 +2009,11 @@ textarea:focus { border-color:var(--gld); }
         <tr class="r-p"><td>Méritos (M.)</td><td><input class="rval" type="number" id="fMer" value="0" onchange="sf('mer',this.value)"></td></tr>
       </table>
 
+      </div><!-- /sub-pane stat -->
+
+      <!-- ══ SUB-PANE: ARSENAL ══ -->
+      <div class="sub-pane" data-subtab="arsenal">
+
       <!-- Habilidades -->
       <div class="ptitle" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
         <span>✦ Habilidades</span>
@@ -2016,6 +2083,7 @@ textarea:focus { border-color:var(--gld); }
       </div>
 
       <div class="saved" id="saved"></div>
+      </div><!-- /sub-pane arsenal -->
       </div><!-- /statsOverlay -->
 
     </div><!-- statsContent -->
@@ -2031,11 +2099,11 @@ textarea:focus { border-color:var(--gld); }
   <button class="tab-btn" data-tab="fichas" onclick="switchTab('fichas',this)">
     <span class="tab-icon">⚔</span>Fichas
   </button>
-  <button class="tab-btn" data-tab="stats" onclick="switchTab('stats',this)">
-    <span class="tab-icon">📋</span>Stats
+  <button class="tab-btn" data-tab="ficha" onclick="switchTab('ficha',this)">
+    <span class="tab-icon">📋</span>Ficha
   </button>
   <button class="tab-btn" data-tab="turno" onclick="switchTab('turno',this)">
-    <span class="tab-icon">🎲</span>Turno
+    <span class="tab-icon">🎲</span>Combate
   </button>
 </div>
 
@@ -2403,6 +2471,103 @@ cv.addEventListener('contextmenu', e=>{
   if (ob) { selObsId=ob.id; deleteSelectedObs(); }
 });
 
+// ── TOUCH EVENTS (mobile) ────────────────────────────────────────
+let touchStartTime = 0;
+let touchStartPos = null;
+let longPressTimer = null;
+
+function cellFromTouch(touch) {
+  const r = cv.getBoundingClientRect();
+  return {
+    c: Math.floor((touch.clientX - r.left) / CS),
+    r: Math.floor((touch.clientY - r.top) / CS),
+    x: touch.clientX - r.left,
+    y: touch.clientY - r.top
+  };
+}
+
+cv.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const p = cellFromTouch(touch);
+  touchStartPos = p;
+  touchStartTime = Date.now();
+
+  // Long press = deselect
+  longPressTimer = setTimeout(() => {
+    selId = null; selObsId = null; placingObs = null;
+    buildObsGrid(); buildZonaColors(); refreshObsList();
+    refresh(); redraw();
+  }, 600);
+
+  if (p.c < 0 || p.c >= COLS || p.r < 0 || p.r >= ROWS) return;
+
+  if (zonaMode === 'pintar' || zonaMode === 'borrar') {
+    isPainting = true; paintCell(p.c, p.r); return;
+  }
+  if (placingObs) { placeObs(p.c, p.r); return; }
+
+  const ob = obsAt(p.c, p.r);
+  if (ob) {
+    selObsId = selObsId === ob.id ? null : ob.id;
+    selId = null; refreshObsList(); redraw(); return;
+  }
+  const t = tokAt(p.c, p.r);
+  if (t) {
+    selObsId = null;
+    selId = t.id;
+    drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
+    dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
+    refresh(); redraw();
+  }
+}, { passive: false });
+
+cv.addEventListener('touchmove', e => {
+  e.preventDefault();
+  clearTimeout(longPressTimer);
+  const touch = e.touches[0];
+  const p = cellFromTouch(touch);
+  hov = { c: p.c, r: p.r };
+
+  if (isPainting && p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
+    paintCell(p.c, p.r);
+  }
+  if (drag) {
+    drag.x = p.x - dragOff.x + CS/2;
+    drag.y = p.y - dragOff.y + CS/2;
+    hov.c = Math.max(0, Math.min(COLS-1, Math.floor((drag.x - CS/2)/CS + .5)));
+    hov.r = Math.max(0, Math.min(ROWS-1, Math.floor((drag.y - CS/2)/CS + .5)));
+  }
+  redraw();
+}, { passive: false });
+
+cv.addEventListener('touchend', e => {
+  e.preventDefault();
+  clearTimeout(longPressTimer);
+  isPainting = false;
+  const duration = Date.now() - touchStartTime;
+
+  if (drag) {
+    const t = tokens[drag.id];
+    if (t && (hov.c !== drag.sc || hov.r !== drag.sr) && !tokAt(hov.c, hov.r)) {
+      moveTok(drag.id, hov.c, hov.r);
+      fbSet(drag.id);
+    }
+    drag = null;
+    refresh(); redraw();
+    return;
+  }
+
+  // Tap rápido en celda vacía con ficha seleccionada → mover
+  if (duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
+    moveTok(selId, touchStartPos.c, touchStartPos.r);
+    fbSet(selId);
+    refresh(); redraw();
+  }
+  hov = { c: -1, r: -1 };
+  redraw();
+}, { passive: false });
+
 // ── TOKEN OPS ────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 
@@ -2490,7 +2655,16 @@ function refresh() {
       const el=document.createElement('div');
       el.className='titem'+(t.id===selId?' sel':'');
       el.innerHTML=`<div class="tcolor" style="background:${t.color}"></div><span class="ttext">${t.name}</span><span style="font-size:.75rem;color:rgba(44,26,14,.4);">${String.fromCharCode(65+t.c)}${t.r+1}</span><button class="tdel" onclick="removeTok('${t.id}',event)">×</button>`;
-      el.addEventListener('click',()=>{selId=t.id;refresh();redraw();});
+      el.addEventListener('click',()=>{
+        selId=t.id;
+        refresh();
+        redraw();
+        // En mobile: ir directo al tab Ficha
+        if (window.innerWidth <= 900) {
+          const fichaBtn = document.querySelector('.tab-btn[data-tab="ficha"]');
+          if (fichaBtn) switchTab('ficha', fichaBtn);
+        }
+      });
       list.appendChild(el);
     });
   }
@@ -2507,6 +2681,19 @@ function refresh() {
   }
   // panel derecho
   showStats();
+  // En mobile: si hay ficha seleccionada, highlight al tab Ficha
+  if (window.innerWidth <= 900) {
+    const fichaBtn = document.querySelector('.tab-btn[data-tab="ficha"]');
+    if (fichaBtn) {
+      if (selId && tokens[selId]) {
+        fichaBtn.style.color = 'var(--gld)';
+        fichaBtn.style.textShadow = '0 0 8px rgba(200,148,26,.6)';
+      } else {
+        fichaBtn.style.color = '';
+        fichaBtn.style.textShadow = '';
+      }
+    }
+  }
   // orden de turno
   refreshTurns();
 }
@@ -3355,34 +3542,50 @@ function loadFirebase() {
 
 // ── TABS (mobile) ────────────────────────────────────────────────
 function switchTab(tab, btn) {
-  // only active on mobile
   if (window.innerWidth > 900) return;
-  // hide all panes
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  // deactivate all tab buttons
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  // show selected
-  const pane = document.querySelector('[data-tab="' + tab + '"]');
-  if (pane) pane.classList.add('active');
-  btn.classList.add('active');
-  // special: turno tab shows midbar content
+
+  // 'turno' tab muestra midbar en lugar de un pane
   const midbar = document.getElementById('midbar');
   if (tab === 'turno') {
+    midbar.classList.add('turno-visible');
     midbar.style.display = 'flex';
   } else {
-    if (window.innerWidth <= 900) midbar.style.display = 'none';
+    midbar.classList.remove('turno-visible');
+    midbar.style.display = 'none';
+    const pane = document.querySelector('[data-tab="' + tab + '"]');
+    if (pane) pane.classList.add('active');
   }
+  btn.classList.add('active');
 }
-// init mobile: hide midbar on mobile until turno tab
+
+// ── SUB-TABS (dentro de Ficha) ───────────────────────────────────
+function switchSubTab(subtab, btn) {
+  document.querySelectorAll('.sub-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#subTabBar .stab').forEach(b => b.classList.remove('active'));
+  const pane = document.querySelector('.sub-pane[data-subtab="' + subtab + '"]');
+  if (pane) pane.classList.add('active');
+  btn.classList.add('active');
+}
+
 window.addEventListener('resize', () => {
   const mb = document.getElementById('midbar');
   if (window.innerWidth <= 900) {
-    const turnBtn = document.querySelector('.tab-btn.active[data-tab="turno"]');
-    mb.style.display = turnBtn ? 'flex' : 'none';
+    mb.style.display = mb.classList.contains('turno-visible') ? 'flex' : 'none';
   } else {
     mb.style.display = '';
   }
 });
+
+// init: ocultar midbar en mobile
+(function() {
+  if (window.innerWidth <= 900) {
+    const mb = document.getElementById('midbar');
+    if (mb) mb.style.display = 'none';
+  }
+})();
+
 
 // ── HABILIDADES ──────────────────────────────────────────────────
 const STATS_LIST = [
@@ -4600,213 +4803,6 @@ loadFirebase();
 
 let af=0;
 (function loop(){if(selId){af++;if(af%35===0)redraw();}requestAnimationFrame(loop);})();
-</script>
-
-<!-- ── PWA INSTALL BUTTON ─────────────────────────────────────── -->
-<style>
-#pwaInstallBtn {
-  display: none;
-  position: fixed;
-  bottom: calc(var(--tab-h, 56px) + 14px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 20px 11px 16px;
-  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
-  border: 2px solid var(--gld, #c8941a);
-  border-radius: 40px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.7), 0 0 0 1px rgba(200,148,26,.2);
-  cursor: pointer;
-  font-family: 'Cinzel', serif;
-  font-size: .78rem;
-  letter-spacing: 2px;
-  color: var(--gld, #c8941a);
-  text-transform: uppercase;
-  white-space: nowrap;
-  animation: pwaFloat 3s ease-in-out infinite;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-#pwaInstallBtn.visible { display: flex; }
-#pwaInstallBtn:active { transform: translateX(-50%) scale(.96); }
-#pwaInstallBtn .pwa-icon { font-size: 1.3rem; line-height: 1; }
-#pwaInstallBtn .pwa-close {
-  margin-left: 8px;
-  font-size: 1rem;
-  opacity: .5;
-  padding: 0 2px;
-  color: var(--p, #f4e4b8);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: sans-serif;
-  line-height: 1;
-}
-#pwaInstallBtn .pwa-close:hover { opacity: 1; }
-
-/* Banner iOS (instrucciones manuales) */
-#pwaIosBanner {
-  display: none;
-  position: fixed;
-  bottom: calc(var(--tab-h, 56px) + 14px);
-  left: 12px; right: 12px;
-  z-index: 9999;
-  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
-  border: 2px solid var(--gld, #c8941a);
-  border-radius: 10px;
-  padding: 14px 16px 12px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.75);
-  font-family: 'Cinzel', serif;
-  color: var(--p, #f4e4b8);
-}
-#pwaIosBanner.visible { display: block; }
-#pwaIosBanner .ios-title {
-  font-size: .82rem;
-  letter-spacing: 2px;
-  color: var(--gld, #c8941a);
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-#pwaIosBanner .ios-steps {
-  font-size: .76rem;
-  color: rgba(244,228,184,.8);
-  line-height: 1.9;
-  font-family: 'Crimson Text', serif;
-}
-#pwaIosBanner .ios-steps span { font-size: 1.1rem; }
-#pwaIosBanner .ios-close {
-  position: absolute; top: 10px; right: 12px;
-  background: none; border: none;
-  color: var(--p, #f4e4b8); font-size: 1.1rem;
-  cursor: pointer; opacity: .6;
-  font-family: sans-serif;
-}
-#pwaIosBanner .ios-close:hover { opacity: 1; }
-#pwaIosBanner::after {
-  content: '';
-  position: absolute;
-  bottom: -10px; left: 50%;
-  transform: translateX(-50%);
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid var(--gld, #c8941a);
-}
-
-@keyframes pwaFloat {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(-5px); }
-}
-</style>
-
-<!-- Botón instalación (Android / Chrome) -->
-<button id="pwaInstallBtn" aria-label="Instalar aplicación">
-  <span class="pwa-icon">⚔️</span>
-  Instalar App
-  <button class="pwa-close" id="pwaClose" aria-label="Cerrar">✕</button>
-</button>
-
-<!-- Banner iOS (Safari) -->
-<div id="pwaIosBanner">
-  <button class="ios-close" id="iosClose">✕</button>
-  <div class="ios-title">⚔️ Instalar Mapa Táctico</div>
-  <div class="ios-steps">
-    1. Tocá <span>⬆️</span> <em>Compartir</em> en Safari<br>
-    2. Elegí <strong>"Agregar a pantalla de inicio"</strong><br>
-    3. ¡Listo! Abrila como app nativa 🗺️
-  </div>
-</div>
-
-<script>
-// ── PWA SERVICE WORKER (inline via blob) ──────────────────────────
-(function() {
-  if (!('serviceWorker' in navigator)) return;
-  const swCode = `
-    const CACHE = 'mapa-tactico-v1';
-    self.addEventListener('install', e => {
-      self.skipWaiting();
-    });
-    self.addEventListener('activate', e => {
-      e.waitUntil(clients.claim());
-    });
-    self.addEventListener('fetch', e => {
-      // Solo cachear recursos misma origen
-      if (e.request.url.startsWith(self.location.origin)) {
-        e.respondWith(
-          caches.open(CACHE).then(cache =>
-            cache.match(e.request).then(cached =>
-              cached || fetch(e.request).then(res => {
-                cache.put(e.request, res.clone());
-                return res;
-              })
-            )
-          )
-        );
-      }
-    });
-  `;
-  try {
-    const blob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{});
-  } catch(e) {}
-})();
-
-// ── LÓGICA DE INSTALACIÓN ─────────────────────────────────────────
-(function() {
-  const installBtn = document.getElementById('pwaInstallBtn');
-  const closeBtn   = document.getElementById('pwaClose');
-  const iosBanner  = document.getElementById('pwaIosBanner');
-  const iosClose   = document.getElementById('iosClose');
-
-  if (!installBtn || !iosBanner) return;
-
-  // Evitar mostrar si ya está instalada
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-  if (isStandalone) return;
-
-  // Solo mostrar en mobile
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  if (!isMobile) return;
-
-  // ── Android / Chrome: evento beforeinstallprompt ──
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.classList.add('visible');
-  });
-
-  installBtn.addEventListener('click', async (ev) => {
-    // Si el click fue en el botón "✕", no instalar
-    if (ev.target.id === 'pwaClose') return;
-    if (!deferredPrompt) return;
-    installBtn.classList.remove('visible');
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  });
-
-  closeBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    installBtn.classList.remove('visible');
-    sessionStorage.setItem('pwaInstallDismissed', '1');
-  });
-
-  // ── iOS Safari ──
-  const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  if (isIos && isSafari && !sessionStorage.getItem('pwaIosDismissed')) {
-    setTimeout(() => iosBanner.classList.add('visible'), 1500);
-  }
-
-  iosClose.addEventListener('click', () => {
-    iosBanner.classList.remove('visible');
-    sessionStorage.setItem('pwaIosDismissed', '1');
-  });
-})();
 </script>
 </body>
 </html>
