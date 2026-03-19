@@ -548,7 +548,7 @@ body {
 /* ── ATRIBUTOS EXPANDIDOS ── */
 .attr-row {
   display: grid;
-  grid-template-columns: 1fr 42px 42px 42px 20px;
+  grid-template-columns: 1fr 42px 42px 42px 20px 22px;
   align-items: center;
   gap: 4px;
   padding: 3px 6px;
@@ -579,7 +579,7 @@ body {
 /* mini header labels */
 .attr-header {
   display: grid;
-  grid-template-columns: 1fr 42px 42px 42px 20px;
+  grid-template-columns: 1fr 42px 42px 42px 20px 22px;
   gap: 4px;
   padding: 0 6px 2px;
 }
@@ -1464,6 +1464,27 @@ textarea:focus { border-color:var(--gld); }
   }
 }
 
+/* chips M/A/Aa/R en turn card */
+.turn-chips {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.tc {
+  font-family: 'Cinzel', serif;
+  font-size: .52rem;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  opacity: .85;
+}
+.tc-m  { background: rgba(41,128,185,.2);  color: #2980b9; }
+.tc-a  { background: rgba(192,57,43,.2);   color: #c0392b; }
+.tc-aa { background: rgba(142,68,173,.2);  color: #8e44ad; }
+.tc-r  { background: rgba(39,174,96,.2);   color: #27ae60; }
+.turn-card.active .tc { opacity: 1; }
+
 /* botones desempate turno */
 .tie-btn {
   background: none;
@@ -1478,6 +1499,71 @@ textarea:focus { border-color:var(--gld); }
 }
 .tie-btn:hover { background: rgba(200,148,26,.2); }
 
+/* ── BOTÓN TIRADA RÁPIDA ── */
+.qroll-btn {
+  background: none;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  color: var(--gld);
+  font-size: .75rem;
+  padding: 2px 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1.2;
+  transition: background .12s, transform .1s;
+}
+.qroll-btn:hover { background: rgba(200,148,26,.18); border-color: var(--gld); }
+.qroll-btn:active { transform: scale(.9); }
+
+/* ── ACCIONES PREDEFINIDAS ── */
+#accionesPanel {
+  background: rgba(200,148,26,.07);
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 6px;
+  padding: 8px 10px 6px;
+  margin-bottom: 10px;
+}
+#accionesPanel .acc-title {
+  font-family: 'Cinzel', serif;
+  font-size: .62rem;
+  letter-spacing: 2px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.acc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+.acc-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  background: var(--p);
+  border: 1px solid var(--ps);
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  color: var(--ink2);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  transition: background .12s, border-color .12s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.acc-btn .acc-icon { font-size: 1.3rem; line-height: 1; }
+.acc-btn:hover  { background: rgba(200,148,26,.15); border-color: var(--gld); color: var(--ink); }
+.acc-btn:active { transform: scale(.93); }
+.acc-btn.acc-atk { border-color: rgba(139,26,26,.4); }
+.acc-btn.acc-atk:hover { background: rgba(139,26,26,.12); border-color: var(--red); }
+.acc-btn.acc-def { border-color: rgba(41,128,185,.4); }
+.acc-btn.acc-def:hover { background: rgba(41,128,185,.1); border-color: #2980b9; }
+.acc-btn.acc-util { border-color: rgba(39,174,96,.35); }
+.acc-btn.acc-util:hover { background: rgba(39,174,96,.1); border-color: #27ae60; }
+
 /* tooltip */
 #tip {
   position:fixed; background:rgba(20,10,0,.9); color:var(--p);
@@ -1486,9 +1572,77 @@ textarea:focus { border-color:var(--gld); }
   font-family:'Cinzel',serif; z-index:99;
 }
 
+/* ── TOAST DE TIRADA ── */
+#rollToast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(.85);
+  z-index: 9000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s ease, transform .18s ease;
+  text-align: center;
+  min-width: 160px;
+  max-width: min(280px, 85vw);
+  padding: 18px 20px 16px;
+  background: rgba(12, 6, 2, 0.93);
+  border: 2px solid var(--ps);
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.85), 0 0 0 1px rgba(200,148,26,.15);
+  backdrop-filter: blur(4px);
+  word-break: break-word;
+}
+#rollToast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+#rollToast.rt-crit  { border-color: #c8941a; box-shadow: 0 8px 40px rgba(0,0,0,.85), 0 0 18px rgba(200,148,26,.35); }
+#rollToast.rt-fail  { border-color: #c0392b; box-shadow: 0 8px 40px rgba(0,0,0,.85), 0 0 18px rgba(192,57,43,.35); }
+#rollToast.rt-heal  { border-color: #27ae60; box-shadow: 0 8px 40px rgba(0,0,0,.85), 0 0 18px rgba(39,174,96,.3); }
+#rollToast .rt-total {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(1.8rem, 8vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0,0,0,.6);
+  display: block;
+  word-break: break-word;
+  hyphens: auto;
+}
+#rollToast .rt-label {
+  font-family: 'Cinzel', serif;
+  font-size: .72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: .9;
+  display: block;
+  margin-top: 6px;
+  color: var(--ps);
+}
+#rollToast .rt-detail {
+  font-family: 'Crimson Text', serif;
+  font-size: .9rem;
+  opacity: .75;
+  display: block;
+  margin-top: 3px;
+  color: var(--p);
+}
+#rollToast.rt-normal { color: var(--p); }
+#rollToast.rt-crit   { color: #f1c40f; }
+#rollToast.rt-fail   { color: #e74c3c; }
+#rollToast.rt-heal   { color: #2ecc71; }
+
 </style>
 </head>
 <body>
+
+<!-- TOAST DE TIRADA -->
+<div id="rollToast">
+  <span class="rt-total" id="rtTotal">20</span>
+  <span class="rt-label" id="rtLabel">Poder</span>
+  <span class="rt-detail" id="rtDetail">d20(15) +5</span>
+</div>
 
 <!-- TOPBAR -->
 <div id="topbar">
@@ -2014,6 +2168,35 @@ textarea:focus { border-color:var(--gld); }
         </div>
       </div>
 
+      <!-- Movimientos y Acciones -->
+      <div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
+        <div>
+          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🏃 Movimientos</span>
+          <input class="fin num" type="number" min="0" max="9" id="fMov" value="1"
+            onchange="sf('mov',this.value);refreshTurns();"
+            style="margin-bottom:0;text-align:center;font-size:.95rem;">
+        </div>
+        <div>
+          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">⚔️ Acciones</span>
+          <input class="fin num" type="number" min="0" max="9" id="fAcc" value="1"
+            onchange="sf('acc',this.value);refreshTurns();"
+            style="margin-bottom:0;text-align:center;font-size:.95rem;">
+        </div>
+        <div>
+          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">✨ Acciones Adicionales</span>
+          <input class="fin num" type="number" min="0" max="9" id="fAcca" value="0"
+            onchange="sf('acca',this.value);refreshTurns();"
+            style="margin-bottom:0;text-align:center;font-size:.95rem;">
+        </div>
+        <div>
+          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🛡️ Reacciones</span>
+          <input class="fin num" type="number" min="0" max="9" id="fRea" value="1"
+            onchange="sf('rea',this.value);refreshTurns();"
+            style="margin-bottom:0;text-align:center;font-size:.95rem;">
+        </div>
+      </div>
+
       </div><!-- /sub-pane vital -->
 
       <!-- ══ SUB-PANE: STATS ══ -->
@@ -2040,6 +2223,7 @@ textarea:focus { border-color:var(--gld); }
           <div class="stat-mini-lbl">Mod Final</div>
           <span class="mod-box mod-final-box" id="mFinalPod">0</span>
         </div>
+        <button class="qroll-btn" onclick="quickRoll('pod','Poder')" title="1d20 + Mod Final Poder">🎲</button>
       </div>
       <div class="stat-main-row s-b">
         <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
@@ -2060,6 +2244,7 @@ textarea:focus { border-color:var(--gld); }
           <div class="stat-mini-lbl">Mod Final</div>
           <span class="mod-box mod-final-box" id="mFinalAgi">0</span>
         </div>
+        <button class="qroll-btn" onclick="quickRoll('agi','Agilidad')" title="1d20 + Mod Final Agilidad">🎲</button>
       </div>
       <div class="stat-main-row s-o">
         <div class="sdot" style="background:#e67e22;flex-shrink:0;"></div>
@@ -2080,6 +2265,7 @@ textarea:focus { border-color:var(--gld); }
           <div class="stat-mini-lbl">Mod Final</div>
           <span class="mod-box mod-final-box" id="mFinalRes">0</span>
         </div>
+        <button class="qroll-btn" onclick="quickRoll('res','Resistencia')" title="1d20 + Mod Final Resistencia">🎲</button>
       </div>
       <div class="stat-main-row s-g">
         <div class="sdot" style="background:#27ae60;flex-shrink:0;"></div>
@@ -2100,6 +2286,7 @@ textarea:focus { border-color:var(--gld); }
           <div class="stat-mini-lbl">Mod Final</div>
           <span class="mod-box mod-final-box" id="mFinalTec">0</span>
         </div>
+        <button class="qroll-btn" onclick="quickRoll('tec','Técnica')" title="1d20 + Mod Final Técnica">🎲</button>
       </div>
       <div class="stat-main-row s-p">
         <div class="sdot" style="background:#8e44ad;flex-shrink:0;"></div>
@@ -2120,12 +2307,13 @@ textarea:focus { border-color:var(--gld); }
           <div class="stat-mini-lbl">Mod Final</div>
           <span class="mod-box mod-final-box" id="mFinalInt">0</span>
         </div>
+        <button class="qroll-btn" onclick="quickRoll('int','Inteligencia')" title="1d20 + Mod Final Inteligencia">🎲</button>
       </div>
 
       <!-- Atributos -->
       <div class="ptitle" style="margin-top:8px;">◆ Atributos</div>
       <div class="attr-header">
-        <span>Atributo</span><span>Base</span><span>Bono</span><span>Total</span><span title="Competencia">⭐</span>
+        <span>Atributo</span><span>Base</span><span>Bono</span><span>Total</span><span title="Competencia">⭐</span><span></span>
       </div>
       <div class="attr-row s-r">
         <span class="attr-lbl">Fuerza</span>
@@ -2133,6 +2321,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaFue" value="0" onchange="sfBonoAttr('fue',this.value)">
         <span class="attr-total" id="tAFue">0</span>
         <input class="attr-comp" type="checkbox" id="compFue" title="Competencia" onchange="toggleComp('fue',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('fue','Fuerza')" title="1d20 + Fuerza">🎲</button>
       </div>
       <div class="attr-row s-r">
         <span class="attr-lbl">Intimidación</span>
@@ -2140,6 +2329,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaIntim" value="0" onchange="sfBonoAttr('intim',this.value)">
         <span class="attr-total" id="tAIntim">0</span>
         <input class="attr-comp" type="checkbox" id="compIntim" title="Competencia" onchange="toggleComp('intim',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('intim','Intimidación')" title="1d20 + Intimidación">🎲</button>
       </div>
       <div class="attr-row s-b">
         <span class="attr-lbl">Evasión</span>
@@ -2147,6 +2337,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaEva" value="0" onchange="sfBonoAttr('eva',this.value)">
         <span class="attr-total" id="tAEva">0</span>
         <input class="attr-comp" type="checkbox" id="compEva" title="Competencia" onchange="toggleComp('eva',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('eva','Evasión')" title="1d20 + Evasión">🎲</button>
       </div>
       <div class="attr-row s-b">
         <span class="attr-lbl">Acrobacia</span>
@@ -2154,6 +2345,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaAcr" value="0" onchange="sfBonoAttr('acr',this.value)">
         <span class="attr-total" id="tAAcr">0</span>
         <input class="attr-comp" type="checkbox" id="compAcr" title="Competencia" onchange="toggleComp('acr',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('acr','Acrobacia')" title="1d20 + Acrobacia">🎲</button>
       </div>
       <div class="attr-row s-b">
         <span class="attr-lbl">Sigilo</span>
@@ -2161,6 +2353,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaSig" value="0" onchange="sfBonoAttr('sig',this.value)">
         <span class="attr-total" id="tASig">0</span>
         <input class="attr-comp" type="checkbox" id="compSig" title="Competencia" onchange="toggleComp('sig',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('sig','Sigilo')" title="1d20 + Sigilo">🎲</button>
       </div>
       <div class="attr-row s-o">
         <span class="attr-lbl">Aguante</span>
@@ -2168,6 +2361,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaAgu" value="0" onchange="sfBonoAttr('agu',this.value)">
         <span class="attr-total" id="tAAgu">0</span>
         <input class="attr-comp" type="checkbox" id="compAgu" title="Competencia" onchange="toggleComp('agu',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('agu','Aguante')" title="1d20 + Aguante">🎲</button>
       </div>
       <div class="attr-row s-o">
         <span class="attr-lbl">Voluntad</span>
@@ -2175,6 +2369,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaVol" value="0" onchange="sfBonoAttr('vol',this.value)">
         <span class="attr-total" id="tAVol">0</span>
         <input class="attr-comp" type="checkbox" id="compVol" title="Competencia" onchange="toggleComp('vol',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('vol','Voluntad')" title="1d20 + Voluntad">🎲</button>
       </div>
       <div class="attr-row s-g">
         <span class="attr-lbl">Control de Q.</span>
@@ -2182,6 +2377,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaCtq" value="0" onchange="sfBonoAttr('ctq',this.value)">
         <span class="attr-total" id="tACtq">0</span>
         <input class="attr-comp" type="checkbox" id="compCtq" title="Competencia" onchange="toggleComp('ctq',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('ctq','Control Q.')" title="1d20 + Control Q.">🎲</button>
       </div>
       <div class="attr-row s-g">
         <span class="attr-lbl">Ingeniería</span>
@@ -2189,6 +2385,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaIng" value="0" onchange="sfBonoAttr('ing',this.value)">
         <span class="attr-total" id="tAIng">0</span>
         <input class="attr-comp" type="checkbox" id="compIng" title="Competencia" onchange="toggleComp('ing',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('ing','Ingeniería')" title="1d20 + Ingeniería">🎲</button>
       </div>
       <div class="attr-row s-g">
         <span class="attr-lbl">Táctica</span>
@@ -2196,6 +2393,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaTac" value="0" onchange="sfBonoAttr('tac',this.value)">
         <span class="attr-total" id="tATac">0</span>
         <input class="attr-comp" type="checkbox" id="compTac" title="Competencia" onchange="toggleComp('tac',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('tac','Táctica')" title="1d20 + Táctica">🎲</button>
       </div>
       <div class="attr-row s-p">
         <span class="attr-lbl">Persuasión</span>
@@ -2203,6 +2401,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaPer" value="0" onchange="sfBonoAttr('per',this.value)">
         <span class="attr-total" id="tAPer">0</span>
         <input class="attr-comp" type="checkbox" id="compPer" title="Competencia" onchange="toggleComp('per',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('per','Persuasión')" title="1d20 + Persuasión">🎲</button>
       </div>
       <div class="attr-row s-p">
         <span class="attr-lbl">Engaño</span>
@@ -2210,6 +2409,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaEng" value="0" onchange="sfBonoAttr('eng',this.value)">
         <span class="attr-total" id="tAEng">0</span>
         <input class="attr-comp" type="checkbox" id="compEng" title="Competencia" onchange="toggleComp('eng',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('eng','Engaño')" title="1d20 + Engaño">🎲</button>
       </div>
       <div class="attr-row s-p">
         <span class="attr-lbl">Investigación</span>
@@ -2217,6 +2417,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaInv" value="0" onchange="sfBonoAttr('inv',this.value)">
         <span class="attr-total" id="tAInv">0</span>
         <input class="attr-comp" type="checkbox" id="compInv" title="Competencia" onchange="toggleComp('inv',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('inv','Investigación')" title="1d20 + Investigación">🎲</button>
       </div>
       <div class="attr-row s-p">
         <span class="attr-lbl">Percepción</span>
@@ -2224,6 +2425,7 @@ textarea:focus { border-color:var(--gld); }
         <input class="attr-num" type="number" id="fBaPrc" value="0" onchange="sfBonoAttr('prc',this.value)">
         <span class="attr-total" id="tAPrc">0</span>
         <input class="attr-comp" type="checkbox" id="compPrc" title="Competencia" onchange="toggleComp('prc',this.checked)">
+        <button class="qroll-btn" onclick="quickRoll('prc','Percepción')" title="1d20 + Percepción">🎲</button>
       </div>
 
       <!-- Recursos -->
@@ -2240,6 +2442,28 @@ textarea:focus { border-color:var(--gld); }
 
       <!-- ══ SUB-PANE: ARSENAL ══ -->
       <div class="sub-pane" data-subtab="arsenal">
+
+      <!-- Acciones predefinidas -->
+      <div id="accionesPanel">
+        <div class="acc-title">⚡ Acciones</div>
+        <div class="acc-grid">
+          <button class="acc-btn acc-atk" onclick="accionPuno()" title="d20 para golpear · Daño = 1 + Mod Poder">
+            <span class="acc-icon">👊</span>Puño
+          </button>
+          <button class="acc-btn acc-def" onclick="accionDefender()" title="Defensa +2 por 1 turno">
+            <span class="acc-icon">🛡️</span>Defender
+          </button>
+          <button class="acc-btn acc-def" onclick="accionEsquivar()" title="Próximo golpe: tirar Evasión para esquivar">
+            <span class="acc-icon">💨</span>Esquivar
+          </button>
+          <button class="acc-btn acc-util" onclick="accionEsconderse()" title="d20 + Mod Sigilo">
+            <span class="acc-icon">🌑</span>Esconderse
+          </button>
+          <button class="acc-btn acc-util" onclick="accionDescansar()" title="Recupera 1d4 + Reg. Estamina">
+            <span class="acc-icon">💤</span>Descansar
+          </button>
+        </div>
+      </div>
 
       <!-- Habilidades -->
       <div class="ptitle" style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;">
@@ -2419,6 +2643,7 @@ function blank() {
     cua:0, yh:0, ct:0, mer:0,
     habilidades:[], pasivas:[], inventario:[], plus_ultra:false,
     estados:{}, notas:'',
+    mov:1, acc:1, acca:0, rea:1,
     baFue:0,baIntim:0,baEva:0,baAcr:0,baSig:0,baAgu:0,baVol:0,baCtq:0,baIng:0,baTac:0,baPer:0,baEng:0,baInv:0,baPrc:0,
     compFue:false,compIntim:false,compEva:false,compAcr:false,compSig:false,compAgu:false,compVol:false,compCtq:false,compIng:false,compTac:false,compPer:false,compEng:false,compInv:false,compPrc:false,
     equipo:{
@@ -2903,11 +3128,24 @@ function addToken() {
   outer: for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(!tokAt(cc,rr)){c=cc;r=rr;break outer;}
   const id=uid();
   tokens[id] = { id, name, sym, color:selColor, c, r, sh:blank() };
-  // Guardar hash de contraseña si se definió
   if (pw) tokens[id].pwHash = simpleHash(pw);
   selId = id;
-  // Marcar como desbloqueada para quien la creó
   unlockedIds.add(id);
+  // Calcular vitales según clase/stats y luego igualar current al máximo
+  autoCalcVitales();
+  const sh = tokens[id].sh;
+  // Forzar vida_c y est_c al máximo recién calculado
+  sh.vida_c = sh.vida_m;
+  sh.est_c  = sh.est_m;
+  if (roomRef) {
+    roomRef.child('tokens/'+id+'/sh/vida_c').set(sh.vida_c);
+    roomRef.child('tokens/'+id+'/sh/est_c').set(sh.est_c);
+  }
+  // Actualizar inputs de UI
+  const vcEl = document.getElementById('fVidaC');
+  const ecEl = document.getElementById('fEstC');
+  if (vcEl) vcEl.value = sh.vida_c;
+  if (ecEl) ecEl.value = sh.est_c;
   fbSet(id);
   document.getElementById('iPassword').value = '';
   addLog('spawn', `<b>${name}</b> entró al campo en <b>${String.fromCharCode(65+c)}${r+1}</b>${pw?' 🔒':''}`);
@@ -3087,6 +3325,7 @@ function showStats() {
     fBaAgu:s.baAgu||0, fBaVol:s.baVol||0, fBaCtq:s.baCtq||0, fBaIng:s.baIng||0,
     fBaTac:s.baTac||0, fBaPer:s.baPer||0, fBaEng:s.baEng||0, fBaInv:s.baInv||0, fBaPrc:s.baPrc||0,
     fCua:s.cua, fYh:s.yh, fCt:s.ct, fMer:s.mer,
+    fMov:s.mov??1, fAcc:s.acc??1, fAcca:s.acca??0, fRea:s.rea??1,
     // equipamiento renderizado aparte
   };
   Object.entries(M).forEach(([id,val])=>{ const el=document.getElementById(id); if(el) el.value=val??''; });
@@ -3310,25 +3549,37 @@ function autoCalcVitales() {
   else                            estM = (6 * nivel) + (mTec * 2);
   estM = Math.max(1, estM);
 
-  // Reg Estamina
-  const reg = (clase === 'mental') ? 2 + mInt : 1 + mInt;
+  // Reg Estamina — mínimo 1
+  const reg = Math.max(1, (clase === 'mental') ? 2 + mInt : 1 + mInt);
 
   // Actualizar en sh y en los inputs visibles
   const updates = { vel, def, ini, vida_m: vidaM, est_m: estM, reg };
   Object.entries(updates).forEach(([k, v]) => {
     sh[k] = v;
     if (roomRef) roomRef.child('tokens/'+selId+'/sh/'+k).set(v);
-    // actualizar inputs en pantalla
     const idMap = { vel:'fVel', def:'fDef', ini:'fIni', vida_m:'fVidaM', est_m:'fEstM', reg:'fReg' };
     const el = document.getElementById(idMap[k]);
     if (el) el.value = v;
-    // actualizar totales visuales
     const tMap = { vel:'tVel', def:'tDef', ini:'tIni', reg:'tReg' };
     if (tMap[k]) {
       const tel = document.getElementById(tMap[k]);
       if (tel) tel.textContent = v;
     }
   });
+
+  // Clamp vida_c y est_c al nuevo máximo (nunca pueden superar el max)
+  if ((sh.vida_c || 0) > vidaM) {
+    sh.vida_c = vidaM;
+    if (roomRef) roomRef.child('tokens/'+selId+'/sh/vida_c').set(vidaM);
+    const el = document.getElementById('fVidaC');
+    if (el) el.value = vidaM;
+  }
+  if ((sh.est_c || 0) > estM) {
+    sh.est_c = estM;
+    if (roomRef) roomRef.child('tokens/'+selId+'/sh/est_c').set(estM);
+    const el = document.getElementById('fEstC');
+    if (el) el.value = estM;
+  }
 
   // Actualizar totales vitales (base recalculada + bono)
   updateVitalTotals();
@@ -3546,13 +3797,27 @@ function refreshTurns() {
 
     const card = document.createElement('div');
     card.className = 'turn-card' + (isActive ? ' active' : '');
-    // Botones ▲▼ solo si hay empate
-    const upBtn  = canUp   ? `<button class="tie-btn" onclick="moveTurnCard(${i},-1);event.stopPropagation();" title="Subir">▲</button>` : '';
+    const upBtn   = canUp   ? `<button class="tie-btn" onclick="moveTurnCard(${i},-1);event.stopPropagation();" title="Subir">▲</button>` : '';
     const downBtn = canDown ? `<button class="tie-btn" onclick="moveTurnCard(${i},1);event.stopPropagation();"  title="Bajar">▼</button>` : '';
+    // Chips de acciones
+    const sh = t.sh || {};
+    const mov  = sh.mov  ?? 1;
+    const acc  = sh.acc  ?? 1;
+    const acca = sh.acca ?? 0;
+    const rea  = sh.rea  ?? 1;
+    const chipsHtml = `<span class="turn-chips">` +
+      `<span class="tc tc-m" title="Movimientos">M:${mov}</span>` +
+      `<span class="tc tc-a" title="Acciones">A:${acc}</span>` +
+      (acca > 0 ? `<span class="tc tc-aa" title="Acciones Adicionales">Aa:${acca}</span>` : '') +
+      `<span class="tc tc-r" title="Reacciones">R:${rea}</span>` +
+      `</span>`;
     card.innerHTML = `
       <span class="turn-num">${i+1}</span>
       <div class="turn-avatar" style="background:${t.color};color:${isLight(t.color)?'#1a0f08':'#fff'}">${t.sym||t.name[0]||'?'}</div>
-      <span style="font-size:.82rem;">${t.name}</span>
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+        <span style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.name}</span>
+        ${chipsHtml}
+      </div>
       <span class="turn-ini">ini:${ini}</span>
       ${upBtn}${downBtn}
     `;
@@ -3677,6 +3942,13 @@ function rollDice(sides, qty, mod) {
   hist.appendChild(entry);
   while (hist.children.length > 30) hist.removeChild(hist.lastChild);
 
+  // Toast
+  const label = qty > 1 ? `${qty}d${sides}` : `d${sides}`;
+  const detail = mod !== 0 ? `${rolls[0]}${mod>=0?'+':''}${mod}` : `${rolls[0]}`;
+  if (isFail)      showToast('PIFIA',   label, `d20(1) — ¡Fallo total!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', label, detail, 'crit');
+  else             showToast(total,     label, detail, 'normal');
+
   const logType = isCrit ? 'spawn' : isFail ? 'del' : 'move';
 
   if (roomRef) {
@@ -3714,6 +3986,13 @@ function mRoll(sides) {
   const total = sum + mod;
   const isCrit = sides === 20 && qty === 1 && rolls[0] === 20;
   const isFail = sides === 20 && qty === 1 && rolls[0] === 1;
+
+  // Toast
+  const mlabel  = qty > 1 ? `${qty}d${sides}` : `d${sides}`;
+  const mdetail = mod !== 0 ? `${rolls[0]}${mod>=0?'+':''}${mod}` : `${rolls[0]}`;
+  if (isFail)      showToast('PIFIA',   mlabel, `d${sides}(1) — ¡Fallo total!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', mlabel, mdetail, 'crit');
+  else             showToast(total,     mlabel, mdetail, 'normal');
 
   // Mostrar resultado en el panel del mapa
   const totEl  = document.getElementById('mDiceTotal');
@@ -3782,6 +4061,202 @@ function mApplyStatMod() {
   const modEl = document.getElementById('mDiceMod');
   if (modEl) modEl.value = val;
   sel.value = '';
+}
+
+// ── TOAST DE TIRADA ──────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(total, label, detail, mode) {
+  // mode: 'normal' | 'crit' | 'fail' | 'heal'
+  const toast   = document.getElementById('rollToast');
+  const totEl   = document.getElementById('rtTotal');
+  const lblEl   = document.getElementById('rtLabel');
+  const detEl   = document.getElementById('rtDetail');
+  if (!toast) return;
+
+  totEl.textContent = total;
+  lblEl.textContent = label;
+  detEl.textContent = detail;
+
+  toast.className = 'rt-' + (mode || 'normal');
+  // forzar reflow para reiniciar animación si ya estaba visible
+  toast.classList.remove('show');
+  void toast.offsetWidth;
+  toast.classList.add('show');
+
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2200);
+}
+
+// ── ACCIONES PREDEFINIDAS ─────────────────────────────────────────
+function _getTokenName() {
+  return (selId && tokens[selId]) ? tokens[selId].name : '?';
+}
+function _readSpan(id) {
+  const el = document.getElementById(id);
+  return el ? (parseInt(el.textContent) || 0) : 0;
+}
+
+function accionPuno() {
+  if (!selId || !tokens[selId]) return;
+  const name   = _getTokenName();
+  const modPod = getStatTotal('pod');
+  const golpe  = Math.ceil(Math.random() * 20);
+  const isCrit = golpe === 20;
+  const isFail = golpe === 1;
+  const dmg    = Math.max(1, 1 + modPod);
+
+  let msg = `👊 <b>${name}</b> ataca con el puño — Golpe: d20(${golpe})`;
+  if (isCrit) msg += ' ✨ ¡CRÍTICO!';
+  if (isFail) msg += ' 💀 ¡FALLO!';
+  if (!isFail) msg += ` → Daño: <b>${dmg}</b> (1 + Mod.Poder ${modPod >= 0 ? '+' : ''}${modPod})`;
+
+  const type = isCrit ? 'spawn' : isFail ? 'del' : 'move';
+
+  if (isFail) {
+    showToast('PIFIA', 'Puño', `d20(1) — Fallo total`, 'fail');
+  } else if (isCrit) {
+    showToast('CRÍTICO', 'Puño', `d20(20) → Daño: ${dmg}`, 'crit');
+  } else {
+    showToast(golpe, 'Puño — Golpe', `Daño: ${dmg} (1 + Poder ${modPod >= 0?'+':''}${modPod})`, 'normal');
+  }
+
+  addLog(type, msg);
+  _publishRoll(msg, type);
+}
+
+function accionDefender() {
+  if (!selId || !tokens[selId]) return;
+  const name = _getTokenName();
+  const def  = _readSpan('tDef');
+  showToast('DEF +2', 'Defender', `Defensa: ${def} → ${def+2} este turno`, 'heal');
+  const msg  = `🛡️ <b>${name}</b> se defiende — Defensa activa: <b>${def + 2}</b> este turno (+2 temporal)`;
+  addLog('spawn', msg);
+}
+
+function accionEsquivar() {
+  if (!selId || !tokens[selId]) return;
+  const name = _getTokenName();
+  showToast('ESQUIVA', 'Esquivar', 'Próximo golpe → tirar Evasión', 'normal');
+  const msg  = `💨 <b>${name}</b> entra en postura de esquiva — El próximo ataque recibido puede ser evadido con una tirada de <b>Evasión</b>`;
+  addLog('move', msg);
+}
+
+function accionEsconderse() {
+  if (!selId || !tokens[selId]) return;
+  const name   = _getTokenName();
+  const modSig = getStatTotal('sig');
+  const die    = Math.ceil(Math.random() * 20);
+  const total  = die + modSig;
+  const isCrit = die === 20;
+  const isFail = die === 1;
+
+  if (isFail) showToast('PIFIA', 'Sigilo', `d20(1) — ¡Te descubrieron!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', 'Sigilo', `d20(20) +${modSig} = ${total}`, 'crit');
+  else showToast(total, 'Sigilo', `d20(${die}) ${modSig >= 0?'+':''}${modSig}`, 'normal');
+
+  let msg = `🌑 <b>${name}</b> intenta esconderse — Sigilo: d20(${die}) ${modSig >= 0 ? '+' : ''}${modSig} = <b>${total}</b>`;
+  if (isCrit) msg += ' ✨ ¡CRÍTICO!';
+  if (isFail) msg += ' 💀 ¡PIFIA!';
+
+  const type = isCrit ? 'spawn' : isFail ? 'del' : 'move';
+  addLog(type, msg);
+  _publishRoll(msg, type);
+}
+
+function accionDescansar() {
+  if (!selId || !tokens[selId]) return;
+  const name = _getTokenName();
+  const reg  = _readSpan('tReg');
+  const die  = Math.ceil(Math.random() * 4);
+  const rec  = Math.max(0, die + reg);
+
+  const sh = tokens[selId].sh;
+  const prev   = sh.est_c || 0;
+  const maxEst = sh.est_m || 100;
+  sh.est_c     = Math.min(maxEst, prev + rec);
+  fbPatch(selId, { 'sh/est_c': sh.est_c });
+
+  showToast(`+${rec}`, 'Estamina', `1d4(${die}) ${reg >= 0?'+':''}${reg} → ${sh.est_c}/${maxEst}`, 'heal');
+
+  const msg = `💤 <b>${name}</b> descansa — Recupera <b>${rec}</b> de Estamina (1d4(${die}) + Reg.${reg >= 0 ? '+' : ''}${reg}) → ${sh.est_c}/${maxEst}`;
+  addLog('spawn', msg);
+  ub();
+}
+
+// Publica tirada al historial de dados compartido
+function _publishRoll(msg, type) {
+  const ts = Date.now();
+  const clr = type==='spawn'?'#c8941a':type==='del'?'#c0392b':'#8b1a1a';
+  const lastB = msg.match(/.*<b>(\d+)<\/b>/);
+  if (lastB) {
+    ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el){el.textContent=lastB[1];el.style.color=clr;} });
+    ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=msg; });
+  }
+  if (roomRef) {
+    const key = roomRef.child('rolls').push().key;
+    myRollKeys.add(key);
+    roomRef.child('rolls/'+key).set({ msg, type, ts });
+    ['diceHistory','mDiceHistory'].forEach(hid => {
+      const hel = document.getElementById(hid);
+      if (!hel) return;
+      const e = document.createElement('div');
+      e.className = 'dhentry ' + (type==='spawn'?'crit':type==='del'?'fail':'');
+      const hh = new Date(ts).getHours().toString().padStart(2,'0');
+      const mm = new Date(ts).getMinutes().toString().padStart(2,'0');
+      e.innerHTML = `<span class="dhtime">${hh}:${mm}</span>${msg}`;
+      if (hid === 'mDiceHistory') hel.insertBefore(e, hel.firstChild);
+      else hel.appendChild(e);
+      while (hel.children.length > 30) hel.removeChild(hid==='mDiceHistory'?hel.lastChild:hel.firstChild);
+    });
+  }
+}
+
+// ── TIRADA RÁPIDA DE STAT ────────────────────────────────────────
+function quickRoll(stat, label) {
+  if (!selId || !tokens[selId]) return;
+  const mod  = getStatTotal(stat);
+  const die  = Math.ceil(Math.random() * 20);
+  const total = die + mod;
+  const isCrit = die === 20;
+  const isFail = die === 1;
+  const tName  = tokens[selId].name;
+
+  // Toast
+  if (isFail)      showToast('PIFIA',   label, `d20(1) — ¡Fallo total!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', label, `d20(20) ${mod>=0?'+':''}${mod} = ${total}`, 'crit');
+  else             showToast(total,     label, `d20(${die}) ${mod>=0?'+':''}${mod}`, 'normal');
+
+  let msg = `🎲 <b>${tName}</b> tiró <b>${label}</b>: d20(${die}) ${mod >= 0 ? '+' : ''}${mod} = <b>${total}</b>`;
+  if (isCrit) msg += ' ✨ ¡CRÍTICO!';
+  if (isFail) msg += ' 💀 ¡PIFIA!';
+
+  const type = isCrit ? 'spawn' : isFail ? 'del' : 'move';
+
+  const clr = isCrit ? '#c8941a' : isFail ? '#c0392b' : '#8b1a1a';
+  ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el){el.textContent=total;el.style.color=clr;} });
+  ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=msg; });
+
+  addLog(type, msg);
+  if (roomRef) {
+    const ts = Date.now();
+    const key = roomRef.child('rolls').push().key;
+    myRollKeys.add(key);
+    roomRef.child('rolls/'+key).set({ msg, type, ts });
+    ['diceHistory','mDiceHistory'].forEach(hid => {
+      const hel = document.getElementById(hid);
+      if (!hel) return;
+      const e = document.createElement('div');
+      e.className = 'dhentry ' + (isCrit?'crit':isFail?'fail':'');
+      const hh = new Date(ts).getHours().toString().padStart(2,'0');
+      const mm = new Date(ts).getMinutes().toString().padStart(2,'0');
+      e.innerHTML = `<span class="dhtime">${hh}:${mm}</span>${msg}`;
+      if (hid === 'mDiceHistory') hel.insertBefore(e, hel.firstChild);
+      else hel.appendChild(e);
+      while (hel.children.length > 30) hel.removeChild(hid==='mDiceHistory'?hel.lastChild:hel.firstChild);
+    });
+  }
 }
 
 function getStatTotal(stat) {
