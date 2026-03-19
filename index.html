@@ -1392,6 +1392,58 @@ textarea:focus { border-color:var(--gld); }
 #mobileSalaPanel input[type=text] { margin-bottom: 0; }
 #mobilePresenceList { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
 
+/* ── BARRA MODO FLOTANTE (mobile) ── */
+#modebar { display: none; }
+@media (max-width: 900px) {
+  #modebar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 10px;
+    background: #1a0f08;
+    border-bottom: 1px solid rgba(200,148,26,.3);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #modebar .mlbl {
+    font-family: 'Cinzel', serif;
+    font-size: .62rem;
+    color: #a07850;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #modebar .mbtn {
+    flex: 1;
+    padding: 8px 4px;
+    border: 1px solid var(--ps);
+    background: rgba(200,160,100,.1);
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: .68rem;
+    color: #a07850;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  #modebar .mbtn.active {
+    background: var(--gld);
+    color: var(--ink);
+    border-color: var(--gld);
+    font-weight: 700;
+    color: #2c1a0e;
+  }
+  #modebar.painting {
+    background: rgba(100,20,20,.4);
+    border-bottom-color: var(--red);
+  }
+}
+
 /* tooltip */
 #tip {
   position:fixed; background:rgba(20,10,0,.9); color:var(--p);
@@ -1591,6 +1643,15 @@ textarea:focus { border-color:var(--gld); }
   <!-- MAP COL (tab: mapa) -->
   <div id="mapCol" class="tab-pane active" data-tab="mapa">
     <span id="mapScrollHint">← deslizá para ver todo el mapa →</span>
+
+    <!-- Barra de modo: siempre visible en mobile -->
+    <div id="modebar" class="painting">
+      <span class="mlbl">Modo:</span>
+      <button class="mbtn active" id="modePin" onclick="setZonaMode('pintar')">✏ Pintar</button>
+      <button class="mbtn" id="modeErase" onclick="setZonaMode('borrar')">🧹 Borrar</button>
+      <button class="mbtn" id="modeMove" onclick="setZonaMode('none')">✋ Mover</button>
+    </div>
+
     <div class="mapbox" id="mapbox">
       <canvas id="cv"></canvas>
     </div>
@@ -2513,6 +2574,8 @@ cv.addEventListener('contextmenu', e=>{
 let touchStartTime = 0;
 let touchStartPos = null;
 let longPressTimer = null;
+let touchIsPainting = false;
+let touchIsDragging = false;
 
 function cellFromTouch(touch) {
   const r = cv.getBoundingClientRect();
@@ -2525,11 +2588,34 @@ function cellFromTouch(touch) {
 }
 
 cv.addEventListener('touchstart', e => {
-  e.preventDefault();
   const touch = e.touches[0];
   const p = cellFromTouch(touch);
   touchStartPos = p;
   touchStartTime = Date.now();
+  touchIsPainting = false;
+  touchIsDragging = false;
+
+  // En modo mover (none): NO interceptar → el browser scrollea normalmente
+  if (zonaMode === 'none' && !placingObs) {
+    // Solo marcar si hay ficha bajo el dedo para arrastrar
+    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
+      const t = tokAt(p.c, p.r);
+      if (t) {
+        e.preventDefault();
+        selObsId = null;
+        selId = t.id;
+        touchIsDragging = true;
+        drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
+        dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
+        refresh(); redraw();
+      }
+      // Sin ficha → no preventDefault → el browser scrollea
+    }
+    return;
+  }
+
+  // En modo pintar/borrar o colocando obstáculo: interceptar
+  e.preventDefault();
 
   // Long press = deselect
   longPressTimer = setTimeout(() => {
@@ -2541,7 +2627,7 @@ cv.addEventListener('touchstart', e => {
   if (p.c < 0 || p.c >= COLS || p.r < 0 || p.r >= ROWS) return;
 
   if (zonaMode === 'pintar' || zonaMode === 'borrar') {
-    isPainting = true; paintCell(p.c, p.r); return;
+    touchIsPainting = true; isPainting = true; paintCell(p.c, p.r); return;
   }
   if (placingObs) { placeObs(p.c, p.r); return; }
 
@@ -2554,57 +2640,66 @@ cv.addEventListener('touchstart', e => {
   if (t) {
     selObsId = null;
     selId = t.id;
+    touchIsDragging = true;
     drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
     dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
     refresh(); redraw();
   }
-}, { passive: false });
+}, { passive: true }); // passive:true por defecto → el browser puede scrollear
 
 cv.addEventListener('touchmove', e => {
-  e.preventDefault();
-  clearTimeout(longPressTimer);
   const touch = e.touches[0];
   const p = cellFromTouch(touch);
   hov = { c: p.c, r: p.r };
 
-  if (isPainting && p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-    paintCell(p.c, p.r);
+  if (touchIsPainting) {
+    e.preventDefault(); // solo bloquear scroll si estamos pintando
+    clearTimeout(longPressTimer);
+    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) paintCell(p.c, p.r);
   }
-  if (drag) {
+
+  if (touchIsDragging && drag) {
+    e.preventDefault(); // solo bloquear scroll si arrastramos ficha
+    clearTimeout(longPressTimer);
     drag.x = p.x - dragOff.x + CS/2;
     drag.y = p.y - dragOff.y + CS/2;
     hov.c = Math.max(0, Math.min(COLS-1, Math.floor((drag.x - CS/2)/CS + .5)));
     hov.r = Math.max(0, Math.min(ROWS-1, Math.floor((drag.y - CS/2)/CS + .5)));
   }
-  redraw();
+
+  if (touchIsPainting || touchIsDragging) redraw();
 }, { passive: false });
 
 cv.addEventListener('touchend', e => {
-  e.preventDefault();
   clearTimeout(longPressTimer);
   isPainting = false;
   const duration = Date.now() - touchStartTime;
 
-  if (drag) {
+  if (touchIsDragging && drag) {
     const t = tokens[drag.id];
     if (t && (hov.c !== drag.sc || hov.r !== drag.sr) && !tokAt(hov.c, hov.r)) {
       moveTok(drag.id, hov.c, hov.r);
       fbSet(drag.id);
     }
-    drag = null;
+    drag = null; touchIsDragging = false;
     refresh(); redraw();
     return;
   }
 
-  // Tap rápido en celda vacía con ficha seleccionada → mover
-  if (duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
-    moveTok(selId, touchStartPos.c, touchStartPos.r);
-    fbSet(selId);
-    refresh(); redraw();
+  touchIsPainting = false;
+  touchIsDragging = false;
+
+  // Tap rápido en celda vacía con ficha seleccionada → mover (solo en modo mover)
+  if (zonaMode === 'none' && duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
+    if (touchStartPos.c >= 0 && touchStartPos.c < COLS && touchStartPos.r >= 0 && touchStartPos.r < ROWS) {
+      moveTok(selId, touchStartPos.c, touchStartPos.r);
+      fbSet(selId);
+      refresh(); redraw();
+    }
   }
   hov = { c: -1, r: -1 };
   redraw();
-}, { passive: false });
+}, { passive: true });
 
 // ── TOKEN OPS ────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
@@ -4189,10 +4284,23 @@ function setZonaMode(mode) {
   zonaMode = mode;
   // also exit obstacle placing
   if (mode !== 'none') { placingObs = null; buildObsGrid(); }
+  // Sync los botones del panel Zonas (desktop + mapaExtras)
   ['Pin','Erase','None'].forEach(m => {
     const el = document.getElementById('zonaMode'+m);
     if (el) el.className = 'zona-mode-btn' + (mode === m.toLowerCase() ? ' active' : '');
   });
+  // Sync la modebar flotante (mobile)
+  const mb = document.getElementById('modebar');
+  const modePin   = document.getElementById('modePin');
+  const modeErase = document.getElementById('modeErase');
+  const modeMove  = document.getElementById('modeMove');
+  if (modePin)   modePin.className   = 'mbtn' + (mode === 'pintar' ? ' active' : '');
+  if (modeErase) modeErase.className = 'mbtn' + (mode === 'borrar' ? ' active' : '');
+  if (modeMove)  modeMove.className  = 'mbtn' + (mode === 'none'   ? ' active' : '');
+  if (mb) {
+    if (mode === 'none') mb.classList.remove('painting');
+    else mb.classList.add('painting');
+  }
 }
 
 function getOrCreateZone() {
