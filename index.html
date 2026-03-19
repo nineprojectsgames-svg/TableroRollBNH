@@ -1464,6 +1464,20 @@ textarea:focus { border-color:var(--gld); }
   }
 }
 
+/* botones desempate turno */
+.tie-btn {
+  background: none;
+  border: 1px solid var(--ps);
+  border-radius: 3px;
+  color: var(--gld);
+  font-size: .6rem;
+  padding: 1px 4px;
+  cursor: pointer;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+.tie-btn:hover { background: rgba(200,148,26,.2); }
+
 /* tooltip */
 #tip {
   position:fixed; background:rgba(20,10,0,.9); color:var(--p);
@@ -1656,9 +1670,9 @@ textarea:focus { border-color:var(--gld); }
     <div class="panel admin-only">
       <div class="ptitle">🎨 Zonas / Áreas</div>
       <div class="zona-mode-row">
-        <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
+        <div class="zona-mode-btn active" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
+        <div class="zona-mode-btn" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
         <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
-        <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
       </div>
       <div class="zona-colors" id="zonaColors"></div>
       <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
@@ -1706,11 +1720,11 @@ textarea:focus { border-color:var(--gld); }
     <span id="mapScrollHint">← deslizá para ver todo el mapa →</span>
 
     <!-- Barra de modo: siempre visible en mobile -->
-    <div id="modebar" class="painting">
+    <div id="modebar">
       <span class="mlbl">Modo:</span>
-      <button class="mbtn active" id="modePin" onclick="setZonaMode('pintar')">✏ Pintar</button>
+      <button class="mbtn active" id="modeMove" onclick="setZonaMode('none')">✋ Mover</button>
+      <button class="mbtn" id="modePin" onclick="setZonaMode('pintar')">✏ Pintar</button>
       <button class="mbtn" id="modeErase" onclick="setZonaMode('borrar')">🧹 Borrar</button>
-      <button class="mbtn" id="modeMove" onclick="setZonaMode('none')">✋ Mover</button>
     </div>
 
     <div class="mapbox" id="mapbox">
@@ -2609,25 +2623,25 @@ function drawTok(t, ox, oy) {
       }
     }
   }
-  // barras de vida y estamina encima de la ficha
+  // barras de vida y estamina — dentro del token (parte inferior), siempre visibles
   if (t.sh) {
-    const bw = rd * 2;        // ancho de la barra = diámetro de la ficha
-    const bh = 4;             // alto de cada barra
-    const bx = x - rd;       // inicio X (borde izquierdo de la ficha)
-    const by = y - rd - 11;  // encima de la ficha: barra vida
-    const by2 = by + bh + 2; // segunda barra: estamina
+    const bw = rd * 1.8;           // un poco menos que el diámetro
+    const bh = 4;
+    const bx = x - bw / 2;
+    const by  = y + rd * 0.18;     // vida: mitad inferior del token
+    const by2 = by + bh + 2;       // estamina: justo debajo
 
-    // fondo barras
-    ctx.fillStyle = 'rgba(0,0,0,.45)';
+    // fondos semitransparentes
+    ctx.fillStyle = 'rgba(0,0,0,.55)';
     ctx.beginPath(); ctx.roundRect(bx-1, by-1, bw+2, bh+2, 2); ctx.fill();
     ctx.beginPath(); ctx.roundRect(bx-1, by2-1, bw+2, bh+2, 2); ctx.fill();
 
-    // barra vida
+    // barra vida (verde)
     const vp = Math.max(0, Math.min(1, (t.sh.vida_c||0) / Math.max(1, t.sh.vida_m||100)));
-    ctx.fillStyle = '#27ae60';
+    ctx.fillStyle = vp > 0.5 ? '#27ae60' : vp > 0.25 ? '#f39c12' : '#e74c3c';
     if (vp > 0) { ctx.beginPath(); ctx.roundRect(bx, by, bw * vp, bh, 2); ctx.fill(); }
 
-    // barra estamina
+    // barra estamina (amarillo)
     const ep = Math.max(0, Math.min(1, (t.sh.est_c||0) / Math.max(1, t.sh.est_m||100)));
     ctx.fillStyle = '#f1c40f';
     if (ep > 0) { ctx.beginPath(); ctx.roundRect(bx, by2, bw * ep, bh, 2); ctx.fill(); }
@@ -3362,23 +3376,28 @@ function logTime() {
 // Mostrar una entrada en el log local (sin publicar a Firebase)
 function showLog(type, msg, ts) {
   const list = document.getElementById('loglist');
+  if (!list) return;
   const empty = list.querySelector('p.info');
   if (empty) empty.remove();
   const el = document.createElement('div');
-  el.className = 'logentry ' + type;
-  const time = ts ? (new Date(ts).getHours().toString().padStart(2,'0')+':'+new Date(ts).getMinutes().toString().padStart(2,'0')) : logTime();
+  el.className = 'logentry ' + (type || 'move');
+  const time = ts
+    ? (new Date(ts).getHours().toString().padStart(2,'0')+':'+new Date(ts).getMinutes().toString().padStart(2,'0'))
+    : logTime();
   el.innerHTML = `<span class="logtime">${time}</span>${msg}`;
   list.appendChild(el);
-  while (list.children.length > MAX_HISTORY) list.removeChild(list.lastChild);
+  // column-reverse: lastChild es el más antiguo visualmente (arriba) → borrarlo
+  while (list.children.length > MAX_HISTORY) list.removeChild(list.firstChild);
 }
 
 // addLog: muestra local + publica a Firebase si hay conexión
 function addLog(type, msg) {
-  showLog(type, msg);
+  const ts = Date.now();
+  showLog(type, msg, ts);
   if (roomRef) {
     const ref = roomRef.child('logs').push();
     myLogKeys.add(ref.key);
-    ref.set({ type, msg, ts: Date.now() });
+    ref.set({ type, msg, ts });
     // NO onDisconnect().remove() — los logs persisten entre sesiones
   }
 }
@@ -3428,14 +3447,45 @@ function undoMove() {
 // ── ORDEN DE TURNO ───────────────────────────────────────────────
 let turnIndex = 0;
 let turnRound = 1;
+let turnOrderOverride = []; // IDs en orden manual (para desempate)
 
 function getTurnOrder() {
-  // ordenar fichas por iniciativa descendente
-  return Object.values(tokens).sort((a, b) => {
+  // Ordenar por iniciativa descendente
+  const sorted = Object.values(tokens).sort((a, b) => {
     const ia = a.sh ? ((a.sh.ini||0)+(a.sh.bvIni||0)) : 0;
     const ib = b.sh ? ((b.sh.ini||0)+(b.sh.bvIni||0)) : 0;
-    return ib - ia;
+    if (ib !== ia) return ib - ia;
+    // Empate: usar orden manual si existe
+    const oa = turnOrderOverride.indexOf(a.id);
+    const ob = turnOrderOverride.indexOf(b.id);
+    if (oa !== -1 && ob !== -1) return oa - ob;
+    if (oa !== -1) return -1;
+    if (ob !== -1) return 1;
+    return 0;
   });
+  return sorted;
+}
+
+function moveTurnCard(idx, dir) {
+  // dir: -1 = subir, +1 = bajar
+  const order = getTurnOrder();
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= order.length) return;
+  // Solo permitir si hay empate de iniciativa entre los dos
+  const ia = order[idx].sh ? ((order[idx].sh.ini||0)+(order[idx].sh.bvIni||0)) : 0;
+  const ib = order[newIdx].sh ? ((order[newIdx].sh.ini||0)+(order[newIdx].sh.bvIni||0)) : 0;
+  if (ia !== ib) return; // no swapear si no hay empate
+
+  // Reconstruir el override con el swap
+  const ids = order.map(t => t.id);
+  [ids[idx], ids[newIdx]] = [ids[newIdx], ids[idx]];
+  turnOrderOverride = ids;
+  // Persistir en Firebase
+  if (roomRef) roomRef.child('turnOrderOverride').set(turnOrderOverride);
+  // Ajustar turnIndex si el activo se movió
+  if (turnIndex === idx) turnIndex = newIdx;
+  else if (turnIndex === newIdx) turnIndex = idx;
+  refreshTurns();
 }
 
 function refreshTurns() {
@@ -3444,6 +3494,11 @@ function refreshTurns() {
 
   if (order.length === 0) {
     list.innerHTML = '<span class="turn-empty">Añadí fichas para ver el orden de turno.</span>';
+    document.getElementById('turnRound').textContent = 'Ronda ' + turnRound;
+    const mList = document.getElementById('mTurnList');
+    const mRound = document.getElementById('mTurnRound');
+    if (mRound) mRound.textContent = 'Ronda ' + turnRound;
+    if (mList) mList.innerHTML = list.innerHTML;
     return;
   }
 
@@ -3454,8 +3509,12 @@ function refreshTurns() {
   order.forEach((t, i) => {
     const ini = t.sh ? ((t.sh.ini||0)+(t.sh.bvIni||0)) : 0;
     const isActive = i === turnIndex;
+    // ¿tiene empate con vecino de arriba o abajo?
+    const prevIni = i > 0 && order[i-1].sh ? ((order[i-1].sh.ini||0)+(order[i-1].sh.bvIni||0)) : null;
+    const nextIni = i < order.length-1 && order[i+1].sh ? ((order[i+1].sh.ini||0)+(order[i+1].sh.bvIni||0)) : null;
+    const canUp   = i > 0 && prevIni === ini;
+    const canDown = i < order.length-1 && nextIni === ini;
 
-    // separador de flecha entre fichas
     if (i > 0) {
       const arr = document.createElement('span');
       arr.className = 'turn-arrow';
@@ -3465,11 +3524,15 @@ function refreshTurns() {
 
     const card = document.createElement('div');
     card.className = 'turn-card' + (isActive ? ' active' : '');
+    // Botones ▲▼ solo si hay empate
+    const upBtn  = canUp   ? `<button class="tie-btn" onclick="moveTurnCard(${i},-1);event.stopPropagation();" title="Subir">▲</button>` : '';
+    const downBtn = canDown ? `<button class="tie-btn" onclick="moveTurnCard(${i},1);event.stopPropagation();"  title="Bajar">▼</button>` : '';
     card.innerHTML = `
       <span class="turn-num">${i+1}</span>
       <div class="turn-avatar" style="background:${t.color};color:${isLight(t.color)?'#1a0f08':'#fff'}">${t.sym||t.name[0]||'?'}</div>
       <span style="font-size:.82rem;">${t.name}</span>
       <span class="turn-ini">ini:${ini}</span>
+      ${upBtn}${downBtn}
     `;
     card.addEventListener('click', () => {
       selId = t.id;
@@ -3531,6 +3594,8 @@ function prevTurn() {
 function resetTurns() {
   turnIndex = 0;
   turnRound = 1;
+  turnOrderOverride = [];
+  if (roomRef) roomRef.child('turnOrderOverride').remove();
   const order = getTurnOrder();
   if (order.length > 0) { selId = order[0].id; refresh(); redraw(); }
   refreshTurns();
@@ -3890,6 +3955,11 @@ function connectRoom(code) {
   listenRolls();
   listenObstacles();
   listenZones();
+  // Orden de turno manual (desempate)
+  roomRef.child('turnOrderOverride').on('value', snap => {
+    const d = snap.val();
+    if (Array.isArray(d)) { turnOrderOverride = d; refreshTurns(); }
+  });
 }
 
 // Push: escribir token completo a Firebase
@@ -4529,7 +4599,7 @@ const ZONA_COLORS = [
 // zones: { id: { id, label, color, cells: {`c,r`: true} } }
 let zones = {};
 let selZoneId = null;
-let zonaMode = 'pintar'; // 'pintar' | 'borrar' | 'none'
+let zonaMode = 'none'; // 'pintar' | 'borrar' | 'none'
 let selZoneColor = ZONA_COLORS[4]; // default teal
 let isPainting = false; // mouse held for drag-paint
 
@@ -5230,20 +5300,24 @@ function renderRollEntry(d, prepend) {
 
 function listenLogs() {
   if (!roomRef) return;
-  // 1. Cargar últimos 60 logs al conectar
-  roomRef.child('logs').orderByChild('ts').limitToLast(60).once('value', snap => {
+  // 1. Cargar últimos 100 logs al conectar (del más viejo al más nuevo)
+  roomRef.child('logs').orderByChild('ts').limitToLast(100).once('value', snap => {
     const entries = [];
-    snap.forEach(child => entries.push({ key: child.key, ...child.val() }));
+    snap.forEach(child => {
+      const val = child.val();
+      if (val && val.msg) entries.push({ key: child.key, type: val.type||'move', msg: val.msg, ts: val.ts||0 });
+    });
+    // Renderizar en orden cronológico
     entries.forEach(d => {
       if (!myLogKeys.has(d.key)) showLog(d.type, d.msg, d.ts);
     });
-    // 2. Escuchar solo los NUEVOS a partir de ahora
+    // 2. Escuchar solo los NUEVOS (ts posterior al último cargado)
     const lastTs = entries.length > 0 ? entries[entries.length-1].ts : Date.now();
     roomRef.child('logs').orderByChild('ts').startAt(lastTs + 1).on('child_added', snap => {
       const d = snap.val();
-      if (!d) return;
+      if (!d || !d.msg) return;
       if (myLogKeys.has(snap.key)) { myLogKeys.delete(snap.key); return; }
-      showLog(d.type, d.msg, d.ts);
+      showLog(d.type || 'move', d.msg, d.ts || Date.now());
     });
   });
 }
