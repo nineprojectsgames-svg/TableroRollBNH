@@ -2,7 +2,38 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mapa Táctico">
+<meta name="theme-color" content="#1a0f08">
 <title>Mapa Táctico — Boku no RPG</title>
+<script>
+// ── PWA MANIFEST (inyectado inline para single-file) ──────────────
+(function() {
+  const manifest = {
+    name: "Mapa Táctico — Boku no RPG",
+    short_name: "Mapa Táctico",
+    description: "Mapa táctico colaborativo para sesiones de RPG",
+    start_url: ".",
+    display: "standalone",
+    orientation: "landscape",
+    background_color: "#1a0f08",
+    theme_color: "#1a0f08",
+    icons: [
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231a0f08'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
+      { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a0f08'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.currentScript.parentNode.appendChild(link);
+})();
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
@@ -4569,6 +4600,213 @@ loadFirebase();
 
 let af=0;
 (function loop(){if(selId){af++;if(af%35===0)redraw();}requestAnimationFrame(loop);})();
+</script>
+
+<!-- ── PWA INSTALL BUTTON ─────────────────────────────────────── -->
+<style>
+#pwaInstallBtn {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h, 56px) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px 11px 16px;
+  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
+  border: 2px solid var(--gld, #c8941a);
+  border-radius: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.7), 0 0 0 1px rgba(200,148,26,.2);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: 2px;
+  color: var(--gld, #c8941a);
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: pwaFloat 3s ease-in-out infinite;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#pwaInstallBtn.visible { display: flex; }
+#pwaInstallBtn:active { transform: translateX(-50%) scale(.96); }
+#pwaInstallBtn .pwa-icon { font-size: 1.3rem; line-height: 1; }
+#pwaInstallBtn .pwa-close {
+  margin-left: 8px;
+  font-size: 1rem;
+  opacity: .5;
+  padding: 0 2px;
+  color: var(--p, #f4e4b8);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: sans-serif;
+  line-height: 1;
+}
+#pwaInstallBtn .pwa-close:hover { opacity: 1; }
+
+/* Banner iOS (instrucciones manuales) */
+#pwaIosBanner {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h, 56px) + 14px);
+  left: 12px; right: 12px;
+  z-index: 9999;
+  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
+  border: 2px solid var(--gld, #c8941a);
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.75);
+  font-family: 'Cinzel', serif;
+  color: var(--p, #f4e4b8);
+}
+#pwaIosBanner.visible { display: block; }
+#pwaIosBanner .ios-title {
+  font-size: .82rem;
+  letter-spacing: 2px;
+  color: var(--gld, #c8941a);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+#pwaIosBanner .ios-steps {
+  font-size: .76rem;
+  color: rgba(244,228,184,.8);
+  line-height: 1.9;
+  font-family: 'Crimson Text', serif;
+}
+#pwaIosBanner .ios-steps span { font-size: 1.1rem; }
+#pwaIosBanner .ios-close {
+  position: absolute; top: 10px; right: 12px;
+  background: none; border: none;
+  color: var(--p, #f4e4b8); font-size: 1.1rem;
+  cursor: pointer; opacity: .6;
+  font-family: sans-serif;
+}
+#pwaIosBanner .ios-close:hover { opacity: 1; }
+#pwaIosBanner::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid var(--gld, #c8941a);
+}
+
+@keyframes pwaFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(-5px); }
+}
+</style>
+
+<!-- Botón instalación (Android / Chrome) -->
+<button id="pwaInstallBtn" aria-label="Instalar aplicación">
+  <span class="pwa-icon">⚔️</span>
+  Instalar App
+  <button class="pwa-close" id="pwaClose" aria-label="Cerrar">✕</button>
+</button>
+
+<!-- Banner iOS (Safari) -->
+<div id="pwaIosBanner">
+  <button class="ios-close" id="iosClose">✕</button>
+  <div class="ios-title">⚔️ Instalar Mapa Táctico</div>
+  <div class="ios-steps">
+    1. Tocá <span>⬆️</span> <em>Compartir</em> en Safari<br>
+    2. Elegí <strong>"Agregar a pantalla de inicio"</strong><br>
+    3. ¡Listo! Abrila como app nativa 🗺️
+  </div>
+</div>
+
+<script>
+// ── PWA SERVICE WORKER (inline via blob) ──────────────────────────
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  const swCode = `
+    const CACHE = 'mapa-tactico-v1';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      e.waitUntil(clients.claim());
+    });
+    self.addEventListener('fetch', e => {
+      // Solo cachear recursos misma origen
+      if (e.request.url.startsWith(self.location.origin)) {
+        e.respondWith(
+          caches.open(CACHE).then(cache =>
+            cache.match(e.request).then(cached =>
+              cached || fetch(e.request).then(res => {
+                cache.put(e.request, res.clone());
+                return res;
+              })
+            )
+          )
+        );
+      }
+    });
+  `;
+  try {
+    const blob = new Blob([swCode], {type:'application/javascript'});
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  } catch(e) {}
+})();
+
+// ── LÓGICA DE INSTALACIÓN ─────────────────────────────────────────
+(function() {
+  const installBtn = document.getElementById('pwaInstallBtn');
+  const closeBtn   = document.getElementById('pwaClose');
+  const iosBanner  = document.getElementById('pwaIosBanner');
+  const iosClose   = document.getElementById('iosClose');
+
+  if (!installBtn || !iosBanner) return;
+
+  // Evitar mostrar si ya está instalada
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  if (isStandalone) return;
+
+  // Solo mostrar en mobile
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if (!isMobile) return;
+
+  // ── Android / Chrome: evento beforeinstallprompt ──
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.add('visible');
+  });
+
+  installBtn.addEventListener('click', async (ev) => {
+    // Si el click fue en el botón "✕", no instalar
+    if (ev.target.id === 'pwaClose') return;
+    if (!deferredPrompt) return;
+    installBtn.classList.remove('visible');
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+
+  closeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    installBtn.classList.remove('visible');
+    sessionStorage.setItem('pwaInstallDismissed', '1');
+  });
+
+  // ── iOS Safari ──
+  const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isIos && isSafari && !sessionStorage.getItem('pwaIosDismissed')) {
+    setTimeout(() => iosBanner.classList.add('visible'), 1500);
+  }
+
+  iosClose.addEventListener('click', () => {
+    iosBanner.classList.remove('visible');
+    sessionStorage.setItem('pwaIosDismissed', '1');
+  });
+})();
 </script>
 </body>
 </html>
