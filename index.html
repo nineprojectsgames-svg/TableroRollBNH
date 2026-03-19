@@ -1507,7 +1507,7 @@ textarea:focus { border-color:var(--gld); }
         <span class="turn-round" id="turnRound">Ronda 1</span>
         <button class="btn btn-grn" onclick="prevTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">◀</button>
         <button class="btn btn-gld" onclick="nextTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">Siguiente ▶</button>
-        <label style="display:flex;align-items:center;gap:4px;font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);cursor:pointer;white-space:nowrap;"><input type="checkbox" id="autoRegen" checked style="cursor:pointer;accent-color:var(--gld);"> Auto Estamina</label>
+        <label style="display:flex;align-items:center;gap:4px;font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);cursor:pointer;white-space:nowrap;"><input type="checkbox" id="autoRegen" checked style="cursor:pointer;accent-color:var(--gld);" onchange="const mr=document.getElementById('mAutoRegen');if(mr)mr.checked=this.checked;"> Auto Estamina</label>
         <button class="btn btn-red" onclick="resetTurns()" style="width:auto;padding:3px 8px;font-size:.68rem;">↺ Reset</button>
       </div>
     </div>
@@ -1738,7 +1738,7 @@ textarea:focus { border-color:var(--gld); }
           </div>
         </div>
         <label style="display:flex;align-items:center;gap:5px;font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);cursor:pointer;margin-bottom:8px;">
-          <input type="checkbox" id="mAutoRegen" checked style="cursor:pointer;accent-color:var(--gld);" onchange="document.getElementById('autoRegen').checked=this.checked"> Auto Estamina
+          <input type="checkbox" id="mAutoRegen" checked style="cursor:pointer;accent-color:var(--gld);" onchange="const ar=document.getElementById('autoRegen');if(ar)ar.checked=this.checked;"> Auto Estamina
         </label>
         <div class="turn-list" id="mTurnList" style="display:flex;flex-wrap:wrap;gap:5px;">
           <span class="turn-empty">Sin fichas en el turno.</span>
@@ -1791,7 +1791,7 @@ textarea:focus { border-color:var(--gld); }
             <span id="mDiceTotal" style="font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:var(--red);line-height:1;min-width:46px;text-align:center;">—</span>
             <span id="mDiceBreak" style="font-size:.78rem;color:var(--ink2);flex:1;line-height:1.5;font-style:italic;">Tirá un dado...</span>
           </div>
-          <div id="mDiceHistory" style="max-height:80px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:2px;margin-top:6px;"></div>
+          <div id="mDiceHistory" style="max-height:80px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;margin-top:6px;"></div>
         </div>
       </div>
 
@@ -1808,7 +1808,7 @@ textarea:focus { border-color:var(--gld); }
   </div>
 
   <!-- RIGHT COL (tab: ficha) -->
-  <div id="rightCol" class="tab-pane active" data-tab="ficha">
+  <div id="rightCol" class="tab-pane" data-tab="ficha">
 
     <!-- Sub-tab bar: solo en mobile -->
     <div id="subTabBar">
@@ -2336,14 +2336,11 @@ textarea:focus { border-color:var(--gld); }
   <button class="tab-btn active" data-tab="mapa" onclick="switchTab('mapa',this)">
     <span class="tab-icon">🗺</span>Mapa
   </button>
-  <button class="tab-btn" data-tab="fichas" onclick="switchTab('fichas',this)">
-    <span class="tab-icon">⚔</span>Fichas
-  </button>
   <button class="tab-btn" data-tab="ficha" onclick="switchTab('ficha',this)">
     <span class="tab-icon">📋</span>Ficha
   </button>
-  <button class="tab-btn" data-tab="turno" onclick="switchTab('turno',this)">
-    <span class="tab-icon">🎲</span>Combate
+  <button class="tab-btn" data-tab="fichas" onclick="switchTab('fichas',this)">
+    <span class="tab-icon">☰</span>Menú
   </button>
 </div>
 
@@ -3457,7 +3454,8 @@ function nextTurn() {
   selId = t.id;
 
   // regenerar estamina al inicio del turno (solo si está activado)
-  if (t.sh && document.getElementById('autoRegen').checked) {
+  const autoRegenOn = document.getElementById('autoRegen')?.checked || document.getElementById('mAutoRegen')?.checked;
+  if (t.sh && autoRegenOn) {
     const reg  = (t.sh.reg||0) + (t.sh.bvReg||0);
     const max  = t.sh.est_m || 100;
     const prev = t.sh.est_c || 0;
@@ -3917,19 +3915,12 @@ function switchTab(tab, btn) {
   if (window.innerWidth > 900) return;
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
-  // 'turno' tab muestra midbar en lugar de un pane
-  const midbar = document.getElementById('midbar');
-  if (tab === 'turno') {
-    midbar.classList.add('turno-visible');
-    midbar.style.display = 'flex';
-  } else {
-    midbar.classList.remove('turno-visible');
-    midbar.style.display = 'none';
-    const pane = document.querySelector('[data-tab="' + tab + '"]');
-    if (pane) pane.classList.add('active');
-  }
+  const pane = document.querySelector('[data-tab="' + tab + '"]');
+  if (pane) pane.classList.add('active');
   btn.classList.add('active');
+  // mapaBottom solo visible cuando estamos en el tab Mapa
+  const mb = document.getElementById('mapaBottom');
+  if (mb) mb.style.display = (tab === 'mapa') ? 'block' : 'none';
 }
 
 // ── SUB-TABS (dentro de Ficha) ───────────────────────────────────
@@ -3943,18 +3934,17 @@ function switchSubTab(subtab, btn) {
 
 window.addEventListener('resize', () => {
   const mb = document.getElementById('midbar');
-  if (window.innerWidth <= 900) {
-    mb.style.display = mb.classList.contains('turno-visible') ? 'flex' : 'none';
-  } else {
-    mb.style.display = '';
-  }
+  if (mb) mb.style.display = window.innerWidth <= 900 ? 'none' : '';
 });
 
-// init: ocultar midbar en mobile
+// init mobile: ocultar midbar y mapaBottom hasta que el tab mapa esté activo
 (function() {
   if (window.innerWidth <= 900) {
     const mb = document.getElementById('midbar');
     if (mb) mb.style.display = 'none';
+    // mapaBottom: visible solo si tab mapa está activo (lo está por defecto)
+    const mbot = document.getElementById('mapaBottom');
+    if (mbot) mbot.style.display = 'block';
   }
 })();
 
@@ -5166,31 +5156,57 @@ function listenLogs() {
 
 function listenRolls() {
   if (!roomRef) return;
-  // solo escuchar tiradas NUEVAS (posteriores a cuando conectamos)
   roomRef.child('rolls').orderByChild('ts').startAt(lastRollTs + 1).on('child_added', snap => {
     const d = snap.val();
     if (!d) return;
     // si yo tiré este dado, ya lo mostré localmente — no duplicar
     if (myRollKeys.has(snap.key)) { myRollKeys.delete(snap.key); return; }
-    // mostrar en historial de dados
+
+    const hh = new Date(d.ts).getHours().toString().padStart(2,'0');
+    const mm2 = new Date(d.ts).getMinutes().toString().padStart(2,'0');
+    const timeStamp = `${hh}:${mm2}`;
+
+    // ── Panel desktop (diceHistory) ──
     const hist = document.getElementById('diceHistory');
-    const entry = document.createElement('div');
-    const cls = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
-    entry.className = 'dhentry ' + cls;
-    entry.innerHTML = `<span class="dhtime">${new Date(d.ts).getHours().toString().padStart(2,'0')}:${new Date(d.ts).getMinutes().toString().padStart(2,'0')}</span>${d.msg}`;
-    hist.appendChild(entry);
-    while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+    if (hist) {
+      const entry = document.createElement('div');
+      const cls = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
+      entry.className = 'dhentry ' + cls;
+      entry.innerHTML = `<span class="dhtime">${timeStamp}</span>${d.msg}`;
+      hist.appendChild(entry);
+      while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+    }
+
+    // ── Panel mobile bajo el mapa (mDiceHistory) ──
+    const mHist = document.getElementById('mDiceHistory');
+    if (mHist) {
+      const mEntry = document.createElement('div');
+      const cls2 = d.type === 'spawn' ? 'crit' : d.type === 'del' ? 'fail' : '';
+      mEntry.className = 'dhentry ' + cls2;
+      mEntry.innerHTML = `<span class="dhtime">${timeStamp}</span>${d.msg}`;
+      mHist.insertBefore(mEntry, mHist.firstChild);
+      while (mHist.children.length > 20) mHist.removeChild(mHist.lastChild);
+    }
+
     // también al log principal
     addLog(d.type, `🎲 ${d.msg}`);
-    // actualizar el resultado visible si es el más reciente
-    // (parseamos el total del mensaje)
-    const match = d.msg.match(/<b>(\d+)<\/b>\s*(?:✨|💀)?$/);
-    if (match) {
-      const totalEl = document.getElementById('diceTotal');
-      const bdEl = document.getElementById('diceBreakdown');
-      totalEl.textContent = match[1];
-      totalEl.style.color = d.type==='spawn'?'#c8941a':d.type==='del'?'#c0392b':'#8b1a1a';
-      bdEl.innerHTML = d.msg;
+
+    // actualizar resultado visible (desktop + mobile)
+    const match = d.msg.match(/<b>(\d+)<\/b>\s*(?:✨|💀)?/g);
+    // extraer el último número en negrita (el total)
+    const lastB = d.msg.match(/.*<b>(\d+)<\/b>/);
+    if (lastB) {
+      const total = lastB[1];
+      const clr = d.type==='spawn'?'#c8941a':d.type==='del'?'#c0392b':'#8b1a1a';
+      const dtEl = document.getElementById('diceTotal');
+      const dbEl = document.getElementById('diceBreakdown');
+      if (dtEl) { dtEl.textContent = total; dtEl.style.color = clr; }
+      if (dbEl) dbEl.innerHTML = d.msg;
+      // mobile
+      const mTot = document.getElementById('mDiceTotal');
+      const mBrk = document.getElementById('mDiceBreak');
+      if (mTot) { mTot.textContent = total; mTot.style.color = clr; }
+      if (mBrk) mBrk.innerHTML = d.msg;
     }
   });
 }
