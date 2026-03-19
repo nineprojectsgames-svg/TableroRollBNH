@@ -1590,6 +1590,7 @@ textarea:focus { border-color:var(--gld); }
 
   <!-- MAP COL (tab: mapa) -->
   <div id="mapCol" class="tab-pane active" data-tab="mapa">
+    <span id="mapScrollHint">← deslizá para ver todo el mapa →</span>
     <div class="mapbox" id="mapbox">
       <canvas id="cv"></canvas>
     </div>
@@ -1603,6 +1604,43 @@ textarea:focus { border-color:var(--gld); }
       <input type="number" id="customRows" min="4" max="40" value="14" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--ink);outline:none;">
       <button class="btn btn-grn btn-sm" onclick="setCustomGrid()">✓</button>
       <button class="btn btn-red btn-sm" onclick="clearMap()">Limpiar</button>
+    </div>
+
+    <!-- Extras del mapa: Zonas, Obstáculos, Controles — solo visibles en mobile -->
+    <div id="mapaExtras">
+      <div class="panel">
+        <div class="ptitle">🎨 Zonas / Áreas</div>
+        <div class="zona-mode-row">
+          <div class="zona-mode-btn active" id="zonaModePin" onclick="setZonaMode('pintar')">✏ Pintar</div>
+          <div class="zona-mode-btn" id="zonaModeErase" onclick="setZonaMode('borrar')">🧹 Borrar</div>
+          <div class="zona-mode-btn" id="zonaModeNone" onclick="setZonaMode('none')">✋ Mover</div>
+        </div>
+        <div class="zona-colors" id="zonaColors"></div>
+        <input type="text" id="zonaLabelInput" placeholder="Nombre de la zona (opcional)" maxlength="24" style="margin-bottom:6px;">
+        <div class="zona-list" id="zonaList"><p class="info">Sin zonas.</p></div>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-red btn-sm" id="btnDelZona" onclick="deleteSelectedZona()" style="display:none;flex:1;">Eliminar zona</button>
+          <button class="btn btn-red btn-sm" onclick="clearZonas()" style="flex:1;">Limpiar todo</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">🧱 Obstáculos</div>
+        <div class="obs-grid" id="obsGrid"></div>
+        <div class="obs-list" id="obsList"><p class="info">Sin obstáculos.</p></div>
+        <button class="btn btn-red" id="btnDelObs" onclick="deleteSelectedObs()" style="display:none;">Eliminar seleccionado</button>
+        <button class="btn btn-red" onclick="clearObstacles()" style="margin-top:4px;">Limpiar todos</button>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">✧ Controles touch</div>
+        <p class="info" style="line-height:1.9;font-size:.88rem;">
+          <b>Tocar ficha</b> — Seleccionar<br>
+          <b>Arrastrar ficha</b> — Mover<br>
+          <b>Tocar celda vacía</b> — Mover seleccionada<br>
+          <b>Long press vacío</b> — Deseleccionar
+        </p>
+      </div>
     </div>
   </div>
 
@@ -4803,6 +4841,156 @@ loadFirebase();
 
 let af=0;
 (function loop(){if(selId){af++;if(af%35===0)redraw();}requestAnimationFrame(loop);})();
+</script>
+
+<!-- ── PWA INSTALL ─────────────────────────────────────────────── -->
+<style>
+#pwaInstallBtn {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px 11px 16px;
+  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
+  border: 2px solid var(--gld);
+  border-radius: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.7), 0 0 0 1px rgba(200,148,26,.2);
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: pwaFloat 3s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+#pwaInstallBtn.visible { display: flex; }
+#pwaInstallBtn:active { transform: translateX(-50%) scale(.96); animation: none; }
+#pwaInstallBtn .pwa-icon { font-size: 1.3rem; line-height: 1; }
+#pwaInstallBtn .pwa-x {
+  margin-left: 6px; font-size: 1rem; opacity: .5;
+  background: none; border: none; color: var(--p);
+  cursor: pointer; line-height: 1; padding: 0 2px;
+  font-family: sans-serif;
+}
+#pwaInstallBtn .pwa-x:hover { opacity: 1; }
+#pwaIosBanner {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--tab-h) + 14px);
+  left: 12px; right: 12px;
+  z-index: 9999;
+  background: linear-gradient(135deg, #2c1a0e 0%, #1a0f08 100%);
+  border: 2px solid var(--gld);
+  border-radius: 10px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.75);
+  font-family: 'Cinzel', serif;
+  color: var(--p);
+}
+#pwaIosBanner.visible { display: block; }
+#pwaIosBanner .ios-title { font-size:.82rem; letter-spacing:2px; color:var(--gld); margin-bottom:8px; text-transform:uppercase; }
+#pwaIosBanner .ios-steps { font-size:.76rem; color:rgba(244,228,184,.85); line-height:1.9; font-family:'Crimson Text',serif; }
+#pwaIosBanner .ios-steps span { font-size:1.1rem; }
+#pwaIosBanner .ios-x { position:absolute; top:10px; right:12px; background:none; border:none; color:var(--p); font-size:1.1rem; cursor:pointer; opacity:.6; font-family:sans-serif; }
+#pwaIosBanner .ios-x:hover { opacity:1; }
+@keyframes pwaFloat {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-5px); }
+}
+</style>
+
+<button id="pwaInstallBtn" aria-label="Instalar aplicación">
+  <span class="pwa-icon">⚔️</span>
+  Instalar App
+  <button class="pwa-x" id="pwaClose" aria-label="Cerrar">✕</button>
+</button>
+
+<div id="pwaIosBanner">
+  <button class="ios-x" id="iosClose">✕</button>
+  <div class="ios-title">⚔️ Instalar Mapa Táctico</div>
+  <div class="ios-steps">
+    1. Tocá <span>⬆️</span> <em>Compartir</em> en Safari<br>
+    2. Elegí <strong>"Agregar a pantalla de inicio"</strong><br>
+    3. ¡Listo! Abrila como app nativa 🗺️
+  </div>
+</div>
+
+<script>
+// ── PWA SERVICE WORKER inline ────────────────────────────────────
+(function(){
+  if (!('serviceWorker' in navigator)) return;
+  const sw = `
+    const C='mapa-v1';
+    self.addEventListener('install',()=>self.skipWaiting());
+    self.addEventListener('activate',e=>e.waitUntil(clients.claim()));
+    self.addEventListener('fetch',e=>{
+      if(e.request.url.startsWith(self.location.origin)){
+        e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(f=>{c.put(e.request,f.clone());return f;}))));
+      }
+    });
+  `;
+  try {
+    const b = new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(b)).catch(()=>{});
+  } catch(e){}
+})();
+
+// ── LÓGICA INSTALACIÓN ────────────────────────────────────────────
+(function(){
+  const btn = document.getElementById('pwaInstallBtn');
+  const closeBtn = document.getElementById('pwaClose');
+  const ios = document.getElementById('pwaIosBanner');
+  const iosClose = document.getElementById('iosClose');
+  if (!btn) return;
+
+  // Ya instalada como standalone → no mostrar nada
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (isStandalone) return;
+
+  // Solo mobile
+  if (!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return;
+
+  // Android/Chrome: beforeinstallprompt
+  let deferred = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferred = e;
+    if (!sessionStorage.getItem('pwaDismissed')) btn.classList.add('visible');
+  });
+
+  btn.addEventListener('click', async ev => {
+    if (ev.target.id === 'pwaClose') return;
+    if (!deferred) return;
+    btn.classList.remove('visible');
+    deferred.prompt();
+    await deferred.userChoice;
+    deferred = null;
+  });
+
+  closeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    btn.classList.remove('visible');
+    sessionStorage.setItem('pwaDismissed','1');
+  });
+
+  // iOS Safari
+  const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isIos && isSafari && !sessionStorage.getItem('iosDismissed')) {
+    setTimeout(()=> ios.classList.add('visible'), 1800);
+  }
+
+  iosClose.addEventListener('click', () => {
+    ios.classList.remove('visible');
+    sessionStorage.setItem('iosDismissed','1');
+  });
+})();
 </script>
 </body>
 </html>
