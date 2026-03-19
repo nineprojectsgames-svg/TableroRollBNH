@@ -2623,28 +2623,50 @@ function drawTok(t, ox, oy) {
       }
     }
   }
-  // barras de vida y estamina — dentro del token (parte inferior), siempre visibles
+  // ── Barras circulares de vida y estamina ──
+  // Vida:     mitad superior — de -π (izq) a 0 (der) en sentido HORARIO (false), pasando por arriba (-π/2)
+  // Estamina: mitad inferior — de  0 (der) a π (izq) en sentido HORARIO (false), pasando por abajo (+π/2)
   if (t.sh) {
-    const bw = rd * 1.8;           // un poco menos que el diámetro
-    const bh = 4;
-    const bx = x - bw / 2;
-    const by  = y + rd * 0.18;     // vida: mitad inferior del token
-    const by2 = by + bh + 2;       // estamina: justo debajo
+    const R  = rd + 3.5;
+    const sw = 3.5;
 
-    // fondos semitransparentes
-    ctx.fillStyle = 'rgba(0,0,0,.55)';
-    ctx.beginPath(); ctx.roundRect(bx-1, by-1, bw+2, bh+2, 2); ctx.fill();
-    ctx.beginPath(); ctx.roundRect(bx-1, by2-1, bw+2, bh+2, 2); ctx.fill();
-
-    // barra vida (verde)
     const vp = Math.max(0, Math.min(1, (t.sh.vida_c||0) / Math.max(1, t.sh.vida_m||100)));
-    ctx.fillStyle = vp > 0.5 ? '#27ae60' : vp > 0.25 ? '#f39c12' : '#e74c3c';
-    if (vp > 0) { ctx.beginPath(); ctx.roundRect(bx, by, bw * vp, bh, 2); ctx.fill(); }
-
-    // barra estamina (amarillo)
     const ep = Math.max(0, Math.min(1, (t.sh.est_c||0) / Math.max(1, t.sh.est_m||100)));
-    ctx.fillStyle = '#f1c40f';
-    if (ep > 0) { ctx.beginPath(); ctx.roundRect(bx, by2, bw * ep, bh, 2); ctx.fill(); }
+
+    ctx.save();
+    ctx.lineWidth = sw;
+    ctx.lineCap = 'round';
+
+    // — Fondo mitad superior (vida) —
+    ctx.strokeStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.arc(x, y, R, -Math.PI, 0, false);  // horario: izq(-π)→arriba(-π/2)→der(0)
+    ctx.stroke();
+
+    // — Arco vida: empieza izquierda(-π), avanza horario una fracción de π —
+    if (vp > 0) {
+      const color = vp > 0.5 ? '#2ecc71' : vp > 0.25 ? '#f39c12' : '#e74c3c';
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, R, -Math.PI, -Math.PI + Math.PI * vp, false);
+      ctx.stroke();
+    }
+
+    // — Fondo mitad inferior (estamina) —
+    ctx.strokeStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath();
+    ctx.arc(x, y, R, 0, Math.PI, false);   // horario: der(0)→abajo(π/2)→izq(π)
+    ctx.stroke();
+
+    // — Arco estamina: empieza derecha(0), avanza horario una fracción de π —
+    if (ep > 0) {
+      ctx.strokeStyle = '#f1c40f';
+      ctx.beginPath();
+      ctx.arc(x, y, R, 0, Math.PI * ep, false);
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 }
 
