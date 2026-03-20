@@ -3550,7 +3550,7 @@ function sfBono(field, value) {
   sf._t = setTimeout(() => el.style.opacity = '0', 1800);
 }
 
-// Calcula Mod Base = floor((base + bono) / 2) - 5
+// Calcula Mod Base = REDONDEAR.MENOS((base+bono)/2 - 5) = trunc en JS
 // y Mod Final = ModBase + bonos equipo/pasivas/PU
 function updateMainStatMods() {
   if (!selId || !tokens[selId]) return;
@@ -3573,7 +3573,7 @@ function updateMainStatMods() {
   MAINS.forEach(([key, Key]) => {
     const base   = sh[key] || 0;
     const bono   = sh['b'+Key] || 0;
-    const modBase  = Math.floor((base + bono) / 2) - 5;
+    const modBase  = Math.trunc((base + bono) / 2 - 5);
     const ext    = (extBonos[key] || 0) + pu;
     const modFinal = modBase + ext;
 
@@ -3654,32 +3654,17 @@ function autoCalcVitales() {
 
   // Calcular mod final directo desde sh (sin depender del DOM)
   // Fórmula: mod = floor((stat - 1) / 2) - 4  (según tabla del manual)
-  function statToMod(val) {
-    val = Math.max(1, val || 0);
-    if (val <= 2)  return -4;
-    if (val <= 4)  return -3;
-    if (val <= 6)  return -2;
-    if (val <= 8)  return -1;
-    if (val <= 10) return  0;
-    if (val <= 12) return  1;
-    if (val <= 14) return  2;
-    if (val <= 16) return  3;
-    if (val <= 18) return  4;
-    if (val <= 20) return  5;
-    if (val <= 22) return  6;
-    if (val <= 24) return  7;
-    if (val <= 26) return  8;
-    if (val <= 28) return  9;
-    if (val <= 30) return 10;
-    return 11;
+  // Fórmula correcta: REDONDEAR.MENOS((base+bono)/2) - 5 = round half up
+  function calcModBase(base, bono) {
+    return Math.trunc((base + bono) / 2 - 5);
   }
-  // Mod Final = modBase + bono de stat + bonos equipo/pasivas/PU
+
+  // Mod Final = modBase(base+bono) + bonos equipo/pasivas/PU
   function getModFinalSh(stat) {
     const base  = sh[stat] || 0;
     const bKey  = 'b' + stat[0].toUpperCase() + stat.slice(1);
     const bono  = sh[bKey] || 0;
-    const modBase = statToMod(base);
-    // Bonos equipo y pasivas
+    const modBase = calcModBase(base, bono);
     let ext = 0;
     Object.values(sh.equipo || {}).forEach(slot => {
       if (slot && slot.stat === stat && slot.bono) ext += parseFloat(slot.bono) || 0;
@@ -3688,8 +3673,7 @@ function autoCalcVitales() {
       if (p.activa && p.stat === stat && p.bono) ext += parseFloat(p.bono) || 0;
     });
     if (sh.plus_ultra) ext += 2;
-    const modFinal = modBase + bono + ext;
-    return modFinal;
+    return modBase + ext;
   }
 
   // Si el DOM ya tiene los valores renderizados, preferir esos (más precisos)
