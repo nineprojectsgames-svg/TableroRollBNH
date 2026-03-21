@@ -2607,25 +2607,37 @@ textarea:focus { border-color:var(--gld); }
    DESKTOP — min-width: 901px
 ════════════════════════════════════════════════════════════════ */
 @media (min-width: 901px) {
-  /* App sections as normal flow */
-  .app-section        { overflow: hidden; display: none; }
-  .app-section.active { display: flex; }
-  #secJugar           { position: static !important; display: flex !important; flex-direction: column; }
+  /* App sections: solo la activa se muestra, ocupa toda la pantalla */
+  .app-section {
+    display: none !important;
+    overflow: hidden;
+    position: static;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+  .app-section.active {
+    display: flex !important;
+    flex-direction: column;
+  }
 
-  /* Juego desktop */
-  .tab-pane  { display: block !important; }
-  #mapCol    { display: flex !important; }
-  #midbar    { display: flex !important; }
-  #tabBar    { display: none !important; }
-  #subTabBar { display: none !important; }
-  .sub-pane  { display: block !important; }
-  #mapaExtras     { display: none !important; }
-  #mapScrollHint  { display: none !important; }
-  #mobileSalaPanel { display: none; }
-  #modebar   { display: none; }
-  #mapaBottom { display: none; }
+  /* secJugar activa: layout de columnas */
+  #secJugar.active { flex-direction: column; }
 
-  /* Guia desktop */
+  /* Juego desktop — controles que solo aplican cuando secJugar está visible */
+  #secJugar .tab-pane  { display: block !important; }
+  #secJugar #mapCol    { display: flex !important; }
+  #midbar              { display: flex !important; }
+  #tabBar              { display: none !important; }
+  #subTabBar           { display: none !important; }
+  .sub-pane            { display: block !important; }
+  #mapaExtras          { display: none !important; }
+  #mapScrollHint       { display: none !important; }
+  #mobileSalaPanel     { display: none; }
+  #modebar             { display: none; }
+  #mapaBottom          { display: none; }
+
+  /* Guia desktop: sidebar lateral */
   #secGuia { flex-direction: row; }
   .guia-sidebar {
     width: 230px; flex-direction: column;
@@ -2651,6 +2663,15 @@ textarea:focus { border-color:var(--gld); }
   }
   .char-list-card { width: auto; flex-direction: row; }
   .chars-form-panel { overflow-y: auto; padding: 20px 28px 60px; }
+
+  /* Perfil desktop */
+  #secPerfil {
+    overflow-y: auto;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 40px 20px 60px;
+    background: #1a0f08;
+  }
 }
 
 
@@ -7325,11 +7346,14 @@ function listenPresence() {
 }
 
 // ── INIT ─────────────────────────────────────────────────────────
-// Set initial active section on mobile
+// Set initial active section
 (function() {
+  const sj = document.getElementById('secJugar');
   if (window.innerWidth <= 900) {
-    const sj = document.getElementById('secJugar');
     if (sj) sj.classList.add('active-section');
+  } else {
+    // Desktop: use 'active' class
+    if (sj) sj.classList.add('active');
   }
 })();
 buildColors();
@@ -8714,8 +8738,12 @@ function switchSection(sec) {
     return;
   }
 
-  // Desktop behavior
-  document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
+  // Desktop behavior — toggle active class, CSS handles display
+  document.querySelectorAll('.app-section').forEach(el => {
+    el.classList.remove('active');
+    // Also remove active-section (used by mobile) just in case
+    el.classList.remove('active-section');
+  });
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   const secEl = document.getElementById('sec' + sec.charAt(0).toUpperCase() + sec.slice(1));
   if (secEl) secEl.classList.add('active');
@@ -8723,10 +8751,11 @@ function switchSection(sec) {
   if (navEl) navEl.classList.add('active');
   if (sec === 'personajes') { renderCharsList(); }
   if (sec === 'perfil') renderProfileCard();
-  if (sec !== 'jugar') {
-    const sc = secEl && secEl.querySelector('.guia-content, .chars-form-panel');
+  // Scroll to top when switching
+  if (sec !== 'jugar' && secEl) {
+    const sc = secEl.querySelector('.guia-content, .chars-form-panel');
     if (sc) sc.scrollTop = 0;
-    else if (secEl) secEl.scrollTop = 0;
+    else secEl.scrollTop = 0;
   }
 }
 
