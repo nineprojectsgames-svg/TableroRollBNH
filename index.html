@@ -121,10 +121,9 @@ body {
   flex-shrink: 0;
   display: flex;
   gap: 8px;
-  padding: 0 10px 4px;
+  padding: 0 10px 5px;
   align-items: stretch;
   min-height: 0;
-  max-height: 120px;
 }
 
 /* turn panel compact */
@@ -134,10 +133,10 @@ body {
   background: var(--p);
   border: 2px solid var(--ps);
   border-radius: 4px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
 }
 .turn-header {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 5px;
@@ -165,11 +164,11 @@ body {
 
 /* dice compact */
 #diceWrap {
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  width: 100%;
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 4px;
+  padding: 6px 10px;
+  width: 480px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -178,9 +177,9 @@ body {
 .dice-row { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-bottom: 5px; }
 .dice-btn {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  width: 42px; height: 42px;
+  width: 38px; height: 38px;
   background: var(--p); border: 1px solid var(--ps); border-radius: 4px;
-  font-family: 'Cinzel', serif; font-size: .68rem; color: var(--ink2);
+  font-family: 'Cinzel', serif; font-size: .65rem; color: var(--ink2);
   cursor: pointer; transition: background .15s, transform .1s;
   flex-shrink: 0;
 }
@@ -206,7 +205,7 @@ body {
 .dice-total { font-family:'Cinzel',serif; font-size:1.7rem; font-weight:700; color:var(--red); line-height:1; min-width:42px; text-align:center; }
 .dice-breakdown { font-size:.78rem; color:var(--ink2); line-height:1.4; }
 .dice-breakdown b { color:var(--ink); }
-.dice-history { max-height:80px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:2px; margin-top:4px; width:100%; }
+.dice-history { max-height:60px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:2px; margin-top:4px; width:100%; }
 .dice-history::-webkit-scrollbar { width:3px; }
 .dice-history::-webkit-scrollbar-thumb { background:var(--ps); }
 .dhentry { font-size:.72rem; color:var(--ink2); padding:2px 5px; background:rgba(200,160,100,.12); border-radius:3px; border-left:3px solid var(--ps); }
@@ -673,7 +672,7 @@ body {
 
 /* left col */
 #leftCol {
-  width: 170px;
+  width: 200px;
   flex-shrink: 0;
   overflow-y: auto;
   display: flex;
@@ -698,7 +697,7 @@ body {
 
 /* right col */
 #rightCol {
-  width: 300px;
+  width: 340px;
   flex-shrink: 0;
   overflow-y: auto;
   background: var(--p);
@@ -2533,8 +2532,6 @@ textarea:focus { border-color:var(--gld); }
     display: flex !important;
   }
 
-  /* ── DADOS en rightCol: ocultos en mobile (usa mapaBottom) ── */
-  #dicePanel { display: none !important; }
 
   /* ── INPUTS: sin zoom en iOS ── */
   input[type="text"],
@@ -2657,27 +2654,50 @@ textarea:focus { border-color:var(--gld); }
 }
 
 
-/* ── DADOS EN RIGHTCOL (desktop) ─────────────────────────────────── */
-@media (min-width: 901px) {
-  /* El panel de dados ahora vive en rightCol */
-  #dicePanel {
-    flex-shrink: 0;
-  }
-  #dicePanel .ptitle {
-    font-size: .65rem;
-    cursor: pointer;
-    user-select: none;
-  }
-  #dicePanel .ptitle:hover { color: var(--gld); }
-  /* dice-row más compacta dentro del sidebar */
-  #diceWrap .dice-row { gap: 4px; margin-bottom: 4px; }
-  #diceWrap .dice-total { font-size: 1.4rem; min-width: 36px; }
-  #diceWrap .dice-result-area { padding-top: 4px; margin-top: 4px; }
-  /* Historial más compacto */
-  #diceWrap .dice-history { max-height: 60px; }
-  /* Que el midbar con solo turno sea más compacto */
-  #midbar { max-height: 110px; }
-  /* El log de la derecha (roll toast) queda bien */
+
+/* ── PANELES COLAPSABLES (turno y dados) ────────────────────────── */
+#turnPanelBody,
+#dicePanelBody {
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+  max-height: 200px;
+  opacity: 1;
+}
+#turnPanelBody.collapsed,
+#dicePanelBody.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+}
+
+/* Cuando el panel de dados está colapsado, el midbar queda muy compacto */
+#diceWrap.collapsed {
+  justify-content: flex-start;
+}
+#turnWrap.collapsed {
+  justify-content: flex-start;
+}
+
+/* Header del turn y dice clickeable */
+.turn-header { cursor: pointer; }
+.turn-header .turn-controls { cursor: default; }
+
+/* Flecha visual */
+#turnPanelArrow,
+#dicePanelArrow {
+  transition: transform 0.2s ease;
+  display: inline-block;
+  color: var(--ps);
+  font-size: .72rem;
+  flex-shrink: 0;
+}
+#turnPanelArrow.collapsed,
+#dicePanelArrow.collapsed {
+  transform: rotate(180deg);
+}
+
+/* midbar compacto cuando ambos colapsados */
+#midbar.both-collapsed {
+  padding-bottom: 3px;
 }
 
 </style>
@@ -2746,9 +2766,10 @@ textarea:focus { border-color:var(--gld); }
 <!-- MIDBAR: turn + dice -->
 <div id="midbar">
   <div id="turnWrap">
-    <div class="turn-header">
+    <div class="turn-header" style="cursor:pointer;user-select:none;" onclick="toggleTurnPanel(event)">
       <span class="turn-title">⚔ Orden de Turno</span>
-      <div class="turn-controls">
+      <span id="turnPanelArrow" style="font-size:.7rem;color:var(--ps);margin-left:4px;flex-shrink:0;">▲</span>
+      <div class="turn-controls" onclick="event.stopPropagation()">
         <span class="turn-round" id="turnRound">Ronda 1</span>
         <button class="btn btn-grn" onclick="prevTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">◀</button>
         <button class="btn btn-gld" onclick="nextTurn()" style="width:auto;padding:3px 8px;font-size:.68rem;">Siguiente ▶</button>
@@ -2756,11 +2777,100 @@ textarea:focus { border-color:var(--gld); }
         <button class="btn btn-red" onclick="resetTurns()" style="width:auto;padding:3px 8px;font-size:.68rem;">↺ Reset</button>
       </div>
     </div>
+    <div id="turnPanelBody">
     <div class="turn-list" id="turnList">
       <span class="turn-empty">Añadí fichas para ver el orden de turno.</span>
     </div>
+    </div><!-- /turnPanelBody -->
   </div>
+  <div id="diceWrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;user-select:none;" onclick="toggleDicePanel(event)">
+    <span class="turn-title">🎲 Tirada de Dados</span>
+    <span id="dicePanelArrow" style="font-size:.7rem;color:var(--ps);margin-left:4px;">▲</span>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <label style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">Tirar:</label>
+      <input type="number" id="diceQty" value="1" min="1" max="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.8rem;color:#2c1a0e;outline:none;">
+      <span style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
+    </div>
+  </div>
+
+<div id="dicePanelBody">
+    <div class="dice-row">
+    <!-- Ventaja / Normal / Desventaja -->
+    <div class="adv-row" style="width:100%;margin-bottom:6px;">
+      <button class="adv-btn" id="dAdvV" onclick="setAdvantage('ventaja','d')" title="Tirar 2d20, tomar el mayor">⬆ Ventaja</button>
+      <button class="adv-btn adv-sel-normal" id="dAdvN" onclick="setAdvantage('normal','d')" title="Tirada normal">— Normal</button>
+      <button class="adv-btn" id="dAdvD" onclick="setAdvantage('desventaja','d')" title="Tirar 2d20, tomar el menor">⬇ Desventaja</button>
+    </div>
+    <!-- dados estándar -->
+    <button class="dice-btn" onclick="roll(4)"  title="d4" ><span class="dice-icon">△</span>d4</button>
+    <button class="dice-btn" onclick="roll(6)"  title="d6" ><span class="dice-icon">⬡</span>d6</button>
+    <button class="dice-btn" onclick="roll(8)"  title="d8" ><span class="dice-icon">◇</span>d8</button>
+    <button class="dice-btn" onclick="roll(10)" title="d10"><span class="dice-icon">⬟</span>d10</button>
+    <button class="dice-btn" onclick="roll(12)" title="d12"><span class="dice-icon">⬠</span>d12</button>
+    <button class="dice-btn" onclick="roll(20)" title="d20"><span class="dice-icon">★</span>d20</button>
+    <button class="dice-btn" onclick="roll(100)" title="d100" style="font-size:.62rem;"><span class="dice-icon">%</span>d100</button>
+
+    <div class="dice-sep"></div>
+
+    <!-- dado personalizado -->
+    <div class="dice-custom">
+      <label style="font-size:.72rem;color:#5c3d1e;">Personalizado</label>
+      <div class="dice-custom-row">
+        <span style="font-size:.78rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
+        <input type="number" id="diceCustom" value="6" min="2" max="999" style="width:52px;">
+        <button class="btn btn-gld" onclick="rollCustom()" style="width:auto;padding:4px 8px;font-size:.7rem;">Tirar</button>
+      </div>
+    </div>
+
+    <div class="dice-sep"></div>
+
+    <!-- modificador y stat -->
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:.72rem;color:#5c3d1e;">Modificador</label>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <input type="number" id="diceMod" value="0" style="width:50px;padding:3px 5px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.82rem;color:#2c1a0e;outline:none;">
+        <select id="diceStat" class="dice-stat-sel" onchange="applyStatMod()" title="Usar stat de la ficha seleccionada">
+          <option value="">+ stat</option>
+          <option value="pod">Poder</option>
+          <option value="agi">Agilidad</option>
+          <option value="res">Resistencia</option>
+          <option value="tec">Técnica</option>
+          <option value="int">Inteligencia</option>
+          <option value="fue">Fuerza</option>
+          <option value="intim">Intimidación</option>
+          <option value="eva">Evasión</option>
+          <option value="acr">Acrobacia</option>
+          <option value="sig">Sigilo</option>
+          <option value="agu">Aguante</option>
+          <option value="vol">Voluntad</option>
+          <option value="ctq">Control Q.</option>
+          <option value="ing">Ingeniería</option>
+          <option value="tac">Táctica</option>
+          <option value="per">Persuasión</option>
+          <option value="eng">Engaño</option>
+          <option value="inv">Investigación</option>
+          <option value="prc">Percepción</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- resultado -->
+  <div class="dice-result-area">
+    <div class="dice-last" id="diceResult">
+      <div class="dice-total" id="diceTotal">—</div>
+      <div class="dice-breakdown" id="diceBreakdown" style="color:#a07850;font-style:italic;">Tirá un dado para empezar</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:4px;">
+      <div class="dice-history" id="diceHistory" style="flex:1;"></div>
+      <button class="admin-only" onclick="clearRolls()" style="background:none;border:none;color:var(--red);font-size:.7rem;cursor:pointer;opacity:.6;white-space:nowrap;padding:2px 4px;font-family:'Cinzel',serif;" title="Solo DM — limpiar historial de dados">🗑 Limpiar</button>
+    </div>
+  </div>
+  </div>
+
   
+  </div><!-- /dicePanelBody -->
 </div>
 
 <!-- MAIN AREA -->
@@ -3616,98 +3726,6 @@ textarea:focus { border-color:var(--gld); }
 
     </div><!-- statsContent -->
   
-      <!-- DADOS en rightCol (desktop) -->
-      <div id="dicePanel" style="border-top:2px solid var(--ps);margin-top:8px;padding-top:8px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;cursor:pointer;" onclick="toggleDicePanel()">
-          <span class="ptitle" style="margin:0;border:none;padding:0;">🎲 Dados</span>
-          <span id="dicePanelToggle" style="font-size:.75rem;color:var(--ps);">▲</span>
-        </div>
-        <div id="dicePanelBody">
-<div id="diceWrap">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-    <span class="turn-title">🎲 Tirada de Dados</span>
-    <div style="display:flex;align-items:center;gap:6px;">
-      <label style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">Tirar:</label>
-      <input type="number" id="diceQty" value="1" min="1" max="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.8rem;color:#2c1a0e;outline:none;">
-      <span style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
-    </div>
-  </div>
-
-  <div class="dice-row">
-    <!-- Ventaja / Normal / Desventaja -->
-    <div class="adv-row" style="width:100%;margin-bottom:6px;">
-      <button class="adv-btn" id="dAdvV" onclick="setAdvantage('ventaja','d')" title="Tirar 2d20, tomar el mayor">⬆ Ventaja</button>
-      <button class="adv-btn adv-sel-normal" id="dAdvN" onclick="setAdvantage('normal','d')" title="Tirada normal">— Normal</button>
-      <button class="adv-btn" id="dAdvD" onclick="setAdvantage('desventaja','d')" title="Tirar 2d20, tomar el menor">⬇ Desventaja</button>
-    </div>
-    <!-- dados estándar -->
-    <button class="dice-btn" onclick="roll(4)"  title="d4" ><span class="dice-icon">△</span>d4</button>
-    <button class="dice-btn" onclick="roll(6)"  title="d6" ><span class="dice-icon">⬡</span>d6</button>
-    <button class="dice-btn" onclick="roll(8)"  title="d8" ><span class="dice-icon">◇</span>d8</button>
-    <button class="dice-btn" onclick="roll(10)" title="d10"><span class="dice-icon">⬟</span>d10</button>
-    <button class="dice-btn" onclick="roll(12)" title="d12"><span class="dice-icon">⬠</span>d12</button>
-    <button class="dice-btn" onclick="roll(20)" title="d20"><span class="dice-icon">★</span>d20</button>
-    <button class="dice-btn" onclick="roll(100)" title="d100" style="font-size:.62rem;"><span class="dice-icon">%</span>d100</button>
-
-    <div class="dice-sep"></div>
-
-    <!-- dado personalizado -->
-    <div class="dice-custom">
-      <label style="font-size:.72rem;color:#5c3d1e;">Personalizado</label>
-      <div class="dice-custom-row">
-        <span style="font-size:.78rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
-        <input type="number" id="diceCustom" value="6" min="2" max="999" style="width:52px;">
-        <button class="btn btn-gld" onclick="rollCustom()" style="width:auto;padding:4px 8px;font-size:.7rem;">Tirar</button>
-      </div>
-    </div>
-
-    <div class="dice-sep"></div>
-
-    <!-- modificador y stat -->
-    <div style="display:flex;flex-direction:column;gap:4px;">
-      <label style="font-size:.72rem;color:#5c3d1e;">Modificador</label>
-      <div style="display:flex;align-items:center;gap:4px;">
-        <input type="number" id="diceMod" value="0" style="width:50px;padding:3px 5px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.82rem;color:#2c1a0e;outline:none;">
-        <select id="diceStat" class="dice-stat-sel" onchange="applyStatMod()" title="Usar stat de la ficha seleccionada">
-          <option value="">+ stat</option>
-          <option value="pod">Poder</option>
-          <option value="agi">Agilidad</option>
-          <option value="res">Resistencia</option>
-          <option value="tec">Técnica</option>
-          <option value="int">Inteligencia</option>
-          <option value="fue">Fuerza</option>
-          <option value="intim">Intimidación</option>
-          <option value="eva">Evasión</option>
-          <option value="acr">Acrobacia</option>
-          <option value="sig">Sigilo</option>
-          <option value="agu">Aguante</option>
-          <option value="vol">Voluntad</option>
-          <option value="ctq">Control Q.</option>
-          <option value="ing">Ingeniería</option>
-          <option value="tac">Táctica</option>
-          <option value="per">Persuasión</option>
-          <option value="eng">Engaño</option>
-          <option value="inv">Investigación</option>
-          <option value="prc">Percepción</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- resultado -->
-  <div class="dice-result-area">
-    <div class="dice-last" id="diceResult">
-      <div class="dice-total" id="diceTotal">—</div>
-      <div class="dice-breakdown" id="diceBreakdown" style="color:#a07850;font-style:italic;">Tirá un dado para empezar</div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:4px;">
-      <div class="dice-history" id="diceHistory" style="flex:1;"></div>
-      <button class="admin-only" onclick="clearRolls()" style="background:none;border:none;color:var(--red);font-size:.7rem;cursor:pointer;opacity:.6;white-space:nowrap;padding:2px 4px;font-family:'Cinzel',serif;" title="Solo DM — limpiar historial de dados">🗑 Limpiar</button>
-    </div>
-  </div>
-  </div>
-        </div>
-      </div>
 </div>
 
 </div>
@@ -10139,16 +10157,41 @@ setTimeout(() => {
 }, 500);
 
 </script>
+
 <script>
-// ── DADOS PANEL (collapsible en desktop) ─────────────────────────
-let _dicePanelOpen = true;
-function toggleDicePanel() {
-  _dicePanelOpen = !_dicePanelOpen;
-  const body = document.getElementById('dicePanelBody');
-  const arrow = document.getElementById('dicePanelToggle');
-  if (body) body.style.display = _dicePanelOpen ? '' : 'none';
-  if (arrow) arrow.textContent = _dicePanelOpen ? '▲' : '▼';
+// ── PANELES COLAPSABLES MIDBAR ────────────────────────────────────
+let _turnOpen = true;
+let _diceOpen = true;
+
+function toggleTurnPanel(e) {
+  if (e) e.stopPropagation();
+  _turnOpen = !_turnOpen;
+  const body  = document.getElementById('turnPanelBody');
+  const arrow = document.getElementById('turnPanelArrow');
+  const wrap  = document.getElementById('turnWrap');
+  if (body)  body.classList.toggle('collapsed', !_turnOpen);
+  if (arrow) arrow.classList.toggle('collapsed', !_turnOpen);
+  if (wrap)  wrap.classList.toggle('collapsed',  !_turnOpen);
+  _updateMidbarState();
 }
+
+function toggleDicePanel(e) {
+  if (e) e.stopPropagation();
+  _diceOpen = !_diceOpen;
+  const body  = document.getElementById('dicePanelBody');
+  const arrow = document.getElementById('dicePanelArrow');
+  const wrap  = document.getElementById('diceWrap');
+  if (body)  body.classList.toggle('collapsed', !_diceOpen);
+  if (arrow) arrow.classList.toggle('collapsed', !_diceOpen);
+  if (wrap)  wrap.classList.toggle('collapsed',  !_diceOpen);
+  _updateMidbarState();
+}
+
+function _updateMidbarState() {
+  const mb = document.getElementById('midbar');
+  if (mb) mb.classList.toggle('both-collapsed', !_turnOpen && !_diceOpen);
+}
+
 </script>
 </body>
 </html>
