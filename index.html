@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mapa Táctico">
 <meta name="theme-color" content="#1a0f08">
-<title>Mapa Táctico — Boku no RPG</title>
+<title>BNH RPG — Academia de Héroes</title>
 <script>
 (function(){
-  const m={name:"Mapa Táctico — Boku no RPG",short_name:"Mapa Táctico",description:"Mapa táctico colaborativo para RPG",start_url:".",display:"standalone",orientation:"any",background_color:"#1a0f08",theme_color:"#1a0f08",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231a0f08'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"},{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a0f08'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
+  const m={name:"BNH RPG — Academia de Héroes",short_name:"BNH RPG",description:"Mapa táctico colaborativo para RPG",start_url:".",display:"standalone",orientation:"any",background_color:"#1a0f08",theme_color:"#1a0f08",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231a0f08'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"},{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a0f08'/%3E%3Ctext x='256' y='360' font-size='300' text-anchor='middle'%3E🗺%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}]};
   const b=new Blob([JSON.stringify(m)],{type:'application/json'});
   const l=document.createElement('link');l.rel='manifest';l.href=URL.createObjectURL(b);
   document.currentScript.parentNode.appendChild(l);
@@ -1712,10 +1712,703 @@ textarea:focus { border-color:var(--gld); }
 #rollToast.rt-fail   { color: #e74c3c; }
 #rollToast.rt-heal   { color: #2ecc71; }
 
+
+
+/* ══════════════════════════════════════════════════════
+   NAVEGACIÓN PRINCIPAL — APP SHELL
+══════════════════════════════════════════════════════ */
+#appNav {
+  background: #110a04;
+  border-bottom: 2px solid rgba(200,148,26,.35);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  z-index: 100;
+  position: relative;
+}
+.nav-brand {
+  font-family: 'Cinzel', serif;
+  color: var(--gld);
+  font-size: .8rem;
+  letter-spacing: 3px;
+  padding: 0 18px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(200,148,26,.2);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.nav-tabs {
+  display: flex;
+  flex: 1;
+  height: 100%;
+}
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 20px;
+  height: 42px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-family: 'Cinzel', serif;
+  font-size: .68rem;
+  letter-spacing: 2px;
+  color: #a07850;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: color .15s, border-color .15s, background .15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-tab:hover { color: var(--gld2); background: rgba(200,148,26,.06); }
+.nav-tab.active { color: var(--gld); border-bottom-color: var(--gld); background: rgba(200,148,26,.08); }
+.nav-tab .nav-icon { font-size: 1rem; }
+.nav-user-area {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  flex-shrink: 0;
+}
+.nav-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(200,148,26,.12);
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  color: var(--gld);
+  letter-spacing: 1px;
+}
+.nav-user-dot { width:6px;height:6px;border-radius:50%;background:#27ae60;animation:blink 2s infinite; }
+
+/* ══ SECCIÓN WRAPPER ══ */
+.app-section { display: none; flex: 1; min-height: 0; overflow: hidden; flex-direction: column; }
+.app-section.active { display: flex; }
+#secJugar { flex-direction: column; }
+
+/* ══════════════════════════════════════════════════════
+   SECCIÓN PERFIL / SESIÓN
+══════════════════════════════════════════════════════ */
+#secPerfil {
+  overflow-y: auto;
+  background: #1a0f08;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px 60px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 8px;
+  padding: 32px 36px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6);
+}
+.auth-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  color: var(--gld);
+  text-align: center;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.auth-sub {
+  font-size: .8rem;
+  color: var(--ink2);
+  text-align: center;
+  margin-bottom: 24px;
+  font-style: italic;
+}
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 22px;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  background: none;
+  border: none;
+  font-family: 'Cinzel', serif;
+  font-size: .68rem;
+  letter-spacing: 1px;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-transform: uppercase;
+}
+.auth-tab.active { background: var(--gld); color: var(--ink); font-weight: 700; }
+.auth-field { margin-bottom: 14px; }
+.auth-field label { font-size: .74rem; color: var(--ink2); display: block; margin-bottom: 4px; }
+.auth-field input {
+  width: 100%; padding: 8px 10px;
+  background: rgba(200,160,100,.2); border: 1px solid var(--ps);
+  border-radius: 4px; font-family: 'Crimson Text', serif;
+  font-size: .95rem; color: var(--ink); outline: none;
+}
+.auth-field input:focus { border-color: var(--gld); background: rgba(200,160,100,.3); }
+.auth-err { font-size: .74rem; color: var(--red); font-style: italic; margin-bottom: 10px; min-height: 18px; }
+.auth-btn {
+  width: 100%; padding: 10px;
+  background: var(--gld); border: none; border-radius: 4px;
+  font-family: 'Cinzel', serif; font-size: .75rem; letter-spacing: 2px;
+  color: var(--ink); cursor: pointer; font-weight: 700;
+  text-transform: uppercase; transition: background .15s;
+}
+.auth-btn:hover { background: var(--gld2); }
+.auth-btn:disabled { background: #a07850; cursor: not-allowed; }
+
+/* perfil logueado */
+.profile-card {
+  width: 100%;
+  max-width: 500px;
+  background: var(--p);
+  border: 2px solid var(--ps);
+  border-radius: 8px;
+  padding: 28px 32px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6);
+}
+.profile-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--gld); border: 3px solid var(--ps);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700;
+  color: var(--ink); margin: 0 auto 14px;
+}
+.profile-name {
+  font-family: 'Cinzel', serif; font-size: 1.05rem;
+  letter-spacing: 2px; color: var(--ink); text-align: center;
+  margin-bottom: 4px;
+}
+.profile-meta {
+  font-size: .75rem; color: var(--ink2); text-align: center;
+  margin-bottom: 20px; font-style: italic;
+}
+.profile-stats-row {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+.profile-stat-box {
+  background: rgba(200,148,26,.1);
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 6px; padding: 10px 6px;
+  text-align: center;
+}
+.profile-stat-num {
+  font-family: 'Cinzel', serif; font-size: 1.3rem;
+  color: var(--gld); font-weight: 700; line-height: 1;
+}
+.profile-stat-lbl {
+  font-size: .6rem; color: var(--ink2);
+  font-family: 'Cinzel', serif; letter-spacing: 1px;
+  text-transform: uppercase; margin-top: 3px;
+}
+.btn-logout {
+  width: 100%; padding: 9px;
+  background: none; border: 1px solid var(--red);
+  border-radius: 4px; font-family: 'Cinzel', serif;
+  font-size: .68rem; letter-spacing: 1px; color: var(--red);
+  cursor: pointer; text-transform: uppercase; transition: background .15s;
+}
+.btn-logout:hover { background: rgba(139,26,26,.1); }
+
+/* ══════════════════════════════════════════════════════
+   SECCIÓN GUÍA
+══════════════════════════════════════════════════════ */
+#secGuia {
+  flex-direction: row;
+  overflow: hidden;
+  background: #1a0f08;
+}
+.guia-sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  background: #110a04;
+  border-right: 1px solid rgba(200,148,26,.2);
+  overflow-y: auto;
+  padding: 12px 0;
+}
+.guia-sidebar::-webkit-scrollbar { width: 3px; }
+.guia-sidebar::-webkit-scrollbar-thumb { background: var(--ps); }
+.guia-sidebar-title {
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  letter-spacing: 2px;
+  color: var(--red);
+  text-transform: uppercase;
+  padding: 6px 16px 8px;
+  border-bottom: 1px solid rgba(200,148,26,.15);
+  margin-bottom: 4px;
+}
+.guia-nav-item {
+  display: block;
+  width: 100%;
+  padding: 9px 16px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  text-align: left;
+  font-family: 'Crimson Text', serif;
+  font-size: .82rem;
+  color: #a07850;
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+  line-height: 1.3;
+}
+.guia-nav-item:hover { color: var(--gld2); background: rgba(200,148,26,.06); }
+.guia-nav-item.active { color: var(--gld); border-left-color: var(--gld); background: rgba(200,148,26,.1); }
+.guia-nav-section {
+  font-family: 'Cinzel', serif;
+  font-size: .56rem;
+  letter-spacing: 2px;
+  color: var(--ps);
+  text-transform: uppercase;
+  padding: 10px 16px 4px;
+}
+.guia-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 36px 60px;
+  background: var(--p);
+}
+.guia-content::-webkit-scrollbar { width: 4px; }
+.guia-content::-webkit-scrollbar-thumb { background: var(--ps); }
+.guia-page { display: none; }
+.guia-page.active { display: block; }
+.guia-h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  letter-spacing: 3px;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ps);
+}
+.guia-h2 {
+  font-family: 'Cinzel', serif;
+  font-size: .95rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  text-transform: uppercase;
+  margin: 22px 0 8px;
+}
+.guia-h3 {
+  font-family: 'Cinzel', serif;
+  font-size: .78rem;
+  letter-spacing: 1px;
+  color: var(--ink);
+  margin: 14px 0 5px;
+  text-transform: uppercase;
+}
+.guia-p {
+  font-size: .9rem;
+  color: var(--ink);
+  line-height: 1.75;
+  margin-bottom: 10px;
+}
+.guia-p b { color: var(--red); }
+.guia-ul {
+  margin: 6px 0 12px 18px;
+  font-size: .88rem;
+  color: var(--ink);
+  line-height: 1.8;
+}
+.guia-ul li::marker { color: var(--gld); }
+.guia-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  margin: 12px 0 18px;
+}
+.guia-table th {
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  letter-spacing: 1px;
+  background: rgba(200,148,26,.2);
+  color: var(--ink);
+  padding: 6px 10px;
+  border: 1px solid rgba(0,0,0,.15);
+  text-align: left;
+}
+.guia-table td {
+  padding: 5px 10px;
+  border: 1px solid rgba(0,0,0,.1);
+  color: var(--ink);
+  vertical-align: top;
+}
+.guia-table tr:nth-child(even) td { background: rgba(200,148,26,.05); }
+.guia-callout {
+  border-left: 4px solid var(--gld);
+  background: rgba(200,148,26,.08);
+  padding: 10px 14px;
+  border-radius: 0 4px 4px 0;
+  margin: 12px 0;
+  font-size: .85rem;
+  color: var(--ink);
+  line-height: 1.6;
+  font-style: italic;
+}
+.guia-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-right: 4px;
+}
+.gb-r { background: rgba(192,57,43,.15); color: var(--red); border: 1px solid var(--red); }
+.gb-g { background: rgba(39,174,96,.15); color: #1a4a1a; border: 1px solid #27ae60; }
+.gb-b { background: rgba(41,128,185,.15); color: #154b7a; border: 1px solid #2980b9; }
+.gb-o { background: rgba(230,126,34,.15); color: #7a3a00; border: 1px solid #e67e22; }
+.gb-p { background: rgba(142,68,173,.15); color: #4a1080; border: 1px solid #8e44ad; }
+.guia-class-card {
+  background: rgba(200,160,100,.12);
+  border: 1px solid var(--ps);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.guia-class-card h3 {
+  font-family: 'Cinzel', serif;
+  font-size: .82rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  margin-bottom: 4px;
+}
+.guia-class-card p { font-size: .82rem; color: var(--ink); line-height: 1.6; margin: 0; }
+.guia-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+.guia-stat-box {
+  background: rgba(200,148,26,.1);
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.guia-stat-name {
+  font-family: 'Cinzel', serif;
+  font-size: .62rem;
+  letter-spacing: 1px;
+  color: var(--gld);
+  text-transform: uppercase;
+}
+.guia-stat-desc {
+  font-size: .72rem;
+  color: var(--ink2);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.guia-sep {
+  border: none;
+  border-top: 1px solid var(--ps);
+  margin: 20px 0;
+  opacity: .5;
+}
+
+/* ══════════════════════════════════════════════════════
+   SECCIÓN PERSONAJES
+══════════════════════════════════════════════════════ */
+#secPersonajes {
+  flex-direction: column;
+  overflow: hidden;
+  background: #1a0f08;
+}
+.chars-header {
+  background: #110a04;
+  border-bottom: 1px solid rgba(200,148,26,.25);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.chars-title {
+  font-family: 'Cinzel', serif;
+  font-size: .85rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  text-transform: uppercase;
+  flex: 1;
+}
+.chars-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  gap: 0;
+}
+.chars-list-panel {
+  width: 280px;
+  flex-shrink: 0;
+  background: #110a04;
+  border-right: 1px solid rgba(200,148,26,.2);
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chars-list-panel::-webkit-scrollbar { width: 3px; }
+.chars-list-panel::-webkit-scrollbar-thumb { background: var(--ps); }
+.char-list-card {
+  background: rgba(200,160,100,.12);
+  border: 1px solid rgba(200,148,26,.25);
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.char-list-card:hover { background: rgba(200,148,26,.18); border-color: var(--ps); }
+.char-list-card.active { background: rgba(200,148,26,.22); border-color: var(--gld); }
+.char-list-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-size: .9rem; font-weight: 700;
+  flex-shrink: 0; border: 2px solid rgba(0,0,0,.2);
+}
+.char-list-info { flex: 1; min-width: 0; }
+.char-list-name {
+  font-family: 'Cinzel', serif; font-size: .78rem;
+  color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.char-list-meta { font-size: .68rem; color: var(--ink2); }
+.char-list-del {
+  background: none; border: none; color: var(--red);
+  font-size: .9rem; cursor: pointer; opacity: .4; padding: 2px 4px;
+  flex-shrink: 0;
+}
+.char-list-del:hover { opacity: 1; }
+.chars-empty-panel {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; color: var(--ink2);
+  font-style: italic; font-size: .88rem; text-align: center;
+}
+/* form de creación/edición de personaje */
+.chars-form-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px 60px;
+  background: var(--p);
+}
+.chars-form-panel::-webkit-scrollbar { width: 4px; }
+.chars-form-panel::-webkit-scrollbar-thumb { background: var(--ps); }
+.cf-title {
+  font-family: 'Cinzel', serif; font-size: 1rem;
+  letter-spacing: 2px; color: var(--red);
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--ps); text-transform: uppercase;
+}
+.cf-section {
+  font-family: 'Cinzel', serif; font-size: .68rem;
+  letter-spacing: 2px; color: var(--gld); text-transform: uppercase;
+  margin: 16px 0 8px; padding-top: 10px;
+  border-top: 1px solid rgba(200,148,26,.3);
+}
+.cf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
+.cf-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 6px; }
+.cf-field { display: flex; flex-direction: column; gap: 3px; }
+.cf-field label { font-size: .72rem; color: var(--ink2); }
+.cf-field input, .cf-field select, .cf-field textarea {
+  padding: 6px 8px;
+  background: rgba(200,160,100,.2); border: 1px solid var(--ps);
+  border-radius: 3px; font-family: 'Crimson Text', serif;
+  font-size: .88rem; color: var(--ink); outline: none;
+}
+.cf-field input:focus, .cf-field select:focus, .cf-field textarea:focus { border-color: var(--gld); }
+.cf-field textarea { resize: vertical; min-height: 60px; }
+.cf-stat-grid {
+  display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 10px;
+}
+.cf-stat-box {
+  background: rgba(200,160,100,.15); border: 1px solid var(--ps);
+  border-radius: 4px; padding: 8px 6px; text-align: center;
+}
+.cf-stat-lbl { font-family: 'Cinzel', serif; font-size: .6rem; color: var(--gld); text-transform: uppercase; }
+.cf-stat-box input {
+  width: 100%; text-align: center; background: none; border: none;
+  font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--ink);
+  outline: none; padding: 2px 0;
+}
+.cf-habs-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.cf-hab-row {
+  display: grid; grid-template-columns: 1fr 60px 70px 50px auto;
+  gap: 6px; align-items: center;
+  background: rgba(200,160,100,.1); border: 1px solid rgba(200,160,100,.25);
+  border-radius: 4px; padding: 5px 8px;
+}
+.cf-hab-row input, .cf-hab-row select {
+  padding: 3px 5px;
+  background: rgba(200,160,100,.15); border: 1px solid var(--ps);
+  border-radius: 3px; font-size: .78rem; color: var(--ink);
+  outline: none; font-family: 'Crimson Text', serif;
+}
+.cf-hab-del {
+  background: none; border: none; color: var(--red);
+  cursor: pointer; font-size: .9rem; opacity: .4; padding: 0 2px;
+}
+.cf-hab-del:hover { opacity: 1; }
+.cf-actions {
+  display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;
+}
+.cf-saved { font-size: .72rem; color: var(--grn); font-style: italic; align-self: center; }
+
+/* Login requerido para personajes */
+.chars-login-required {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px; color: var(--ink2);
+  font-style: italic; text-align: center; padding: 40px;
+  background: var(--p);
+}
+.chars-login-required h2 {
+  font-family: 'Cinzel', serif; font-size: .95rem;
+  letter-spacing: 2px; color: var(--red); font-style: normal;
+}
+
+/* ══ RESPONSIVE MOBILE ══ */
+@media (max-width: 900px) {
+  .nav-brand { display: none; }
+  .nav-tab { padding: 0 12px; font-size: .6rem; letter-spacing: 1px; }
+  .nav-tab .nav-icon { font-size: .9rem; }
+  .nav-user-area { padding: 0 8px; }
+  .guia-sidebar { width: 180px; }
+  .chars-list-panel { width: 200px; }
+  .chars-form-panel { padding: 14px 16px 80px; }
+  .guia-content { padding: 16px 18px 80px; }
+  #secPerfil { padding: 20px 12px 80px; }
+  .cf-stat-grid { grid-template-columns: repeat(5,1fr); }
+  .guia-stat-grid { grid-template-columns: repeat(3,1fr); }
+  .cf-grid { grid-template-columns: 1fr; }
+  .cf-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .guia-sidebar { display: none; }
+  .guia-sidebar.mob-open { display: flex; flex-direction: column; position: absolute; z-index: 50; height: 100%; box-shadow: 4px 0 20px rgba(0,0,0,.5); }
+  .chars-body { flex-direction: column; }
+  .chars-list-panel { width: 100%; max-height: 200px; border-right: none; border-bottom: 1px solid rgba(200,148,26,.2); }
+}
+
+
+
+/* ── TABS INTERNOS FICHA PERSONAJE ── */
+.cf-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+.cf-tab {
+  flex: 1;
+  padding: 7px 4px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--ps);
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  letter-spacing: 1px;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cf-tab:last-child { border-right: none; }
+.cf-tab:hover { background: rgba(200,148,26,.12); color: var(--gld2); }
+.cf-tab.active { background: var(--gld); color: var(--ink); font-weight: 700; }
+
+.cf-pane { display: none; }
+.cf-pane.active { display: block; }
+
+/* Plus Ultra en la ficha de personajes */
+.cf-pu {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 9px; border-radius: 4px;
+  border: 2px solid rgba(200,148,26,.4);
+  background: rgba(200,148,26,.08);
+  cursor: pointer; margin-bottom: 8px;
+}
+.cf-pu.on { border-color: var(--gld2); background: rgba(232,180,48,.2); }
+.cf-pubox {
+  width: 15px; height: 15px; border: 2px solid var(--gld);
+  border-radius: 2px; display: flex; align-items: center; justify-content: center;
+}
+.cf-pu.on .cf-pubox { background: var(--gld); }
+.cf-puck { font-size: 10px; font-weight: 700; color: var(--ink); display: none; }
+.cf-pu.on .cf-puck { display: block; }
+.cf-pulbl { font-family: 'Cinzel', serif; font-size: .82rem; letter-spacing: 2px; color: var(--ink2); }
+.cf-pu.on .cf-pulbl { color: var(--gld); }
+.cf-pust { font-size: .72rem; color: var(--ink2); margin-left: auto; font-style: italic; }
+.cf-pu.on .cf-pust { color: var(--gld); }
+
+/* Ajuste del panel del formulario para usar toda la altura */
+.chars-form-panel {
+  display: flex;
+  flex-direction: column;
+}
+#charForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 </style>
 </head>
 <body>
+<!-- ══════════════════════════════════════════════════
+     NAVEGACIÓN PRINCIPAL
+══════════════════════════════════════════════════ -->
+<nav id="appNav">
+  <span class="nav-brand">⚔ BNH RPG</span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="navJugar" onclick="switchSection('jugar')">
+      <span class="nav-icon">🗺</span>Jugar
+    </button>
+    <button class="nav-tab" id="navGuia" onclick="switchSection('guia')">
+      <span class="nav-icon">📖</span>Guía
+    </button>
+    <button class="nav-tab" id="navPersonajes" onclick="switchSection('personajes')">
+      <span class="nav-icon">⚔</span>Personajes
+    </button>
+    <button class="nav-tab" id="navPerfil" onclick="switchSection('perfil')">
+      <span class="nav-icon">👤</span>Perfil
+    </button>
+  </div>
+  <div class="nav-user-area" id="navUserArea" style="display:none;">
+    <div class="nav-user-badge">
+      <div class="nav-user-dot"></div>
+      <span id="navUserName"></span>
+    </div>
+  </div>
+</nav>
 
+
+<div id="secJugar" class="app-section active">
 <!-- TOAST DE TIRADA -->
 <div id="rollToast">
   <span class="rt-total" id="rtTotal">20</span>
@@ -6276,6 +6969,8 @@ let af=0;
 (function loop(){if(selId){af++;if(af%35===0)redraw();}requestAnimationFrame(loop);})();
 </script>
 
+
+</div><!-- /secJugar -->
 <!-- ── PWA INSTALL ─────────────────────────────────────────────── -->
 <style>
 #pwaInstallBtn {
@@ -6424,6 +7119,2304 @@ let af=0;
     sessionStorage.setItem('iosDismissed','1');
   });
 })();
+</script>
+
+<!-- ══════════════════════════════════════════════════
+     SECCIÓN GUÍA
+══════════════════════════════════════════════════ -->
+<div id="secGuia" class="app-section">
+  <div class="guia-sidebar" id="guiaSidebar">
+    <div class="guia-sidebar-title">📖 Manual del Jugador</div>
+
+    <span class="guia-nav-section">Introducción</span>
+    <button class="guia-nav-item active" onclick="showGuiaPage('g-bienvenida',this)">Bienvenida al Mundo</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-jugando',this)">Jugando al Juego</button>
+
+    <span class="guia-nav-section">Mecánicas Base</span>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-stats',this)">Las 5 Estadísticas</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-pruebas',this)">Pruebas de D20</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-combate',this)">Combate</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-acciones',this)">Acciones por Turno</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-condiciones',this)">Estados y Condiciones</button>
+
+    <span class="guia-nav-section">Creación de Personaje</span>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-creacion',this)">Paso a Paso</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-clases',this)">Clases</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-espec',this)">Especializaciones</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-quirk',this)">Quirks / Dones</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-habilidades',this)">Habilidades del Quirk</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-plusultra',this)">Plus Ultra</button>
+
+    <span class="guia-nav-section">Progresión</span>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-niveles',this)">Niveles y XP</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-vida',this)">Vida en la U.A.</button>
+
+    <span class="guia-nav-section">Equipamiento</span>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-equipo',this)">Slots y Armas</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-crafting',this)">Creación Tecnológica</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-mascotas',this)">Mascotas e Invocaciones</button>
+
+    <span class="guia-nav-section">Referencia</span>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-glosario',this)">Glosario</button>
+    <button class="guia-nav-item" onclick="showGuiaPage('g-dm',this)">Guía para el DM</button>
+  </div>
+
+  <div class="guia-content" id="guiaContent">
+
+    <!-- BIENVENIDA -->
+    <div class="guia-page active" id="g-bienvenida">
+      <h1 class="guia-h1">Capítulo 0: Bienvenida al Mundo de los Héroes</h1>
+      <p class="guia-p">Desde el nacimiento del primer quirk hace más de un siglo, la humanidad ha cambiado para siempre. La sociedad evolucionó para adaptarse a una nueva realidad: una donde los dones son parte del día a día, y la lucha por la justicia se libra no solo en los tribunales, sino también en las calles.</p>
+      <p class="guia-p">Bienvenido a este juego de rol narrativo inspirado en el universo de <b>Boku no Hero Academia</b>, donde tú y tus aliados interpretarán a aspirantes a héroes formados en academias como la <b>U.A. High School</b>.</p>
+      <h2 class="guia-h2">Tu rol como jugador</h2>
+      <p class="guia-p">En este sistema no solo lanzarás dados y usarás poderes espectaculares. Tu personaje tendrá motivaciones, miedos, sueños y decisiones que influirán en el mundo. Podrás:</p>
+      <ul class="guia-ul">
+        <li>Elegir o crear tu propio Quirk.</li>
+        <li>Forjar tu camino a través de entrenamientos, torneos, exámenes y agencias.</li>
+        <li>Formar lazos con tus compañeros y enfrentarte a dilemas morales complejos.</li>
+        <li>Participar en misiones reales donde el fracaso puede tener consecuencias.</li>
+      </ul>
+      <div class="guia-callout">💬 "No todos los héroes tienen finales felices. No todos los quirks pueden salvar vidas. Pero si perseverás, entenderás lo que significa ser un héroe."</div>
+      <h2 class="guia-h2">Ideologías Heroicas</h2>
+      <table class="guia-table">
+        <tr><th>Ideología</th><th>Descripción</th></tr>
+        <tr><td><b>Héroe de Justicia</b></td><td>Cree que salvar vidas es el propósito supremo, sin importar el costo personal.</td></tr>
+        <tr><td><b>Héroe de Gloria</b></td><td>Busca fama y reconocimiento, confiando en que la visibilidad inspira a otros.</td></tr>
+        <tr><td><b>Héroe de Estrategia</b></td><td>Prioriza el orden y la planificación táctica por encima de la impulsividad.</td></tr>
+        <tr><td><b>Héroe de Libertad</b></td><td>Rechaza la autoridad y actúa según sus propias convicciones.</td></tr>
+        <tr><td><b>Antihéroe Reformado</b></td><td>Defiende el bien común mediante métodos poco ortodoxos.</td></tr>
+        <tr><td><b>Villano en Potencial</b></td><td>Cree que la sociedad heroica está corrupta y actúa en contra del sistema.</td></tr>
+      </table>
+    </div>
+
+    <!-- JUGANDO -->
+    <div class="guia-page" id="g-jugando">
+      <h1 class="guia-h1">Capítulo 1: Jugando al Juego</h1>
+      <h2 class="guia-h2">¿Jugador o DM?</h2>
+      <p class="guia-p">Existen dos roles fundamentales: el <b>Jugador</b> y el <b>Director del Mundo (DM)</b>.</p>
+      <h3 class="guia-h3">El Jugador</h3>
+      <p class="guia-p">Crea e interpreta a un personaje con su propio Don, historia, metas y personalidad. Toma decisiones desde el punto de vista de su personaje.</p>
+      <h3 class="guia-h3">El Director del Mundo (DM)</h3>
+      <p class="guia-p">Narrador, árbitro y diseñador del mundo. Interpreta a todos los PNJs, describe entornos, presenta desafíos y gestiona las reglas.</p>
+      <h2 class="guia-h2">Ritmo del Juego</h2>
+      <p class="guia-p">El juego alterna entre tres ritmos principales:</p>
+      <div class="guia-class-card">
+        <h3>Narración Libre</h3>
+        <p>El ritmo más flexible. Los jugadores conversan, investigan y planifican. No hay turnos ni tiradas constantes. Representa el 40–60% del tiempo.</p>
+      </div>
+      <div class="guia-class-card">
+        <h3>Escenas Estructuradas</h3>
+        <p>Cuando hay tensión o precisión necesaria. El DM puede pedir tiradas específicas y controlar el orden de las acciones. Representa el 20–30%.</p>
+      </div>
+      <div class="guia-class-card">
+        <h3>Combate por Turnos</h3>
+        <p>En situaciones de combate, el ritmo se divide en rondas y turnos con orden de iniciativa. El ritmo más táctico. Representa el 20–40%.</p>
+      </div>
+      <h2 class="guia-h2">Dados</h2>
+      <p class="guia-p">Los dados son el principal mecanismo para resolver incertidumbre. Se identifican por su cantidad de caras precedidas por una "d":</p>
+      <ul class="guia-ul">
+        <li><b>d4, d6, d8, d10, d12:</b> dados de daño y efectos varios.</li>
+        <li><b>d20:</b> el más usado. Tiradas de ataque, salvación y habilidad.</li>
+        <li><b>d100:</b> dos dados de d10 (uno decenas, uno unidades).</li>
+      </ul>
+      <div class="guia-callout">🎲 <b>Fórmula base:</b> 1d20 + Modificador de Estadística + Bono de Competencia (si aplica) vs DC del DM.</div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="guia-page" id="g-stats">
+      <h1 class="guia-h1">Las 5 Estadísticas</h1>
+      <p class="guia-p">Todo personaje posee cinco estadísticas base que reflejan sus capacidades físicas, mentales y sensoriales.</p>
+      <div class="guia-stat-grid">
+        <div class="guia-stat-box"><div class="guia-stat-name">⚡ Poder</div><div class="guia-stat-desc">Fuerza física, combate cuerpo a cuerpo, levantar objetos.</div></div>
+        <div class="guia-stat-box"><div class="guia-stat-name">💨 Agilidad</div><div class="guia-stat-desc">Velocidad, reflejos, precisión, iniciativa, evasión.</div></div>
+        <div class="guia-stat-box"><div class="guia-stat-name">🛡 Resistencia</div><div class="guia-stat-desc">Soportar daño, fatiga, venenos. Base para HP.</div></div>
+        <div class="guia-stat-box"><div class="guia-stat-name">🔧 Técnica</div><div class="guia-stat-desc">Control del Quirk, maniobras complejas, gadgets.</div></div>
+        <div class="guia-stat-box"><div class="guia-stat-name">🧠 Inteligencia</div><div class="guia-stat-desc">Análisis, estrategia, habilidades psíquicas, conocimiento.</div></div>
+      </div>
+      <h2 class="guia-h2">Tabla de Modificadores</h2>
+      <table class="guia-table">
+        <tr><th>Puntuación</th><th>Modificador</th><th>Descripción</th></tr>
+        <tr><td>1–2</td><td>-4</td><td>Extremadamente deficiente</td></tr>
+        <tr><td>3–4</td><td>-3</td><td>Muy por debajo de lo normal</td></tr>
+        <tr><td>5–6</td><td>-2</td><td>Por debajo de lo normal</td></tr>
+        <tr><td>7–8</td><td>-1</td><td>Ligeramente bajo</td></tr>
+        <tr><td>9–10</td><td>0</td><td>Promedio humano</td></tr>
+        <tr><td>11–12</td><td>+1</td><td>Competente o entrenado</td></tr>
+        <tr><td>13–14</td><td>+2</td><td>Hábil</td></tr>
+        <tr><td>15–16</td><td>+3</td><td>Muy hábil</td></tr>
+        <tr><td>17–18</td><td>+4</td><td>Excepcional</td></tr>
+        <tr><td>19–20</td><td>+5</td><td>Límite máximo sin Don</td></tr>
+        <tr><td>21–25</td><td>+6 a +8</td><td>Sobrehumano</td></tr>
+        <tr><td>26–30</td><td>+9 a +10</td><td>Élite absoluta</td></tr>
+      </table>
+      <div class="guia-callout">📌 <b>Fórmula del Modificador:</b> Cada 2 puntos por encima de 9 suman +1. Por debajo de 9 restan según la tabla.</div>
+      <h2 class="guia-h2">Habilidades por Estadística</h2>
+      <table class="guia-table">
+        <tr><th>Habilidad</th><th>Estadística</th><th>Usos</th></tr>
+        <tr><td>Fuerza</td><td>Poder</td><td>Levantar, romper, empujar</td></tr>
+        <tr><td>Intimidación</td><td>Poder</td><td>Imponer miedo o presión</td></tr>
+        <tr><td>Aguante</td><td>Resistencia</td><td>Resistir fatiga, venenos, calor/frío</td></tr>
+        <tr><td>Voluntad</td><td>Resistencia</td><td>Resistir control mental, dolor</td></tr>
+        <tr><td>Evasión</td><td>Agilidad</td><td>Esquivar ataques, trampas</td></tr>
+        <tr><td>Acrobacia</td><td>Agilidad</td><td>Saltar, trepar, maniobras</td></tr>
+        <tr><td>Sigilo</td><td>Agilidad</td><td>Esconderse, moverse sin ser detectado</td></tr>
+        <tr><td>Control de Quirk</td><td>Técnica</td><td>Uso del Quirk en situaciones complejas</td></tr>
+        <tr><td>Ingeniería</td><td>Técnica</td><td>Reparar, crear o usar tecnología</td></tr>
+        <tr><td>Táctica</td><td>Técnica</td><td>Evaluar combate, flanquear, estrategia</td></tr>
+        <tr><td>Persuasión</td><td>Inteligencia</td><td>Convencer mediante lógica o carisma</td></tr>
+        <tr><td>Engaño</td><td>Inteligencia</td><td>Mentir, disfrazar intenciones</td></tr>
+        <tr><td>Investigación</td><td>Inteligencia</td><td>Encontrar pistas, analizar información</td></tr>
+        <tr><td>Percepción</td><td>Inteligencia</td><td>Detectar detalles, peligros, enemigos</td></tr>
+      </table>
+    </div>
+
+    <!-- PRUEBAS -->
+    <div class="guia-page" id="g-pruebas">
+      <h1 class="guia-h1">Pruebas de D20</h1>
+      <p class="guia-p">La mayoría de acciones se resuelven con 1d20 + modificadores relevantes comparados contra una <b>Dificultad (DC)</b> establecida por el DM.</p>
+      <h2 class="guia-h2">Los 3 tipos de prueba</h2>
+      <div class="guia-class-card">
+        <h3>Prueba de Habilidad</h3>
+        <p>Cuando un personaje intenta algo desafiante. Ej: saltar un tejado (Agilidad), analizar una pista (Inteligencia). Si tiene competencia, suma el Bono de Competencia.</p>
+      </div>
+      <div class="guia-class-card">
+        <h3>Tirada de Salvación</h3>
+        <p>Para resistir un efecto negativo: veneno, golpe paralizante, explosión. El DM indica qué estadística usar.</p>
+      </div>
+      <div class="guia-class-card">
+        <h3>Tirada de Ataque</h3>
+        <p>1d20 + Mod de estadística + Bono de Competencia (si corresponde). Si iguala o supera la DEF del objetivo, el ataque impacta.</p>
+      </div>
+      <h2 class="guia-h2">Ventaja y Desventaja</h2>
+      <p class="guia-p"><b>Ventaja:</b> tirás dos d20 y elegís el resultado más alto.<br><b>Desventaja:</b> tirás dos d20 y elegís el más bajo.</p>
+      <div class="guia-callout">⚠️ Ventaja y desventaja NO se acumulan. Si tenés múltiples fuentes de ventaja pero al menos una de desventaja, se cancelan y hacés tirada normal.</div>
+      <h2 class="guia-h2">Bono de Competencia por Nivel</h2>
+      <table class="guia-table">
+        <tr><th>Nivel</th><th>Bono</th></tr>
+        <tr><td>1–3</td><td>+1</td></tr>
+        <tr><td>4–6</td><td>+2</td></tr>
+        <tr><td>7–9</td><td>+3</td></tr>
+        <tr><td>10–12</td><td>+4</td></tr>
+        <tr><td>13–15</td><td>+5</td></tr>
+      </table>
+      <h2 class="guia-h2">DCs comunes</h2>
+      <table class="guia-table">
+        <tr><th>Dificultad</th><th>DC</th></tr>
+        <tr><td>Fácil</td><td>10</td></tr>
+        <tr><td>Media</td><td>15</td></tr>
+        <tr><td>Difícil</td><td>20</td></tr>
+        <tr><td>Muy difícil</td><td>25+</td></tr>
+      </table>
+    </div>
+
+    <!-- COMBATE -->
+    <div class="guia-page" id="g-combate">
+      <h1 class="guia-h1">Capítulo 5: Combate</h1>
+      <p class="guia-p">El combate es dinámico, táctico y emocional. Cada enfrentamiento se divide en <b>rondas</b> y <b>turnos</b>, siguiendo el orden de iniciativa.</p>
+      <h2 class="guia-h2">Defensa (DEF)</h2>
+      <p class="guia-p">DEF = 10 + Modificador de Resistencia o Agilidad según clase.</p>
+      <ul class="guia-ul">
+        <li><b>Clases con DEF por Resistencia:</b> Ofensivo, Defensivo, Apoyo</li>
+        <li><b>Clases con DEF por Agilidad:</b> Ágil, Técnico, Mental</li>
+      </ul>
+      <table class="guia-table">
+        <tr><th>Cobertura</th><th>Bonus DEF</th></tr>
+        <tr><td>Ligera (hasta cintura)</td><td>+1</td></tr>
+        <tr><td>Parcial (medio cuerpo)</td><td>+2</td></tr>
+        <tr><td>Total (no podés atacar)</td><td>+4</td></tr>
+        <tr><td>Aturdido o derribado</td><td>-2</td></tr>
+        <tr><td>En el aire sin control</td><td>-3</td></tr>
+      </table>
+      <h2 class="guia-h2">Vida y Stamina</h2>
+      <p class="guia-p"><b>HP (Vida):</b> variable entre (6–12) × (nivel+1) + (Mod RES × 1–3) según clase.<br><b>STAM (Estamina):</b> variable entre (5–8) × nivel + (Mod TEC × 1–3) según clase.</p>
+      <h2 class="guia-h2">A 0 HP: Inconsciencia</h2>
+      <p class="guia-p">Al llegar a 0 HP, el personaje queda <b>Incapacitado</b> y tira Salvación de Aguante (1d20 + Mod RES):</p>
+      <table class="guia-table">
+        <tr><th>Resultado</th><th>Efecto</th></tr>
+        <tr><td>15 o más</td><td>Consciente pero gravemente debilitado. Solo acción menor.</td></tr>
+        <tr><td>10 a 14</td><td>Cae inconsciente. Puede recuperarse con primeros auxilios.</td></tr>
+        <tr><td>9 o menos</td><td>Herida Grave + tiradas de Salvación por Muerte.</td></tr>
+      </table>
+      <h3 class="guia-h3">Tiradas de Salvación por Muerte</h3>
+      <p class="guia-p">1d20 sin modificadores. 10+: éxito. 9 o menos: fallo. 3 éxitos = estabilizado. 3 fallos = muerte. 20 natural: recupera 1 HP. 1 natural: 2 fallos.</p>
+      <h2 class="guia-h2">Sinergia de Equipo</h2>
+      <p class="guia-p">Dos o más personajes que entrenan juntos desbloquean <b>Técnicas Combinadas</b> tras 3 misiones juntos (o nivel 3+). Una vez por combate, usan una acción conjunta para ejecutar una técnica más poderosa.</p>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="guia-page" id="g-acciones">
+      <h1 class="guia-h1">Acciones por Turno</h1>
+      <p class="guia-p">En cada turno de combate, un personaje puede realizar por defecto:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="guia-class-card"><h3>🏃 Movimiento</h3><p>Hasta tu límite de casillas. Puede dividirse antes y después de tu acción. Terreno difícil cuesta el doble.</p></div>
+        <div class="guia-class-card"><h3>⚔ Acción Principal</h3><p>Atacar, usar Don, ayudar aliado, defenderse (+2 DEF), esquivar (ventaja en salvación de AGI), usar objeto, etc.</p></div>
+        <div class="guia-class-card"><h3>✨ Acción Adicional</h3><p>Habilitada por Don, clase o condición especial. Ítem ligero, ataque secundario, gritar a aliado, cambiar postura.</p></div>
+        <div class="guia-class-card"><h3>🛡 Reacción</h3><p>Fuera de tu turno cuando se cumple una condición. Contraataque, interposición, defensa automática. 1 por ronda.</p></div>
+      </div>
+      <div class="guia-callout">⚠️ Por defecto casi ningún personaje comienza con reacción. Se obtiene con quirk, equipamiento, clase o subclase.</div>
+      <h2 class="guia-h2">Acciones Principales — Ejemplos</h2>
+      <ul class="guia-ul">
+        <li><b>Realizar un Ataque:</b> 1d20 + Mod + Competencia vs DEF enemiga.</li>
+        <li><b>Usar Habilidad del Don:</b> Activás una técnica de tu Quirk con su costo de STAM.</li>
+        <li><b>Defenderte:</b> +2 a tu DEF hasta tu próximo turno.</li>
+        <li><b>Esquivar:</b> Ventaja en tu próxima Salvación de Agilidad.</li>
+        <li><b>Estabilizar aliado caído:</b> Tirada de INT vs DC del DM.</li>
+        <li><b>Descanso:</b> Tirás 1d4 para recuperar STAM, pero tu DEF se reduce en 2 hasta el próximo turno.</li>
+      </ul>
+    </div>
+
+    <!-- CONDICIONES -->
+    <div class="guia-page" id="g-condiciones">
+      <h1 class="guia-h1">Estados y Condiciones</h1>
+      <p class="guia-p">Durante el combate, los personajes pueden sufrir condiciones que alteran su capacidad de actuar. Cada una tiene una tirada de salvación para superarla.</p>
+      <table class="guia-table">
+        <tr><th>Estado</th><th>Efecto</th><th>Estad.</th><th>DC</th><th>Curación</th></tr>
+        <tr><td><span class="guia-badge gb-r">Aturdido</span></td><td>Pierde el próximo turno</td><td>Resist.</td><td>12</td><td>Final del turno o ayuda aliada</td></tr>
+        <tr><td><span class="guia-badge gb-o">Derribado</span></td><td>Los ataques que recibe tienen ventaja</td><td>Fuerza</td><td>10</td><td>Gastar el movimiento</td></tr>
+        <tr><td><span class="guia-badge gb-r">Cegado</span></td><td>Ataques fallan si dependen de visión</td><td>Resist.</td><td>14</td><td>Superando tirada o curación</td></tr>
+        <tr><td><span class="guia-badge gb-r">Paralizado</span></td><td>No puede actuar ni moverse</td><td>Resist.</td><td>16</td><td>Después de 2 turnos o curación</td></tr>
+        <tr><td><span class="guia-badge gb-p">Asustado</span></td><td>No puede acercarse, desventaja general</td><td>Intelig.</td><td>12</td><td>Superar la tirada</td></tr>
+        <tr><td><span class="guia-badge gb-r">Quemado</span></td><td>1d6 de daño al inicio del turno</td><td>Veloc.</td><td>12</td><td>Luego de 3 turnos, agua o ayuda</td></tr>
+        <tr><td><span class="guia-badge gb-o">Envenenado</span></td><td>1d4 de daño y desventaja en tiradas</td><td>Resist.</td><td>15</td><td>Antídoto, descanso largo o ayuda</td></tr>
+        <tr><td><span class="guia-badge gb-b">Silenciado</span></td><td>No puede usar habilidades verbales</td><td>—</td><td>—</td><td>Alejarse de la causa o finalizar batalla</td></tr>
+        <tr><td><span class="guia-badge gb-p">Confundido</span></td><td>Comportamiento errático</td><td>Intelig.</td><td>13</td><td>Luego de 1 turno</td></tr>
+        <tr><td><span class="guia-badge gb-o">Enredado</span></td><td>No puede moverse, desventaja en ataques</td><td>Fuerza</td><td>13</td><td>Liberación por aliado</td></tr>
+      </table>
+      <h2 class="guia-h2">Efectos Positivos (Buffs)</h2>
+      <p class="guia-p">Los buffs no tienen formato fijo y dependen del Don, clase o habilidad que los genera. Duran unos pocos turnos, hasta el final del combate o mientras se cumpla una condición. El DM gestiona duración y efectos específicos.</p>
+      <h2 class="guia-h2">Plus Ultra (Estado especial)</h2>
+      <p class="guia-p">Durante 3 turnos: +2 a todas las estadísticas, recupera 50% de STAM máxima, 1 habilidad sin costo × 3 de daño por turno, ventaja en todas las tiradas, inmune a miedo y control mental. Al terminar: 0 STAM, pierde el siguiente turno, desventaja en todas las tiradas durante 1 combate.</p>
+    </div>
+
+    <!-- CREACIÓN -->
+    <div class="guia-page" id="g-creacion">
+      <h1 class="guia-h1">Capítulo 2: Creando tu Personaje</h1>
+      <p class="guia-p">Convertirse en héroe comienza en las decisiones que definen quién sos. Seguí estos pasos:</p>
+      <h2 class="guia-h2">Paso 1 — Elegir Clase</h2>
+      <p class="guia-p">La clase define tu estilo de combate y da +1 a tu estadística principal y -1 a otra. Determinará tu HP, STAM y DEF.</p>
+      <h2 class="guia-h2">Paso 2 — Asignar Estadísticas</h2>
+      <p class="guia-p">Usá uno de estos presets (total: 52 puntos) distribuidos libremente en POD, AGI, RES, TEC, INT:</p>
+      <table class="guia-table">
+        <tr><th>Preset</th><th>Descripción</th></tr>
+        <tr><td>12 / 12 / 11 / 9 / 8</td><td>Recomendado. Equilibrado con dos puntos fuertes.</td></tr>
+        <tr><td>11 / 11 / 10 / 10 / 10</td><td>Muy equilibrado. Buen para builds versátiles.</td></tr>
+        <tr><td>15 / 15 / 9 / 7 / 6</td><td>Especializado en dos stats. Alto riesgo/recompensa.</td></tr>
+        <tr><td>15 / 13 / 9 / 9 / 6</td><td>Un stat dominante y soporte secundario.</td></tr>
+      </table>
+      <h2 class="guia-h2">Paso 3 — Mentalidad u Origen (opcional)</h2>
+      <p class="guia-p">Ajuste adicional según tu historia personal. Ej: Impulsivo +1 POD, Estratega +1 INT, Entrenamiento rural +1 RES.</p>
+      <h2 class="guia-h2">Paso 4 — Diseñar tu Quirk</h2>
+      <p class="guia-p">Elegí tipo (Emisor, Transformación, Mutación), efectos mecánicos, costos de STAM y al menos 1 desventaja.</p>
+      <h2 class="guia-h2">Paso 5 — Cálculos Finales</h2>
+      <ul class="guia-ul">
+        <li><b>HP = </b> según clase + (Mod RES × multiplicador)</li>
+        <li><b>STAM = </b> según clase + (Mod TEC × multiplicador)</li>
+        <li><b>DEF = </b> 10 + Mod de stat principal de tu clase</li>
+        <li><b>Iniciativa = </b> Mod AGI</li>
+        <li><b>Velocidad = </b> max(2, Mod AGI)</li>
+      </ul>
+      <div class="guia-callout">📝 <b>Ejemplo completo:</b> Akira Fujimoto — Clase Ágil, stats POD 10 / RES 12 / AGI 15 / TEC 13 / INT 11. Quirk: Reflejo Cinético. HP: 22 — STAM: 18 — DEF: 12.</div>
+      <h2 class="guia-h2">Personalidad (tirada d20)</h2>
+      <table class="guia-table">
+        <tr><th>1–5</th><td>Presumido / Impulsivo / Rebelde / Egocéntrico / Compasivo</td></tr>
+        <tr><th>6–10</th><td>Servicial / Honesto / Amable / Deshonesto / Vengativo</td></tr>
+        <tr><th>11–15</th><td>Cruel / Codicioso / Cooperativo / Leal / Crítico</td></tr>
+        <tr><th>16–20</th><td>Metódico / Egoísta / Indiferente / Lacónico / Pragmático</td></tr>
+      </table>
+    </div>
+
+    <!-- CLASES -->
+    <div class="guia-page" id="g-clases">
+      <h1 class="guia-h1">Capítulo 3: Clases</h1>
+      <table class="guia-table">
+        <tr><th>Clase</th><th>Rol</th><th>Estadística</th><th>Complejidad</th></tr>
+        <tr><td>Ofensivo</td><td>Daño bruto</td><td>Poder</td><td>Baja</td></tr>
+        <tr><td>Defensivo</td><td>Tanque</td><td>Resistencia</td><td>Baja</td></tr>
+        <tr><td>Ágil</td><td>Movimiento y velocidad</td><td>Agilidad</td><td>Media</td></tr>
+        <tr><td>Técnico</td><td>Gadgets, estrategia</td><td>Técnica</td><td>Alta</td></tr>
+        <tr><td>Mental</td><td>Control, debuffs, psíquico</td><td>Inteligencia</td><td>Media</td></tr>
+        <tr><td>Apoyo</td><td>Curación, buffs</td><td>Téc./Int.</td><td>Alta</td></tr>
+      </table>
+      <h2 class="guia-h2">Ofensivo</h2>
+      <p class="guia-p"><b>+1 Poder / -1 Inteligencia</b><br><b>Pasiva:</b> Instinto Aplastante — al matar un enemigo recuperás la mitad de tu STAM máxima.<br><b>HP:</b> (8×(nivel+1)) + (ModRes×2) | <b>DEF:</b> 10+ModRes | <b>STAM:</b> (6×nivel) + (ModTec×2)</p>
+      <h2 class="guia-h2">Defensivo</h2>
+      <p class="guia-p"><b>+1 Resistencia / -1 Agilidad</b><br><b>Pasiva:</b> Centinela Inquebrantable — si no te movés en un turno, ganás +2 DEF (no acumulable).<br><b>HP:</b> (12×(nivel+1)) + (ModRes×3) | <b>DEF:</b> 10+ModRes | <b>STAM:</b> (5×nivel) + (ModTec×1)</p>
+      <h2 class="guia-h2">Ágil</h2>
+      <p class="guia-p"><b>+1 Agilidad / -1 Técnica</b><br><b>Pasiva:</b> Esquiva Precisa — una vez por combate, gastás 3 STAM para esquivar un ataque de hasta radio 2.<br><b>HP:</b> (7×(nivel+1)) + (ModRes×2) | <b>DEF:</b> 10+ModVel | <b>STAM:</b> (6×nivel) + (ModTec×2)</p>
+      <h2 class="guia-h2">Técnico</h2>
+      <p class="guia-p"><b>+1 Técnica / -1 Resistencia</b><br><b>Pasiva:</b> Análisis Rápido — la primera vez que usás un objeto o gadget contra un enemigo, tenés ventaja.<br><b>HP:</b> (6×(nivel+1)) + (ModRes×2) | <b>DEF:</b> 10+ModVel | <b>STAM:</b> (8×nivel) + (ModTec×3)</p>
+      <h2 class="guia-h2">Mental</h2>
+      <p class="guia-p"><b>+1 Inteligencia / -1 Poder</b><br><b>Pasiva:</b> Presión Psicológica — si un enemigo falla una salvación contra vos, tiene desventaja en su próxima acción ofensiva (una vez por enemigo).<br><b>HP:</b> (6×(nivel+1)) + (ModRes×1) | <b>DEF:</b> 10+ModVel | <b>STAM:</b> (7×nivel) + (ModTec×2)</p>
+      <h2 class="guia-h2">Apoyo</h2>
+      <p class="guia-p"><b>+1 Técnica e Inteligencia / -1 Poder y Resistencia</b><br><b>Pasiva:</b> Presencia Reconfortante — si un aliado a ≤3 casillas queda a 0 HP, puede recuperar la mitad de su vida con tirada DC 10. Una vez por combate.<br><b>HP:</b> (9×(nivel+1)) + (ModRes×2) | <b>DEF:</b> 9+ModRes | <b>STAM:</b> (7×nivel) + (ModTec×2)</p>
+    </div>
+
+    <!-- ESPECIALIZACIONES -->
+    <div class="guia-page" id="g-espec">
+      <h1 class="guia-h1">Especializaciones y Subclases</h1>
+      <p class="guia-p">Al nivel 5 elegís tu <b>Especialización</b>. Al nivel 10 elegís tu <b>Subclase</b>.</p>
+      <h2 class="guia-h2">Especializaciones (Nivel 5)</h2>
+      <table class="guia-table">
+        <tr><th>Clase</th><th>Especialización</th><th>Descripción</th></tr>
+        <tr><td>Ofensivo</td><td>Ofensiva Explosiva</td><td>Ataques masivos en área, ondas de choque.</td></tr>
+        <tr><td>Ofensivo</td><td>Destructor Cinético</td><td>Ataques de un objetivo, a distancia variable.</td></tr>
+        <tr><td>Defensivo</td><td>Muro Imparable</td><td>Barreras físicas, proteger aliados.</td></tr>
+        <tr><td>Defensivo</td><td>Reflejo Adaptativo</td><td>Canaliza el daño recibido para contraatacar.</td></tr>
+        <tr><td>Ágil</td><td>Espectro Rápido</td><td>Emboscadas, movimientos impredecibles.</td></tr>
+        <tr><td>Ágil</td><td>Vanguardia Relámpago</td><td>Ataques en cadena, acciones extra.</td></tr>
+        <tr><td>Técnico</td><td>Ingeniero de Campo</td><td>Trampas, herramientas de soporte.</td></tr>
+        <tr><td>Técnico</td><td>Tirador Preciso</td><td>Ataques a distancia, bajo costo de STAM.</td></tr>
+        <tr><td>Mental</td><td>Manipulador Psíquico</td><td>Confusión, ilusiones, control leve.</td></tr>
+        <tr><td>Mental</td><td>Estratega Analítico</td><td>Leer enemigos, predecir y anular habilidades.</td></tr>
+        <tr><td>Apoyo</td><td>Canalizador Vital</td><td>Curación y reducción de efectos negativos.</td></tr>
+        <tr><td>Apoyo</td><td>Potenciador de Campo</td><td>Buffs estratégicos a aliados.</td></tr>
+      </table>
+      <h2 class="guia-h2">Subclases (Nivel 10)</h2>
+      <p class="guia-p">Al nivel 10 podés elegir cualquiera de las otras 6 clases como subclase, ganando su estadística principal y habilidades con competencia:</p>
+      <table class="guia-table">
+        <tr><th>Subclase</th><th>Estadística extra</th></tr>
+        <tr><td>Ofensiva</td><td>Poder</td></tr>
+        <tr><td>Defensiva</td><td>Resistencia</td></tr>
+        <tr><td>Ágil</td><td>Agilidad</td></tr>
+        <tr><td>Técnico</td><td>Técnica</td></tr>
+        <tr><td>Mental</td><td>Inteligencia</td></tr>
+        <tr><td>Apoyo</td><td>+2 a cualquier stat</td></tr>
+      </table>
+    </div>
+
+    <!-- QUIRK -->
+    <div class="guia-page" id="g-quirk">
+      <h1 class="guia-h1">Capítulo 3: Quirks / Dones</h1>
+      <p class="guia-p">Un Quirk es una capacidad sobrehumana innata que afecta tu cuerpo, mente o entorno. Puede ser pasivo, activado, constante o limitado por condiciones.</p>
+      <h2 class="guia-h2">Tipos de Quirk</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div class="guia-class-card"><h3>Emisor</h3><p>Proyecta algo hacia el entorno (fuego, energía, ondas).</p></div>
+        <div class="guia-class-card"><h3>Transformación</h3><p>Afecta tu propio cuerpo (endurecer piel, volverse invisible).</p></div>
+        <div class="guia-class-card"><h3>Mutación</h3><p>Rasgo físico constante (alas, cola, múltiples brazos).</p></div>
+      </div>
+      <h2 class="guia-h2">Etapas para crear tu Quirk</h2>
+      <ul class="guia-ul">
+        <li><b>1. Concepto base:</b> ¿Qué hace? ¿Elemento, transformación, control?</li>
+        <li><b>2. Tipo:</b> Emisor, Transformación o Mutación.</li>
+        <li><b>3. Descripción narrativa:</b> Cómo se ve, cómo se activa, qué genera.</li>
+        <li><b>4. Efectos mecánicos:</b> Máximo 1-2 efectos principales, costo STAM, tiradas asociadas.</li>
+        <li><b>5. Ventajas y desventajas:</b> Al menos 1 desventaja (cooldown, condición, autoafectación).</li>
+        <li><b>6. Progresión:</b> Cómo evoluciona con los niveles.</li>
+      </ul>
+      <h2 class="guia-h2">Generación Aleatoria (opcional)</h2>
+      <p class="guia-p">Tirá un d20 para el concepto base, un d10 para la ventaja, y un d10 para la desventaja.</p>
+      <table class="guia-table">
+        <tr><th>d20</th><th>Concepto Base</th></tr>
+        <tr><td>1–5</td><td>Fuego / Hielo / Sonido / Sombras / Aire</td></tr>
+        <tr><td>6–10</td><td>Luz / Gravedad / Telequinesis / Proyección de energía / Control del tiempo</td></tr>
+        <tr><td>11–15</td><td>Cuerpo elástico / Cuerpo blindado / Inmunidad al dolor / Transformación animal / Sentido mejorado</td></tr>
+        <tr><td>16–20</td><td>Regeneración acelerada / Camuflaje / Multiplicación / Absorción de energía / Manipulación a distancia</td></tr>
+      </table>
+    </div>
+
+    <!-- HABILIDADES QUIRK -->
+    <div class="guia-page" id="g-habilidades">
+      <h1 class="guia-h1">Capítulo 8: Creación de Habilidades</h1>
+      <p class="guia-p">El sistema permite construir habilidades de forma equilibrada. El costo en STAM se calcula combinando daño, alcance, efectos y condiciones.</p>
+      <h2 class="guia-h2">Costo por Daño</h2>
+      <p class="guia-p">Cada dado de daño cuesta 2 de STAM base, multiplicado por el tipo de dado:</p>
+      <table class="guia-table">
+        <tr><th>Dado</th><th>Multiplicador</th><th>Ejemplo (2 dados)</th></tr>
+        <tr><td>d4</td><td>×1</td><td>(2×2)×1 = 4 STAM</td></tr>
+        <tr><td>d6</td><td>×2</td><td>(2×2)×2 = 8 STAM</td></tr>
+        <tr><td>d8</td><td>×3</td><td>(2×2)×3 = 12 STAM</td></tr>
+        <tr><td>d10</td><td>×4</td><td>(2×2)×4 = 16 STAM</td></tr>
+        <tr><td>d12</td><td>×5</td><td>(2×2)×5 = 20 STAM</td></tr>
+        <tr><td>d20</td><td>×6</td><td>(2×2)×6 = 24 STAM</td></tr>
+      </table>
+      <p class="guia-p"><b>Con rango:</b> ((cantidad×2) + casillas extra) × multiplicador dado.<br><b>Con efecto:</b> +4 STAM el primero, +15 el segundo (requiere nivel ≥15).</p>
+      <h2 class="guia-h2">Límites por Nivel</h2>
+      <table class="guia-table">
+        <tr><th>Nivel</th><th>Máx. dados</th><th>Dados disponibles</th><th>Rango max</th><th>Efectos max</th></tr>
+        <tr><td>1–4</td><td>1–2</td><td>d4, d6, d8</td><td>4</td><td>1</td></tr>
+        <tr><td>5–9</td><td>1–4</td><td>hasta d12</td><td>6</td><td>1</td></tr>
+        <tr><td>10–14</td><td>1–6</td><td>hasta d20</td><td>8</td><td>1</td></tr>
+        <tr><td>+15</td><td>1–8</td><td>todos</td><td>10</td><td>2</td></tr>
+      </table>
+      <h2 class="guia-h2">Cantidad de Habilidades</h2>
+      <p class="guia-p">Empezás con 3 habilidades. Ganás 1 extra cada 3 niveles hasta un máximo de 8. A nivel 1 sos competente en 1 de tus habilidades.</p>
+    </div>
+
+    <!-- PLUS ULTRA -->
+    <div class="guia-page" id="g-plusultra">
+      <h1 class="guia-h1">Plus Ultra</h1>
+      <p class="guia-p">Una manifestación extrema del espíritu heroico que permite superar temporalmente los propios límites.</p>
+      <h2 class="guia-h2">Condiciones de Activación</h2>
+      <ul class="guia-ul">
+        <li>Estar por debajo del 25% de HP.</li>
+        <li>Haber gastado más del 75% de STAM.</li>
+        <li>Ver caer a un aliado clave o recibir un golpe devastador.</li>
+        <li>Aprobación narrativa del DM.</li>
+      </ul>
+      <h2 class="guia-h2">Efectos (3 turnos)</h2>
+      <ul class="guia-ul">
+        <li>+2 a <b>todas</b> las estadísticas.</li>
+        <li>Recupera inmediatamente el 50% de STAM máxima.</li>
+        <li>1 habilidad sin costo de STAM con efecto ×3 por turno.</li>
+        <li>Ventaja en todas las tiradas de ataque y salvación.</li>
+        <li>Inmune a miedo, control mental y desmoralización.</li>
+      </ul>
+      <h2 class="guia-h2">Consecuencias</h2>
+      <div class="guia-callout" style="border-color:var(--red);">⚠️ Después de los 3 turnos: 0 STAM, pierde el siguiente turno, desventaja en todas las tiradas durante 1 combate o hasta descanso largo.</div>
+    </div>
+
+    <!-- NIVELES -->
+    <div class="guia-page" id="g-niveles">
+      <h1 class="guia-h1">Niveles y Experiencia</h1>
+      <table class="guia-table">
+        <tr><th>Nivel</th><th>XP req.</th><th>Bono Comp.</th><th>Etapa</th></tr>
+        <tr><td>1</td><td>0</td><td>+1</td><td>Inicio</td></tr>
+        <tr><td>2</td><td>10</td><td>+1</td><td>Inicio</td></tr>
+        <tr><td>3</td><td>25</td><td>+1</td><td>Inicio</td></tr>
+        <tr><td>4</td><td>45</td><td>+2</td><td>Inicio</td></tr>
+        <tr><td>5</td><td>70</td><td>+2</td><td>Medio</td></tr>
+        <tr><td>6</td><td>100</td><td>+2</td><td>Medio</td></tr>
+        <tr><td>7</td><td>135</td><td>+2</td><td>Medio</td></tr>
+        <tr><td>8</td><td>175</td><td>+3</td><td>Medio</td></tr>
+        <tr><td>9</td><td>220</td><td>+3</td><td>Medio</td></tr>
+        <tr><td>10</td><td>270</td><td>+3</td><td>Conflicto</td></tr>
+        <tr><td>12</td><td>385</td><td>+4</td><td>Conflicto</td></tr>
+        <tr><td>15</td><td>595</td><td>+4</td><td>Final</td></tr>
+        <tr><td>20</td><td>1500</td><td>+5</td><td>Post Historia</td></tr>
+      </table>
+      <h2 class="guia-h2">¿Cómo se gana XP?</h2>
+      <ul class="guia-ul">
+        <li>Combates ganados</li>
+        <li>Acciones heroicas significativas</li>
+        <li>Superar conflictos importantes</li>
+        <li>Logros narrativos (rescatar aliados, dominar el Quirk)</li>
+        <li>Buena interpretación a criterio del DM</li>
+      </ul>
+    </div>
+
+    <!-- VIDA EN LA UA -->
+    <div class="guia-page" id="g-vida">
+      <h1 class="guia-h1">Capítulo 6: Vida y Progresión</h1>
+      <h2 class="guia-h2">Rangos Estudiantiles</h2>
+      <table class="guia-table">
+        <tr><th>Rango</th><th>Descripción</th></tr>
+        <tr><td>Novato</td><td>Sin entrenamiento formal</td></tr>
+        <tr><td>Estudiante S.L.</td><td>Entrenamiento formal, sin misiones</td></tr>
+        <tr><td>Estudiante C.L.P.</td><td>Examen oficial superado, puede hacer misiones</td></tr>
+        <tr><td>Héroe en prácticas</td><td>Agencias muestran interés</td></tr>
+        <tr><td>Héroe profesional</td><td>Reconocimiento oficial, misiones públicas</td></tr>
+        <tr><td>Héroe Top</td><td>Figura pública, puede fundar agencias</td></tr>
+        <tr><td>Ícono o Símbolo</td><td>Reconocido a nivel nacional o global</td></tr>
+      </table>
+      <h2 class="guia-h2">Monedas y Recursos</h2>
+      <ul class="guia-ul">
+        <li><b>Credenciales UA:</b> moneda escolar para materiales, permisos y mejoras del dormitorio.</li>
+        <li><b>Yenes Heroicos (¥H):</b> dinero oficial para objetos, trajes, reparaciones, etc.</li>
+        <li><b>Chips Tecnológicos:</b> material para fabricar gadgets y objetos tecnológicos.</li>
+        <li><b>Méritos:</b> sistema opcional del DM para premiar buena actitud y roleplaying.</li>
+      </ul>
+    </div>
+
+    <!-- EQUIPO -->
+    <div class="guia-page" id="g-equipo">
+      <h1 class="guia-h1">Capítulo 7: Equipamiento</h1>
+      <h2 class="guia-h2">Slots de Equipamiento (6 slots)</h2>
+      <table class="guia-table">
+        <tr><th>Slot</th><th>Ejemplos</th></tr>
+        <tr><td>Cabeza</td><td>Visores, gafas, auriculares</td></tr>
+        <tr><td>Torso</td><td>Chalecos, trajes de héroe, armaduras</td></tr>
+        <tr><td>Brazos</td><td>Guantes, brazaletes</td></tr>
+        <tr><td>Piernas</td><td>Botas, rodilleras, perneras</td></tr>
+        <tr><td>2 Accesorios/Gadgets</td><td>Comunicador, amuletos, sensores, dispositivos</td></tr>
+        <tr><td>3 Objetos</td><td>Pociones, bombas, trampas</td></tr>
+      </table>
+      <h2 class="guia-h2">Propiedades de Armas</h2>
+      <table class="guia-table">
+        <tr><th>Propiedad</th><th>Efecto</th></tr>
+        <tr><td>Ligera</td><td>Puede usarse como acción adicional</td></tr>
+        <tr><td>Pesada</td><td>No se puede usar montado sin la misma estadística de fuerza</td></tr>
+        <tr><td>Versátil</td><td>A dos manos o combate dual sin penalización</td></tr>
+        <tr><td>Precisión</td><td>Si falla por 2 o menos, hace mitad de daño</td></tr>
+        <tr><td>Crítico</td><td>Puede hacer crítico con 19 o 18</td></tr>
+        <tr><td>Penetrante</td><td>Ignora defensa de escudos y coberturas físicas</td></tr>
+        <tr><td>Barrido</td><td>Daña 3 casillas de frente con mitad de daño</td></tr>
+        <tr><td>Sangrado</td><td>Salvación de RES DC 10 o queda sangrando</td></tr>
+        <tr><td>Aturdir</td><td>Salvación de RES DC 8 o queda aturdido</td></tr>
+      </table>
+    </div>
+
+    <!-- CRAFTING -->
+    <div class="guia-page" id="g-crafting">
+      <h1 class="guia-h1">Sistema de Creación Tecnológica</h1>
+      <p class="guia-p">Fabricar, modificar o reparar equipamiento mediante <b>Chips Tecnológicos</b>, tiempo y habilidades técnicas.</p>
+      <h2 class="guia-h2">Costo en Chips</h2>
+      <table class="guia-table">
+        <tr><th>Rareza</th><th>Chips requeridos</th></tr>
+        <tr><td>Común</td><td>5–10</td></tr>
+        <tr><td>Avanzado</td><td>15–25</td></tr>
+        <tr><td>Experimental</td><td>30–50</td></tr>
+        <tr><td>Prototipo Especial</td><td>60+</td></tr>
+      </table>
+      <h2 class="guia-h2">DCs de Ingeniería</h2>
+      <table class="guia-table">
+        <tr><th>Tarea</th><th>DC</th></tr>
+        <tr><td>Modificación menor o reparación simple</td><td>10</td></tr>
+        <tr><td>Objeto común</td><td>13</td></tr>
+        <tr><td>Herramienta avanzada</td><td>15</td></tr>
+        <tr><td>Tecnología experimental</td><td>18</td></tr>
+        <tr><td>Prototipo único</td><td>20+</td></tr>
+      </table>
+      <h2 class="guia-h2">Modos de Construcción</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div class="guia-class-card"><h3>Lenta</h3><p>3× el tiempo. Sin fatiga ni riesgo. Ideal para proyectos complejos.</p></div>
+        <div class="guia-class-card"><h3>Normal</h3><p>Tiempo base. Tirada de Ingeniería. Fallo leve: +1d4 chips o +25% tiempo.</p></div>
+        <div class="guia-class-card"><h3>Rápida</h3><p>Mitad del tiempo. Alto riesgo. Tirada 9 o menos: pierden 50% materiales.</p></div>
+      </div>
+    </div>
+
+    <!-- MASCOTAS -->
+    <div class="guia-page" id="g-mascotas">
+      <h1 class="guia-h1">Capítulo 9: Mascotas e Invocaciones</h1>
+      <table class="guia-table">
+        <tr><th>Aspecto</th><th>Mascota</th><th>Invocación</th></tr>
+        <tr><td>Permanencia</td><td>Permanente</td><td>Temporal</td></tr>
+        <tr><td>Nivel</td><td>Sí (1–5)</td><td>No</td></tr>
+        <tr><td>Estadísticas</td><td>Ficha propia</td><td>Usa las del invocador</td></tr>
+        <tr><td>Stamina</td><td>No consume</td><td>Consume del invocador</td></tr>
+        <tr><td>Acciones</td><td>Iniciativa propia</td><td>Actúa después del invocador</td></tr>
+        <tr><td>Máx. en combate</td><td>0–2 por grupo</td><td>0–2 por grupo</td></tr>
+      </table>
+      <h2 class="guia-h2">Stats Iniciales de Mascota (Nivel 1)</h2>
+      <p class="guia-p">Preset distribuible libremente: <b>14, 9, 7, 5, 3</b> entre POD, AGI, RES, TEC, INT.</p>
+      <h2 class="guia-h2">Progresión de Mascota</h2>
+      <table class="guia-table">
+        <tr><th>Nivel</th><th>XP necesaria</th></tr>
+        <tr><td>1→2</td><td>10</td></tr>
+        <tr><td>2→3</td><td>20</td></tr>
+        <tr><td>3→4</td><td>40</td></tr>
+        <tr><td>4→5</td><td>80</td></tr>
+      </table>
+    </div>
+
+    <!-- GLOSARIO -->
+    <div class="guia-page" id="g-glosario">
+      <h1 class="guia-h1">Glosario de Términos</h1>
+      <table class="guia-table">
+        <tr><th>Término</th><th>Definición</th></tr>
+        <tr><td>Quirk / Don</td><td>Habilidad sobrenatural innata del personaje.</td></tr>
+        <tr><td>HP / PV</td><td>Puntos de Vida. Mide la salud física.</td></tr>
+        <tr><td>STAM / STA</td><td>Stamina. Recurso para usar habilidades del Quirk.</td></tr>
+        <tr><td>DEF</td><td>Defensa. Valor que deben superar los ataques para impactar.</td></tr>
+        <tr><td>Mod / Modificador</td><td>Bonus o penalización derivado de una estadística.</td></tr>
+        <tr><td>DC</td><td>Dificultad. Número objetivo que debe alcanzarse para tener éxito.</td></tr>
+        <tr><td>d20</td><td>Dado de 20 caras. Tirada principal para acciones inciertas.</td></tr>
+        <tr><td>Ventaja / Desventaja</td><td>Tirar 2d20 y elegir el mayor / menor.</td></tr>
+        <tr><td>Acción principal</td><td>Lo principal que hace un personaje en su turno.</td></tr>
+        <tr><td>Acción adicional</td><td>Acción menor permitida por habilidades u objetos.</td></tr>
+        <tr><td>Reacción</td><td>Acción fuera del turno al cumplirse una condición.</td></tr>
+        <tr><td>Plus Ultra</td><td>Estado de poder extremo temporal con costo alto.</td></tr>
+        <tr><td>Competencia / Bono Comp.</td><td>Valor extra que se suma si el personaje domina la tarea.</td></tr>
+        <tr><td>DM</td><td>Director del Mundo. Quien dirige la historia y arbitra reglas.</td></tr>
+        <tr><td>PNJ / NPC</td><td>Personaje No Jugador, interpretado por el DM.</td></tr>
+        <tr><td>Cooldown / Recarga</td><td>Turnos requeridos antes de volver a usar una habilidad.</td></tr>
+        <tr><td>Overload</td><td>Penalización por uso excesivo del Quirk.</td></tr>
+      </table>
+    </div>
+
+    <!-- GUÍA DM -->
+    <div class="guia-page" id="g-dm">
+      <h1 class="guia-h1">Guía para el Director del Mundo</h1>
+      <h2 class="guia-h2">Preparación antes de la sesión</h2>
+      <ul class="guia-ul">
+        <li><b>Session zero:</b> acordá tono, nivel de violencia, reglas opcionales y límites de mesa.</li>
+        <li><b>Prep mínima:</b> 1 página por sesión: PNJs clave, 3 encuentros (1 social / 1 exploración / 1 combate), 2 giros narrativos.</li>
+        <li><b>Hoja rápida:</b> DCs comunes (fácil 10, medio 15, difícil 20), HP estimado de mobs, STAM de bosses.</li>
+      </ul>
+      <h2 class="guia-h2">Plantilla de Encuentro</h2>
+      <div class="guia-callout">
+        <b>Objetivo:</b> ¿Qué deben lograr? (rescate, detener bomba)<br>
+        <b>Obstáculos:</b> 2–3 mixtos (grunts + especialista + trampa)<br>
+        <b>Giro narrativo:</b> Ej: el NPC protegido es en realidad una bomba viva<br>
+        <b>Recompensa:</b> XP + objeto + reputación<br>
+        <b>Escala:</b> Para 4 jugadores nivel N: 4–6 grunts, 1 elite, 0–1 boss
+      </div>
+      <h2 class="guia-h2">Balance on the fly</h2>
+      <ul class="guia-ul">
+        <li><b>Muy difícil:</b> reducí HP del enemigo o llegá un héroe aliado narrativamente.</li>
+        <li><b>Muy fácil:</b> subí la agresividad enemiga (no agregues más enemigos de golpe).</li>
+      </ul>
+    </div>
+
+  </div><!-- /guia-content -->
+</div><!-- /secGuia -->
+
+<!-- ══════════════════════════════════════════════════
+     SECCIÓN PERSONAJES
+══════════════════════════════════════════════════ -->
+<div id="secPersonajes" class="app-section">
+  <div class="chars-header">
+    <span class="chars-title">⚔ Mis Personajes</span>
+    <button class="btn btn-grn btn-sm" id="btnNuevoChar" onclick="nuevoPersonaje()" style="display:none;">+ Nuevo Personaje</button>
+    <button class="btn btn-sm" id="btnImportChar" onclick="importarPersonajeLocal()" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);display:none;">⬆ Importar JSON</button>
+  </div>
+
+  <!-- No logueado -->
+  <div id="charsLoginMsg" class="chars-login-required">
+    <h2>🔒 Sesión Requerida</h2>
+    <p>Para guardar y gestionar tus personajes necesitás una cuenta.<br>Es gratis y solo requiere un nombre y contraseña.</p>
+    <button class="btn btn-gld" style="width:auto;padding:10px 28px;" onclick="switchSection('perfil')">Iniciar Sesión</button>
+  </div>
+
+  <!-- Logueado -->
+  <div id="charsPanel" class="chars-body" style="display:none;">
+    <div class="chars-list-panel" id="charsListPanel">
+      <div id="charsListEmpty" class="chars-empty-panel" style="padding:20px;">
+        <span style="font-size:2rem;">⚔</span>
+        <p>Aún no tenés personajes.<br>Creá el primero.</p>
+      </div>
+    </div>
+
+    <div class="chars-form-panel" id="charsFormPanel">
+      <div id="charsFormEmpty" class="chars-empty-panel">
+        <span style="font-size:2.5rem;">📋</span>
+        <p>Seleccioná un personaje<br>o creá uno nuevo.</p>
+      </div>
+
+      <!-- Formulario de personaje -->
+      <div id="charForm" style="display:none;">
+
+<!-- ── TABS INTERNOS DE LA FICHA ── -->
+<div class="cf-title" id="charFormTitle">Nuevo Personaje</div>
+<div class="cf-tabs" id="cfTabBar">
+  <button class="cf-tab active" onclick="cfSwitchTab('vital',this)">❤️ Vital</button>
+  <button class="cf-tab" onclick="cfSwitchTab('stats',this)">📊 Stats</button>
+  <button class="cf-tab" onclick="cfSwitchTab('arsenal',this)">⚔ Arsenal</button>
+  <button class="cf-tab" onclick="cfSwitchTab('lore',this)">📖 Lore</button>
+  <button class="cf-tab" onclick="cfSwitchTab('extra',this)">⚙ Extra</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANE VITAL
+═══════════════════════════════════════ -->
+<div class="cf-pane active" data-cfpane="vital">
+
+  <!-- Cabecera del PJ -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--ps);">
+    <div id="cfAvatarDisplay" style="width:48px;height:48px;border-radius:50%;border:2px solid var(--ps);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;flex-shrink:0;background:var(--gld);color:var(--ink);">?</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;" id="cfNameDisplay">Personaje</div>
+      <div style="font-size:.75rem;color:var(--ink2);font-style:italic;" id="cfSubDisplay">Sin clase · Nivel 1</div>
+    </div>
+    <input type="color" id="cf_color" value="#c8941a" style="width:34px;height:34px;border:1px solid var(--ps);border-radius:50%;padding:2px;cursor:pointer;background:transparent;" onchange="cfRefreshHeader()" title="Color del token">
+  </div>
+
+  <!-- Plus Ultra -->
+  <div class="cf-pu" id="cfPuBtn" onclick="cfTogglePU()">
+    <div class="cf-pubox"><span class="cf-puck" id="cfPuck"></span></div>
+    <span class="cf-pulbl">PLUS ULTRA</span>
+    <span class="cf-pust" id="cfPuSt">inactivo</span>
+  </div>
+
+  <!-- Estados -->
+  <div class="ptitle" style="margin-top:0;">⚡ Estados</div>
+  <div class="estados-grid" id="cfEstadosGrid"></div>
+  <div class="estado-info" id="cfEstadoInfo"></div>
+
+  <!-- Identidad -->
+  <div class="ptitle">✦ Identidad</div>
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp" style="max-width:65px;">
+      <span class="flbl">Nivel</span>
+      <input class="fin num" type="number" min="1" max="20" id="cf_nivel" value="1" onchange="cfUpdateCalcs();cfRefreshHeader()">
+    </div>
+    <div class="fgrp" style="max-width:65px;">
+      <span class="flbl">Bon. Comp.</span>
+      <span id="cfBC" class="fin num" style="display:flex;align-items:center;justify-content:center;background:rgba(200,148,26,.18);font-family:'Cinzel',serif;font-size:.88rem;font-weight:700;color:var(--gld);border-color:var(--gld);">2</span>
+    </div>
+    <div class="fgrp">
+      <span class="flbl">Clase</span>
+      <select class="fin" id="cf_clase" onchange="cfUpdateCalcs();cfRefreshHeader()">
+        <option value="">Sin Elegir</option><option value="Ofensivo">Ofensivo</option><option value="Defensivo">Defensivo</option><option value="Agil">Ágil</option><option value="Tecnico">Técnico</option><option value="Mental">Mental</option><option value="Apoyo">Apoyo</option>
+      </select>
+    </div>
+  </div>
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp">
+      <span class="flbl">Especialización</span>
+      <select class="fin" id="cf_espec">
+        <option value="">Sin Elegir</option><option value="Ofensiva Explosiva">Ofensiva Explosiva</option><option value="Destructor Cinetico">Destructor Cinético</option><option value="Muro Imparable">Muro Imparable</option><option value="Reflejo Adaptativo">Reflejo Adaptativo</option><option value="Espectro Rapido">Espectro Rápido</option><option value="Vanguardia Relampago">Vanguardia Relámpago</option><option value="Ingeniero de Campo">Ingeniero de Campo</option><option value="Tirador Preciso">Tirador Preciso</option><option value="Manipulador Psiquico">Manipulador Psíquico</option><option value="Estratega Analitico">Estratega Analítico</option><option value="Canalizador Vital">Canalizador Vital</option><option value="Potenciador de Campo">Potenciador de Campo</option>
+      </select>
+    </div>
+    <div class="fgrp">
+      <span class="flbl">Subclase</span>
+      <select class="fin" id="cf_subclase">
+        <option value="">Sin Elegir</option><option value="Ofensivo">Ofensivo</option><option value="Defensivo">Defensivo</option><option value="Agil">Ágil</option><option value="Tecnico">Técnico</option><option value="Mental">Mental</option><option value="Apoyo">Apoyo</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- XP -->
+  <div style="margin-bottom:6px;">
+    <div class="brow" style="margin-bottom:3px;">
+      <span class="blbl">XP</span>
+      <input class="bnum" type="number" id="cf_xp_c" value="0" onchange="cfUpdateBars()">
+      <span class="bsep">/</span>
+      <input class="bnum" type="number" id="cf_xp_m" value="10" readonly style="background:rgba(41,128,185,.1);cursor:default;">
+    </div>
+    <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;"><div id="cfBXp" style="height:100%;border-radius:4px;transition:width .3s;background:#27ae60;width:0%"></div></div>
+  </div>
+
+  <!-- Recursos Vitales -->
+  <div class="ptitle" style="margin-top:8px;">♥ Recursos Vitales</div>
+  <div style="margin-bottom:6px;">
+    <div class="brow" style="margin-bottom:3px;">
+      <span class="blbl">Vida</span>
+      <input class="bnum" type="number" id="cf_vida_c" value="100" onchange="cfUpdateBars()">
+      <span class="bsep">/</span>
+      <input class="bnum" type="number" id="cf_vida_m" value="100" readonly style="background:rgba(41,128,185,.1);cursor:default;" title="Calculado automáticamente">
+    </div>
+    <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;"><div id="cfBVida" style="height:100%;border-radius:4px;transition:width .3s;background:#e74c3c;width:100%"></div></div>
+  </div>
+  <div style="margin-bottom:6px;">
+    <div class="brow" style="margin-bottom:3px;">
+      <span class="blbl" style="color:#8e44ad;">🛡 HP Temp</span>
+      <input class="bnum" type="number" min="0" id="cf_hp_temp" value="0" onchange="cfUpdateBars()" style="border-color:rgba(142,68,173,.4);background:rgba(142,68,173,.08);">
+      <span class="bsep" style="color:#8e44ad;">/</span>
+      <span class="bnum" style="display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#8e44ad;font-style:italic;border:none;background:none;padding:0 2px;">máx libre</span>
+    </div>
+    <div id="cfBHpTempRow" style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;display:none;"><div id="cfBHpTemp" style="height:100%;border-radius:4px;transition:width .3s;background:#8e44ad;width:0%"></div></div>
+  </div>
+  <div style="margin-bottom:6px;">
+    <div class="brow" style="margin-bottom:3px;">
+      <span class="blbl">Estamina</span>
+      <input class="bnum" type="number" id="cf_est_c" value="100" onchange="cfUpdateBars()">
+      <span class="bsep">/</span>
+      <input class="bnum" type="number" id="cf_est_m" value="100" readonly style="background:rgba(41,128,185,.1);cursor:default;" title="Calculado automáticamente">
+    </div>
+    <div style="height:8px;background:rgba(0,0,0,.12);border-radius:4px;overflow:hidden;margin:0 2px;"><div id="cfBEst" style="height:100%;border-radius:4px;transition:width .3s;background:#e67e22;width:100%"></div></div>
+  </div>
+
+  <!-- Stats vitales derivados -->
+  <div class="stat-main-row s-b" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+    <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
+    <span class="stat-main-lbl">Velocidad</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_vel" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-bono" style="width:100%;" type="number" id="cf_bvVel" value="0" onchange="cfUpdateVitalTotals()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl" style="color:#27ae60;">Total</div><span class="stat-total" id="cfTVel">0</span></div>
+  </div>
+  <div class="stat-main-row s-o" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+    <div class="sdot" style="background:#e67e22;flex-shrink:0;"></div>
+    <span class="stat-main-lbl">Defensa</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_def" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-bono" style="width:100%;" type="number" id="cf_bvDef" value="0" onchange="cfUpdateVitalTotals()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl" style="color:#27ae60;">Total</div><span class="stat-total" id="cfTDef">0</span></div>
+  </div>
+  <div class="stat-main-row s-b" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+    <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div>
+    <span class="stat-main-lbl">Iniciativa</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_ini" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-bono" style="width:100%;" type="number" id="cf_bvIni" value="0" onchange="cfUpdateVitalTotals()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl" style="color:#27ae60;">Total</div><span class="stat-total" id="cfTIni">0</span></div>
+  </div>
+  <div class="stat-main-row s-p" style="grid-template-columns:auto 1fr 58px 58px 52px;">
+    <div class="sdot" style="background:#8e44ad;flex-shrink:0;"></div>
+    <span class="stat-main-lbl">Reg. Estam.</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_reg" value="0" readonly style="background:rgba(41,128,185,.1);cursor:default;"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-bono" style="width:100%;" type="number" id="cf_bvReg" value="0" onchange="cfUpdateVitalTotals()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl" style="color:#27ae60;">Total</div><span class="stat-total" id="cfTReg">0</span></div>
+  </div>
+
+  <!-- Acciones de turno -->
+  <div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
+    <div><span class="flbl" style="font-size:.72rem;">🏃 Movimientos</span><input class="fin num" type="number" min="0" max="9" id="cf_mov" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
+    <div><span class="flbl" style="font-size:.72rem;">⚔️ Acciones</span><input class="fin num" type="number" min="0" max="9" id="cf_acc" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
+    <div><span class="flbl" style="font-size:.72rem;">✨ Acc. Adicionales</span><input class="fin num" type="number" min="0" max="9" id="cf_acca" value="0" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
+    <div><span class="flbl" style="font-size:.72rem;">🛡️ Reacciones</span><input class="fin num" type="number" min="0" max="9" id="cf_rea" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
+  </div>
+
+</div><!-- /vital -->
+
+<!-- ═══════════════════════════════════════
+     PANE STATS
+═══════════════════════════════════════ -->
+<div class="cf-pane" data-cfpane="stats">
+
+  <div class="ptitle" style="margin-top:8px;">★ Estadísticas Principales</div>
+  <div id="cfCalcPreview" style="background:rgba(200,148,26,.1);border:1px solid rgba(200,148,26,.3);border-radius:4px;padding:8px 12px;margin-bottom:10px;font-size:.78rem;color:var(--ink2);font-style:italic;">Completá clase y stats para ver los cálculos.</div>
+
+  <!-- Poder -->
+  <div class="stat-main-row s-r">
+    <div class="sdot" style="background:#c0392b;flex-shrink:0;"></div><span class="stat-main-lbl">Poder</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_pod" value="10" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-main" type="number" id="cf_bPod" value="0" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Base</div><span class="mod-box mod-base-box" id="cfMBasePod">0</span></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Final</div><span class="mod-box mod-final-box" id="cfMFinalPod">0</span></div>
+  </div>
+  <!-- Agilidad -->
+  <div class="stat-main-row s-b">
+    <div class="sdot" style="background:#2980b9;flex-shrink:0;"></div><span class="stat-main-lbl">Agilidad</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_agi" value="10" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-main" type="number" id="cf_bAgi" value="0" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Base</div><span class="mod-box mod-base-box" id="cfMBaseAgi">0</span></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Final</div><span class="mod-box mod-final-box" id="cfMFinalAgi">0</span></div>
+  </div>
+  <!-- Resistencia -->
+  <div class="stat-main-row s-o">
+    <div class="sdot" style="background:#e67e22;flex-shrink:0;"></div><span class="stat-main-lbl">Resistencia</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_res" value="10" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-main" type="number" id="cf_bRes" value="0" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Base</div><span class="mod-box mod-base-box" id="cfMBaseRes">0</span></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Final</div><span class="mod-box mod-final-box" id="cfMFinalRes">0</span></div>
+  </div>
+  <!-- Técnica -->
+  <div class="stat-main-row s-g">
+    <div class="sdot" style="background:#27ae60;flex-shrink:0;"></div><span class="stat-main-lbl">Técnica</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_tec" value="10" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-main" type="number" id="cf_bTec" value="0" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Base</div><span class="mod-box mod-base-box" id="cfMBaseTec">0</span></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Final</div><span class="mod-box mod-final-box" id="cfMFinalTec">0</span></div>
+  </div>
+  <!-- Inteligencia -->
+  <div class="stat-main-row s-p">
+    <div class="sdot" style="background:#8e44ad;flex-shrink:0;"></div><span class="stat-main-lbl">Inteligencia</span>
+    <div class="sval-col"><div class="stat-mini-lbl">Base</div><input class="sval-main" type="number" id="cf_int" value="10" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Bono</div><input class="sval-main" type="number" id="cf_bInt" value="0" onchange="cfUpdateCalcs()"></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Base</div><span class="mod-box mod-base-box" id="cfMBaseInt">0</span></div>
+    <div class="sval-col"><div class="stat-mini-lbl">Mod Final</div><span class="mod-box mod-final-box" id="cfMFinalInt">0</span></div>
+  </div>
+
+  <!-- Atributos -->
+  <div class="ptitle" style="margin-top:8px;">◆ Atributos</div>
+  <div class="attr-header"><span>Atributo</span><span>Base</span><span>Bono</span><span>Total</span><span title="Competencia">⭐</span><span></span></div>
+  <div class="attr-row s-r"><span class="attr-lbl">Fuerza</span><input class="attr-num auto" type="number" id="cfAFue" value="0" readonly title="Mod Final POD"><input class="attr-num" type="number" id="cfBaFue" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAFue">0</span><input class="attr-comp" type="checkbox" id="cfCompFue" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-r"><span class="attr-lbl">Intimidación</span><input class="attr-num auto" type="number" id="cfAIntim" value="0" readonly title="Mod Final POD"><input class="attr-num" type="number" id="cfBaIntim" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAIntim">0</span><input class="attr-comp" type="checkbox" id="cfCompIntim" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-b"><span class="attr-lbl">Evasión</span><input class="attr-num auto" type="number" id="cfAEva" value="0" readonly title="Mod Final AGI"><input class="attr-num" type="number" id="cfBaEva" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAEva">0</span><input class="attr-comp" type="checkbox" id="cfCompEva" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-b"><span class="attr-lbl">Acrobacia</span><input class="attr-num auto" type="number" id="cfAAcr" value="0" readonly title="Mod Final AGI"><input class="attr-num" type="number" id="cfBaAcr" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAAcr">0</span><input class="attr-comp" type="checkbox" id="cfCompAcr" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-b"><span class="attr-lbl">Sigilo</span><input class="attr-num auto" type="number" id="cfASig" value="0" readonly title="Mod Final AGI"><input class="attr-num" type="number" id="cfBaSig" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTASig">0</span><input class="attr-comp" type="checkbox" id="cfCompSig" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-o"><span class="attr-lbl">Aguante</span><input class="attr-num auto" type="number" id="cfAAgu" value="0" readonly title="Mod Final RES"><input class="attr-num" type="number" id="cfBaAgu" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAAgu">0</span><input class="attr-comp" type="checkbox" id="cfCompAgu" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-o"><span class="attr-lbl">Voluntad</span><input class="attr-num auto" type="number" id="cfAVol" value="0" readonly title="Mod Final RES"><input class="attr-num" type="number" id="cfBaVol" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAVol">0</span><input class="attr-comp" type="checkbox" id="cfCompVol" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-g"><span class="attr-lbl">Ctrl. Quirk</span><input class="attr-num auto" type="number" id="cfACtq" value="0" readonly title="Mod Final TEC"><input class="attr-num" type="number" id="cfBaCtq" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTACtq">0</span><input class="attr-comp" type="checkbox" id="cfCompCtq" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-g"><span class="attr-lbl">Ingeniería</span><input class="attr-num auto" type="number" id="cfAIng" value="0" readonly title="Mod Final TEC"><input class="attr-num" type="number" id="cfBaIng" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAIng">0</span><input class="attr-comp" type="checkbox" id="cfCompIng" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-g"><span class="attr-lbl">Táctica</span><input class="attr-num auto" type="number" id="cfATac" value="0" readonly title="Mod Final TEC"><input class="attr-num" type="number" id="cfBaTac" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTATac">0</span><input class="attr-comp" type="checkbox" id="cfCompTac" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-p"><span class="attr-lbl">Persuasión</span><input class="attr-num auto" type="number" id="cfAPer" value="0" readonly title="Mod Final INT"><input class="attr-num" type="number" id="cfBaPer" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAPer">0</span><input class="attr-comp" type="checkbox" id="cfCompPer" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-p"><span class="attr-lbl">Engaño</span><input class="attr-num auto" type="number" id="cfAEng" value="0" readonly title="Mod Final INT"><input class="attr-num" type="number" id="cfBaEng" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAEng">0</span><input class="attr-comp" type="checkbox" id="cfCompEng" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-p"><span class="attr-lbl">Investigación</span><input class="attr-num auto" type="number" id="cfAInv" value="0" readonly title="Mod Final INT"><input class="attr-num" type="number" id="cfBaInv" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAInv">0</span><input class="attr-comp" type="checkbox" id="cfCompInv" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+  <div class="attr-row s-p"><span class="attr-lbl">Percepción</span><input class="attr-num auto" type="number" id="cfAPrc" value="0" readonly title="Mod Final INT"><input class="attr-num" type="number" id="cfBaPrc" value="0" onchange="cfUpdateAttrTotals()"><span class="attr-total" id="cfTAPrc">0</span><input class="attr-comp" type="checkbox" id="cfCompPrc" title="Competencia" onchange="cfUpdateAttrTotals()"><span></span></div>
+
+  <!-- Recursos -->
+  <div class="ptitle" style="margin-top:8px;">◈ Recursos</div>
+  <table class="rtbl">
+    <tr><th>Recurso</th><th>Valor</th></tr>
+    <tr class="r-b"><td>Credenciales U.A.</td><td><input class="rval" type="number" id="cf_cua" value="0"></td></tr>
+    <tr class="r-y"><td>Yenes H. (YH)</td><td><input class="rval" type="number" id="cf_yh" value="0"></td></tr>
+    <tr class="r-t"><td>Chips Tecnológicos</td><td><input class="rval" type="number" id="cf_ct" value="0"></td></tr>
+    <tr class="r-p"><td>Méritos (M.)</td><td><input class="rval" type="number" id="cf_mer" value="0"></td></tr>
+  </table>
+
+</div><!-- /stats -->
+
+<!-- ═══════════════════════════════════════
+     PANE ARSENAL
+═══════════════════════════════════════ -->
+<div class="cf-pane" data-cfpane="arsenal">
+
+  <!-- Quirk -->
+  <div class="ptitle" style="margin-top:4px;">✦ Quirk / Don</div>
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp"><span class="flbl">Nombre del Quirk</span><input class="fin" type="text" id="cf_quirk_nombre" placeholder="Ej: Reflejo Cinético"></div>
+    <div class="fgrp" style="max-width:120px;">
+      <span class="flbl">Tipo</span>
+      <select class="fin" id="cf_quirk_tipo"><option value="Emisor">Emisor</option><option value="Transformacion">Transformación</option><option value="Mutacion">Mutación</option></select>
+    </div>
+  </div>
+  <div style="margin-bottom:8px;"><span class="flbl">Descripción</span><textarea class="fin" id="cf_quirk_desc" rows="2" placeholder="Cómo se activa, qué genera..."></textarea></div>
+
+  <!-- Habilidades activas -->
+  <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;">
+    <span>✦ Habilidades Activas</span>
+    <button class="btn btn-grn" onclick="cfAddHab()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+  </div>
+  <div style="overflow-x:auto;margin-bottom:6px;">
+    <table id="cfHabTable" style="width:100%;border-collapse:collapse;font-size:.73rem;">
+      <thead><tr>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:70px;">Nombre</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:42px;">Stat</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:38px;">Daño</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:40px;">Rango</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:38px;">Est.</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:80px;">Descripción</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:18px;"></th>
+      </tr></thead>
+      <tbody id="cfHabBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Habilidades pasivas -->
+  <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>✧ Habilidades Pasivas</span>
+    <button class="btn btn-grn" onclick="cfAddPasiva()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+  </div>
+  <div id="cfPasivaList" style="margin-bottom:8px;"></div>
+
+  <!-- Equipamiento -->
+  <div class="ptitle">⚙ Equipamiento</div>
+  <div style="overflow-x:auto;margin-bottom:8px;">
+    <table class="equip-table" id="cfEquipTable">
+      <thead><tr>
+        <th style="min-width:72px;">Slot</th>
+        <th style="min-width:80px;">Nombre</th>
+        <th style="min-width:100px;">Descripción</th>
+        <th style="min-width:42px;">+Stat</th>
+        <th style="min-width:36px;">Bono</th>
+      </tr></thead>
+      <tbody id="cfEquipBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Inventario -->
+  <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>🎒 Inventario</span>
+    <button class="btn btn-grn" onclick="cfAddInventario()" style="width:auto;padding:2px 8px;font-size:.62rem;margin-bottom:0;">+ Agregar</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table id="cfInvTable" style="width:100%;border-collapse:collapse;font-size:.73rem;">
+      <thead><tr>
+        <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:80px;">Nombre</th>
+        <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:120px;">Descripción</th>
+        <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:46px;">Cant.</th>
+        <th style="font-family:'Cinzel',serif;font-size:.6rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:18px;"></th>
+      </tr></thead>
+      <tbody id="cfInvBody"></tbody>
+    </table>
+  </div>
+
+</div><!-- /arsenal -->
+
+<!-- ═══════════════════════════════════════
+     PANE LORE
+═══════════════════════════════════════ -->
+<div class="cf-pane" data-cfpane="lore">
+
+  <div class="ptitle" style="margin-top:4px;">✦ Identidad del Héroe</div>
+  <div class="cf-grid">
+    <div class="cf-field"><label>Nombre del personaje</label><input type="text" id="cf_nombre" placeholder="Ej: Akira Fujimoto" oninput="cfRefreshHeader()"></div>
+    <div class="cf-field"><label>Nombre de héroe</label><input type="text" id="cf_heroname" placeholder="Ej: Cinético"></div>
+  </div>
+  <div class="cf-grid">
+    <div class="cf-field"><label>Grado / Rango</label><input type="text" id="cf_rango" placeholder="Ej: Estudiante C.L.P."></div>
+    <div class="cf-field"><label>Agencia</label><input type="text" id="cf_agencia" placeholder="Ej: Agencia Best Jeanist"></div>
+  </div>
+  <div class="cf-grid">
+    <div class="cf-field"><label>Instructor asignado</label><input type="text" id="cf_instructor" placeholder="Ej: All Might"></div>
+    <div class="cf-field"><label>Ideología heroica</label><input type="text" id="cf_ideologia" placeholder="Ej: Héroe de Justicia"></div>
+  </div>
+
+  <div class="ptitle">🧠 Personalidad y Origen</div>
+  <div class="cf-grid">
+    <div class="cf-field"><label>Personalidad</label><input type="text" id="cf_personalidad" placeholder="Ej: Impulsivo, leal, competitivo"></div>
+    <div class="cf-field"><label>Clase social de origen</label><input type="text" id="cf_origen_social" placeholder="Ej: Clase media urbana"></div>
+  </div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Trasfondo / Historia de origen</label><textarea id="cf_trasfondo" rows="3" placeholder="¿De dónde venís? ¿Familia de héroes? ¿Entrenamiento especial? ¿Qué evento marcó tu vida?"></textarea></div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Motivaciones y metas</label><textarea id="cf_motivaciones" rows="2" placeholder="¿Por qué querés ser héroe? ¿Qué querés lograr?"></textarea></div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Vínculos importantes</label><textarea id="cf_vinculos" rows="2" placeholder="Mentor, rival, familia, amigos... ¿quiénes importan?"></textarea></div>
+
+  <div class="ptitle">🎲 Trinket y Apariencia</div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Trinket / Objeto sentimental</label><input type="text" id="cf_trinket" placeholder="Ej: Banda elástica roja de su hermano mayor"></div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Descripción física</label><textarea id="cf_apariencia" rows="2" placeholder="Altura, complexión, rasgos, estilo de vestimenta..."></textarea></div>
+  <div class="cf-field" style="margin-bottom:8px;"><label>Traje de héroe</label><textarea id="cf_traje" rows="2" placeholder="Describe el traje o uniforme de héroe del personaje..."></textarea></div>
+
+</div><!-- /lore -->
+
+<!-- ═══════════════════════════════════════
+     PANE EXTRA
+═══════════════════════════════════════ -->
+<div class="cf-pane" data-cfpane="extra">
+
+  <!-- Notas -->
+  <div class="ptitle" style="margin-top:4px;">📝 Notas del Personaje</div>
+  <textarea id="cf_notas" rows="5" placeholder="Notas privadas, ideas, historia en desarrollo..." style="width:100%;padding:5px 8px;background:rgba(200,160,100,.15);border:1px solid var(--ps);border-radius:3px;font-family:'Crimson Text',serif;font-size:.85rem;color:var(--ink);outline:none;resize:vertical;line-height:1.5;margin-bottom:10px;"></textarea>
+
+  <!-- Apariencia del token -->
+  <div class="ptitle">🎨 Token en el Mapa</div>
+  <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span class="flbl">Símbolo (1-2 chars)</span>
+      <input type="text" id="cf_sym" maxlength="2" placeholder="A" style="width:50px;text-align:center;padding:5px;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-family:'Cinzel',serif;font-size:1rem;color:var(--ink);outline:none;" oninput="cfRefreshHeader()">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <span class="flbl">Color del token</span>
+      <input type="color" id="cf_color_extra" value="#c8941a" style="width:50px;height:36px;border:1px solid var(--ps);border-radius:4px;padding:2px;cursor:pointer;" onchange="document.getElementById('cf_color').value=this.value;cfRefreshHeader()">
+    </div>
+    <div id="cfTokenPreview" style="width:50px;height:50px;border-radius:50%;border:2px solid var(--ps);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;background:#c8941a;color:#1a0f08;">?</div>
+  </div>
+
+  <!-- Acciones de guardado -->
+  <div class="ptitle" style="margin-top:6px;">💾 Acciones</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+    <button class="btn btn-gld btn-sm" onclick="guardarPersonaje()">💾 Guardar</button>
+    <button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" onclick="exportarPersonajeActual()">⬇ Exportar JSON</button>
+    <button class="btn btn-sm" style="background:none;border:1px solid var(--ps);color:var(--ink2);" onclick="enviarAlMapa()" title="Crea una ficha en el mapa con este personaje">🗺 Enviar al Mapa</button>
+  </div>
+  <div class="saved" id="cfSavedMsg" style="margin-bottom:10px;"></div>
+
+  <!-- Contraseña para ficha en mapa -->
+  <div class="ptitle" style="font-size:.65rem;">🔒 Contraseña para Ficha en Mapa</div>
+  <div style="margin-bottom:4px;">
+    <span class="flbl">Contraseña (vacío = sin contraseña)</span>
+    <input type="password" id="cf_password" class="fin" placeholder="Contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
+    <input type="password" id="cf_password2" class="fin" placeholder="Confirmar contraseña..." maxlength="32" style="letter-spacing:2px;">
+    <div id="cfPwMsg" style="font-size:.72rem;min-height:14px;margin-top:3px;font-style:italic;color:var(--grn);"></div>
+  </div>
+
+</div><!-- /extra -->
+
+</div><!-- /charForm -->
+
+    </div><!-- /charsFormPanel -->
+  </div><!-- /charsPanel -->
+</div><!-- /secPersonajes -->
+
+<!-- ══════════════════════════════════════════════════
+     SECCIÓN PERFIL / SESIÓN
+══════════════════════════════════════════════════ -->
+<div id="secPerfil" class="app-section">
+
+  <!-- Panel de autenticación -->
+  <div id="authCard" class="auth-card">
+    <div class="auth-title">⚔ BNH RPG</div>
+    <div class="auth-sub">Iniciá sesión para guardar tus personajes</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="authTabLogin" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+      <button class="auth-tab" id="authTabReg" onclick="switchAuthTab('register')">Registrarse</button>
+    </div>
+    <div id="authLoginForm">
+      <div class="auth-field"><label>Nombre de usuario</label><input type="text" id="loginUser" placeholder="Tu nombre de héroe" autocomplete="username"></div>
+      <div class="auth-field"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+      <div class="auth-err" id="loginErr"></div>
+      <button class="auth-btn" onclick="doLogin()">Entrar a la Academia</button>
+    </div>
+    <div id="authRegForm" style="display:none;">
+      <div class="auth-field"><label>Nombre de usuario</label><input type="text" id="regUser" placeholder="Tu nombre de héroe" autocomplete="username"></div>
+      <div class="auth-field"><label>Contraseña</label><input type="password" id="regPass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+      <div class="auth-field"><label>Confirmar contraseña</label><input type="password" id="regPass2" placeholder="Repetí la contraseña"></div>
+      <div class="auth-err" id="regErr"></div>
+      <button class="auth-btn" onclick="doRegister()">Crear Cuenta</button>
+    </div>
+  </div>
+
+  <!-- Panel de perfil logueado -->
+  <div id="profileCard" class="profile-card" style="display:none;">
+    <div class="profile-avatar" id="profileAvatar">?</div>
+    <div class="profile-name" id="profileName">Héroe</div>
+    <div class="profile-meta" id="profileMeta">Aspirante a la U.A.</div>
+    <div class="profile-stats-row">
+      <div class="profile-stat-box">
+        <div class="profile-stat-num" id="profileCharCount">0</div>
+        <div class="profile-stat-lbl">Personajes</div>
+      </div>
+      <div class="profile-stat-box">
+        <div class="profile-stat-num" id="profileTopClass">—</div>
+        <div class="profile-stat-lbl">Clase Principal</div>
+      </div>
+      <div class="profile-stat-box">
+        <div class="profile-stat-num" id="profileTopLevel">1</div>
+        <div class="profile-stat-lbl">Nivel Máximo</div>
+      </div>
+    </div>
+    <button class="btn btn-gld" style="margin-bottom:10px;" onclick="switchSection('personajes')">Ver Mis Personajes</button>
+    <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
+  </div>
+</div><!-- /secPerfil -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  SISTEMA DE SECCIONES — NAVEGACIÓN PRINCIPAL
+// ══════════════════════════════════════════════════════════
+let currentSection = 'jugar';
+
+function switchSection(sec) {
+  currentSection = sec;
+  document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  const secEl = document.getElementById('sec' + sec.charAt(0).toUpperCase() + sec.slice(1));
+  if (secEl) secEl.classList.add('active');
+  const navEl = document.getElementById('nav' + sec.charAt(0).toUpperCase() + sec.slice(1));
+  if (navEl) navEl.classList.add('active');
+  if (sec === 'personajes') renderCharsList();
+  if (sec === 'perfil') renderProfileCard();
+}
+
+// ══════════════════════════════════════════════════════════
+//  GUÍA — NAVEGACIÓN INTERNA
+// ══════════════════════════════════════════════════════════
+function showGuiaPage(pageId, btn) {
+  document.querySelectorAll('.guia-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.guia-nav-item').forEach(b => b.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  if (page) { page.classList.add('active'); document.getElementById('guiaContent').scrollTop = 0; }
+  if (btn) btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  SISTEMA DE AUTENTICACIÓN (Firebase DB, hash simple)
+// ══════════════════════════════════════════════════════════
+let currentUser = null; // { uid, username, createdAt }
+const AUTH_KEY = 'bnhrpg_auth';
+
+async function hashPassword(password) {
+  const enc = new TextEncoder();
+  const data = enc.encode(password + 'bnhrpg_salt_v1');
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('authLoginForm').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('authRegForm').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('authTabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('authTabReg').classList.toggle('active', tab === 'register');
+}
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  err.textContent = '';
+  if (!user || !pass) { err.textContent = 'Completá todos los campos.'; return; }
+  if (!db) { err.textContent = 'Sin conexión a Firebase.'; return; }
+  try {
+    const snap = await db.ref('users/' + user).once('value');
+    const data = snap.val();
+    if (!data) { err.textContent = 'Usuario no encontrado.'; return; }
+    const hash = await hashPassword(pass);
+    if (data.passwordHash !== hash) { err.textContent = 'Contraseña incorrecta.'; return; }
+    currentUser = { uid: user, username: data.displayName || user, createdAt: data.createdAt };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+    onUserLoggedIn();
+  } catch(e) { err.textContent = 'Error: ' + e.message; }
+}
+
+async function doRegister() {
+  const user = document.getElementById('regUser').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const err = document.getElementById('regErr');
+  err.textContent = '';
+  if (!user || user.length < 3) { err.textContent = 'El nombre debe tener al menos 3 caracteres (a-z, 0-9, _).'; return; }
+  if (pass.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
+  if (pass !== pass2) { err.textContent = 'Las contraseñas no coinciden.'; return; }
+  if (!db) { err.textContent = 'Sin conexión a Firebase.'; return; }
+  try {
+    const snap = await db.ref('users/' + user).once('value');
+    if (snap.val()) { err.textContent = 'Ese nombre de usuario ya está en uso.'; return; }
+    const hash = await hashPassword(pass);
+    const displayName = document.getElementById('regUser').value.trim();
+    await db.ref('users/' + user).set({ passwordHash: hash, displayName, createdAt: Date.now() });
+    currentUser = { uid: user, username: displayName, createdAt: Date.now() };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+    onUserLoggedIn();
+  } catch(e) { err.textContent = 'Error: ' + e.message; }
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem(AUTH_KEY);
+  onUserLoggedOut();
+}
+
+function onUserLoggedIn() {
+  renderProfileCard();
+  renderNavUser();
+  document.getElementById('authCard').style.display = 'none';
+  document.getElementById('profileCard').style.display = '';
+  if (currentSection === 'personajes') renderCharsList();
+}
+
+function onUserLoggedOut() {
+  document.getElementById('authCard').style.display = '';
+  document.getElementById('profileCard').style.display = 'none';
+  document.getElementById('navUserArea').style.display = 'none';
+  document.getElementById('charsPanel').style.display = 'none';
+  document.getElementById('charsLoginMsg').style.display = '';
+  document.getElementById('btnNuevoChar').style.display = 'none';
+  document.getElementById('btnImportChar').style.display = 'none';
+}
+
+function renderNavUser() {
+  if (!currentUser) return;
+  document.getElementById('navUserArea').style.display = 'flex';
+  document.getElementById('navUserName').textContent = currentUser.username;
+}
+
+function renderProfileCard() {
+  if (!currentUser) return;
+  document.getElementById('profileAvatar').textContent = currentUser.username[0].toUpperCase();
+  document.getElementById('profileName').textContent = currentUser.username;
+  document.getElementById('profileMeta').textContent = 'Miembro desde ' + new Date(currentUser.createdAt).getFullYear();
+  // stats
+  if (db) {
+    db.ref('userChars/' + currentUser.uid).once('value').then(snap => {
+      const chars = snap.val() || {};
+      const arr = Object.values(chars);
+      document.getElementById('profileCharCount').textContent = arr.length;
+      const topClass = arr.reduce((acc, c) => {
+        acc[c.clase] = (acc[c.clase]||0)+1; return acc;
+      }, {});
+      const best = Object.entries(topClass).sort((a,b)=>b[1]-a[1])[0];
+      document.getElementById('profileTopClass').textContent = best ? best[0].slice(0,4) : '—';
+      const maxLv = arr.reduce((m, c) => Math.max(m, c.nivel||1), 1);
+      document.getElementById('profileTopLevel').textContent = maxLv;
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  SISTEMA DE PERSONAJES
+// ══════════════════════════════════════════════════════════
+let editingCharId = null;
+let myChars = {};
+
+function renderCharsList() {
+  if (!currentUser) {
+    document.getElementById('charsLoginMsg').style.display = '';
+    document.getElementById('charsPanel').style.display = 'none';
+    document.getElementById('btnNuevoChar').style.display = 'none';
+    document.getElementById('btnImportChar').style.display = 'none';
+    return;
+  }
+  document.getElementById('charsLoginMsg').style.display = 'none';
+  document.getElementById('charsPanel').style.display = 'flex';
+  document.getElementById('btnNuevoChar').style.display = '';
+  document.getElementById('btnImportChar').style.display = '';
+
+  if (!db) return;
+  db.ref('userChars/' + currentUser.uid).once('value').then(snap => {
+    myChars = snap.val() || {};
+    const list = document.getElementById('charsListPanel');
+    list.innerHTML = '';
+    const arr = Object.entries(myChars);
+    if (arr.length === 0) {
+      list.innerHTML = '<div class="chars-empty-panel" style="padding:20px;flex:1;"><span style="font-size:2rem;">⚔</span><p>Aún no tenés personajes.<br>Creá el primero.</p></div>';
+    } else {
+      arr.forEach(([id, ch]) => {
+        const card = document.createElement('div');
+        card.className = 'char-list-card' + (id === editingCharId ? ' active' : '');
+        card.innerHTML = `
+          <div class="char-list-avatar" style="background:${ch.color||'#c8941a'};color:${isLight(ch.color||'#c8941a')?'#1a0f08':'#fff'}">${(ch.nombre||'?')[0].toUpperCase()}</div>
+          <div class="char-list-info">
+            <div class="char-list-name">${ch.nombre||'Sin nombre'}</div>
+            <div class="char-list-meta">${ch.clase||'Sin clase'} Nv.${ch.nivel||1} · ${ch.heroname||'Sin nombre de héroe'}</div>
+          </div>
+          <button class="char-list-del" onclick="eliminarPersonaje('${id}');event.stopPropagation();" title="Eliminar">🗑</button>
+        `;
+        card.addEventListener('click', () => editarPersonaje(id));
+        list.appendChild(card);
+      });
+    }
+  });
+}
+
+function nuevoPersonaje() {
+  editingCharId = null;
+  // limpiar form
+  ['cf_nombre','cf_heroname','cf_rango','cf_quirk_nombre','cf_quirk_desc','cf_personalidad','cf_ideologia','cf_trasfondo','cf_trinket'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  ['cf_pod','cf_agi','cf_res','cf_tec','cf_int'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 10; });
+  document.getElementById('cf_nivel').value = 1;
+  document.getElementById('cf_clase').value = '';
+  document.getElementById('cf_espec').value = '';
+  document.getElementById('cf_quirk_tipo').value = 'Emisor';
+  document.getElementById('cf_color').value = '#e74c3c';
+  document.getElementById('cfHabsList').innerHTML = '';
+  document.getElementById('charFormTitle').textContent = 'Nuevo Personaje';
+  document.getElementById('charsFormEmpty').style.display = 'none';
+  document.getElementById('charForm').style.display = '';
+  document.getElementById('cfSavedMsg').textContent = '';
+  cfUpdateCalcs();
+}
+
+function editarPersonaje(id) {
+  const ch = myChars[id];
+  if (!ch) return;
+  editingCharId = id;
+  // highlight list
+  document.querySelectorAll('.char-list-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.char-list-card').forEach(c => {
+    if (c.querySelector('.char-list-name')?.textContent === ch.nombre) c.classList.add('active');
+  });
+  // fill form
+  document.getElementById('cf_nombre').value = ch.nombre||'';
+  document.getElementById('cf_heroname').value = ch.heroname||'';
+  document.getElementById('cf_clase').value = ch.clase||'';
+  document.getElementById('cf_espec').value = ch.espec||'';
+  document.getElementById('cf_nivel').value = ch.nivel||1;
+  document.getElementById('cf_rango').value = ch.rango||'';
+  document.getElementById('cf_pod').value = ch.pod||10;
+  document.getElementById('cf_agi').value = ch.agi||10;
+  document.getElementById('cf_res').value = ch.res||10;
+  document.getElementById('cf_tec').value = ch.tec||10;
+  document.getElementById('cf_int').value = ch.int||10;
+  document.getElementById('cf_quirk_nombre').value = ch.quirk_nombre||'';
+  document.getElementById('cf_quirk_tipo').value = ch.quirk_tipo||'Emisor';
+  document.getElementById('cf_quirk_desc').value = ch.quirk_desc||'';
+  document.getElementById('cf_personalidad').value = ch.personalidad||'';
+  document.getElementById('cf_ideologia').value = ch.ideologia||'';
+  document.getElementById('cf_trasfondo').value = ch.trasfondo||'';
+  document.getElementById('cf_trinket').value = ch.trinket||'';
+  document.getElementById('cf_color').value = ch.color||'#e74c3c';
+  // habilidades
+  document.getElementById('cfHabsList').innerHTML = '';
+  (ch.habilidades||[]).forEach(h => cfAddHab(h));
+  document.getElementById('charFormTitle').textContent = 'Editando: ' + (ch.nombre||'Personaje');
+  document.getElementById('charsFormEmpty').style.display = 'none';
+  document.getElementById('charForm').style.display = '';
+  document.getElementById('cfSavedMsg').textContent = '';
+  cfUpdateCalcs();
+}
+
+async function guardarPersonaje() {
+  if (!currentUser || !db) return;
+  const ch = recogerDatosPersonaje();
+  const id = editingCharId || ('char_' + Date.now().toString(36));
+  await db.ref('userChars/' + currentUser.uid + '/' + id).set(ch);
+  editingCharId = id;
+  document.getElementById('charFormTitle').textContent = 'Editando: ' + ch.nombre;
+  document.getElementById('cfSavedMsg').textContent = '✓ Guardado';
+  setTimeout(() => { const el = document.getElementById('cfSavedMsg'); if(el) el.textContent = ''; }, 2000);
+  renderCharsList();
+  renderProfileCard();
+}
+
+async function eliminarPersonaje(id) {
+  if (!currentUser || !db) return;
+  if (!confirm('¿Eliminar este personaje? Esta acción no se puede deshacer.')) return;
+  await db.ref('userChars/' + currentUser.uid + '/' + id).remove();
+  if (editingCharId === id) {
+    editingCharId = null;
+    document.getElementById('charsFormEmpty').style.display = '';
+    document.getElementById('charForm').style.display = 'none';
+  }
+  renderCharsList();
+  renderProfileCard();
+}
+
+function recogerDatosPersonaje() {
+  const habs = [];
+  document.querySelectorAll('.cf-hab-row').forEach(row => {
+    habs.push({
+      nombre: row.querySelector('.cfh-nombre')?.value||'',
+      dados:  row.querySelector('.cfh-dados')?.value||'1',
+      tipo:   row.querySelector('.cfh-tipo')?.value||'d6',
+      stam:   row.querySelector('.cfh-stam')?.value||'0',
+      desc:   row.querySelector('.cfh-desc')?.value||''
+    });
+  });
+  return {
+    nombre: document.getElementById('cf_nombre').value.trim()||'Sin nombre',
+    heroname: document.getElementById('cf_heroname').value.trim(),
+    clase: document.getElementById('cf_clase').value,
+    espec: document.getElementById('cf_espec').value,
+    nivel: parseInt(document.getElementById('cf_nivel').value)||1,
+    rango: document.getElementById('cf_rango').value.trim(),
+    pod: parseInt(document.getElementById('cf_pod').value)||10,
+    agi: parseInt(document.getElementById('cf_agi').value)||10,
+    res: parseInt(document.getElementById('cf_res').value)||10,
+    tec: parseInt(document.getElementById('cf_tec').value)||10,
+    int: parseInt(document.getElementById('cf_int').value)||10,
+    quirk_nombre: document.getElementById('cf_quirk_nombre').value.trim(),
+    quirk_tipo: document.getElementById('cf_quirk_tipo').value,
+    quirk_desc: document.getElementById('cf_quirk_desc').value.trim(),
+    personalidad: document.getElementById('cf_personalidad').value.trim(),
+    ideologia: document.getElementById('cf_ideologia').value.trim(),
+    trasfondo: document.getElementById('cf_trasfondo').value.trim(),
+    trinket: document.getElementById('cf_trinket').value.trim(),
+    color: document.getElementById('cf_color').value,
+    habilidades: habs,
+    updatedAt: Date.now()
+  };
+}
+
+function cfAddHab(h) {
+  const row = document.createElement('div');
+  row.className = 'cf-hab-row';
+  row.innerHTML = `
+    <input type="text" class="cfh-nombre" placeholder="Nombre" value="${h?.nombre||''}">
+    <input type="number" class="cfh-dados" placeholder="Dados" value="${h?.dados||1}" min="1" max="8" style="width:54px;text-align:center;">
+    <select class="cfh-tipo">
+      ${['d4','d6','d8','d10','d12','d20'].map(d=>`<option value="${d}" ${h?.tipo===d?'selected':''}>${d}</option>`).join('')}
+    </select>
+    <input type="number" class="cfh-stam" placeholder="STAM" value="${h?.stam||0}" min="0" style="width:46px;text-align:center;">
+    <button class="cf-hab-del" onclick="this.parentElement.remove()" title="Eliminar">✕</button>
+    <input type="text" class="cfh-desc" placeholder="Descripción breve" value="${h?.desc||''}" style="grid-column:1/5;margin-top:3px;">
+  `;
+  document.getElementById('cfHabsList').appendChild(row);
+}
+
+function cfUpdateCalcs() {
+  const clase = document.getElementById('cf_clase').value.toLowerCase();
+  const nivel = parseInt(document.getElementById('cf_nivel').value)||1;
+  const pod = parseInt(document.getElementById('cf_pod').value)||10;
+  const agi = parseInt(document.getElementById('cf_agi').value)||10;
+  const res = parseInt(document.getElementById('cf_res').value)||10;
+  const tec = parseInt(document.getElementById('cf_tec').value)||10;
+  const int_ = parseInt(document.getElementById('cf_int').value)||10;
+  const modRes = Math.trunc(res/2 - 5);
+  const modAgi = Math.trunc(agi/2 - 5);
+  const modTec = Math.trunc(tec/2 - 5);
+  const modInt = Math.trunc(int_/2 - 5);
+  const modPod = Math.trunc(pod/2 - 5);
+  let hp, stam, def, vel;
+  if (clase==='ofensivo')      { hp=(8*(nivel+1))+(modRes*2); stam=(6*nivel)+(modTec*2); def=10+modRes; }
+  else if (clase==='defensivo'){ hp=(12*(nivel+1))+(modRes*3); stam=(5*nivel)+(modTec*1); def=10+modRes; }
+  else if (clase==='agil')     { hp=(7*(nivel+1))+(modRes*2); stam=(6*nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
+  else if (clase==='tecnico')  { hp=(6*(nivel+1))+(modRes*2); stam=(8*nivel)+(modTec*3); def=10+Math.max(2,modAgi); }
+  else if (clase==='mental')   { hp=(6*(nivel+1))+(modRes*1); stam=(7*nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
+  else if (clase==='apoyo')    { hp=(9*(nivel+1))+(modRes*2); stam=(7*nivel)+(modTec*2); def=9+modRes; }
+  else { const el = document.getElementById('cfCalcPreview'); if(el) el.textContent='Seleccioná una clase para ver los cálculos.'; return; }
+  vel = Math.max(2, modAgi);
+  const bc = Math.ceil(nivel/3)+1;
+  const el = document.getElementById('cfCalcPreview');
+  if(el) el.innerHTML = `<b>HP:</b> ${Math.max(1,hp)} &nbsp;|&nbsp; <b>STAM:</b> ${Math.max(1,stam)} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Iniciativa:</b> ${modAgi>=0?'+'+modAgi:modAgi} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
+}
+
+function exportarPersonajeActual() {
+  const ch = recogerDatosPersonaje();
+  const blob = new Blob([JSON.stringify(ch, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = (ch.nombre||'personaje').replace(/\s+/g,'_') + '.json';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importarPersonajeLocal() {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = e => {
+    const f = e.target.files[0]; if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        editingCharId = null;
+        nuevoPersonaje();
+        // fill fields
+        if(data.nombre) document.getElementById('cf_nombre').value = data.nombre;
+        if(data.heroname) document.getElementById('cf_heroname').value = data.heroname;
+        if(data.clase) document.getElementById('cf_clase').value = data.clase;
+        if(data.espec) document.getElementById('cf_espec').value = data.espec;
+        if(data.nivel) document.getElementById('cf_nivel').value = data.nivel;
+        if(data.rango) document.getElementById('cf_rango').value = data.rango;
+        ['pod','agi','res','tec','int'].forEach(s => { if(data[s]) document.getElementById('cf_'+s).value = data[s]; });
+        if(data.quirk_nombre) document.getElementById('cf_quirk_nombre').value = data.quirk_nombre;
+        if(data.quirk_tipo) document.getElementById('cf_quirk_tipo').value = data.quirk_tipo;
+        if(data.quirk_desc) document.getElementById('cf_quirk_desc').value = data.quirk_desc;
+        if(data.personalidad) document.getElementById('cf_personalidad').value = data.personalidad;
+        if(data.ideologia) document.getElementById('cf_ideologia').value = data.ideologia;
+        if(data.trasfondo) document.getElementById('cf_trasfondo').value = data.trasfondo;
+        if(data.trinket) document.getElementById('cf_trinket').value = data.trinket;
+        if(data.color) document.getElementById('cf_color').value = data.color;
+        if(data.habilidades) data.habilidades.forEach(h => cfAddHab(h));
+        cfUpdateCalcs();
+        switchSection('personajes');
+      } catch(err) { alert('Error al leer el archivo JSON: ' + err.message); }
+    };
+    reader.readAsText(f);
+  };
+  inp.click();
+}
+
+function enviarAlMapa() {
+  const ch = recogerDatosPersonaje();
+  // Construir objeto sh compatible con el sistema de fichas del mapa
+  const modRes = Math.trunc(ch.res/2 - 5);
+  const modAgi = Math.trunc(ch.agi/2 - 5);
+  const modTec = Math.trunc(ch.tec/2 - 5);
+  const modInt = Math.trunc(ch.int/2 - 5);
+  const clase = (ch.clase||'').toLowerCase();
+  let hp, stam, def;
+  if (clase==='ofensivo')      { hp=(8*(ch.nivel+1))+(modRes*2); stam=(6*ch.nivel)+(modTec*2); def=10+modRes; }
+  else if (clase==='defensivo'){ hp=(12*(ch.nivel+1))+(modRes*3); stam=(5*ch.nivel); def=10+modRes; }
+  else if (clase==='agil')     { hp=(7*(ch.nivel+1))+(modRes*2); stam=(6*ch.nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
+  else if (clase==='tecnico')  { hp=(6*(ch.nivel+1))+(modRes*2); stam=(8*ch.nivel)+(modTec*3); def=10+Math.max(2,modAgi); }
+  else if (clase==='mental')   { hp=(6*(ch.nivel+1))+(modRes); stam=(7*ch.nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
+  else if (clase==='apoyo')    { hp=(9*(ch.nivel+1))+(modRes*2); stam=(7*ch.nivel)+(modTec*2); def=9+modRes; }
+  else { hp=50; stam=30; def=10; }
+  hp = Math.max(1,hp); stam = Math.max(1,stam);
+
+  const tok = {
+    id: 't_' + Date.now().toString(36),
+    name: ch.nombre || 'Personaje',
+    sym: (ch.nombre||'?')[0].toUpperCase(),
+    color: ch.color || '#c8941a',
+    c: 0, r: 0,
+    sh: {
+      nivel: ch.nivel, clase: ch.clase, espec: ch.espec,
+      pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
+      vida_c: hp, vida_m: hp, est_c: stam, est_m: stam,
+      xp_c: 0, xp_m: 10,
+      hp_temp: 0, plus_ultra: false,
+      vel: Math.max(2,modAgi), def, ini: modAgi,
+      reg: 1+modInt, mov: 1, acc: 1, acca: 0, rea: 1,
+      estados: {},
+      quirk: ch.quirk_nombre,
+      habilidades: (ch.habilidades||[]).map((h,i) => ({
+        id: 'h'+i, nombre: h.nombre, dados: h.dados,
+        tipo: h.tipo, stam: parseInt(h.stam)||0, desc: h.desc,
+        stat: 'pod', tipo_uso: 'accion'
+      })),
+      equipo: {}, pasivas: [], notas: ch.trasfondo||''
+    }
+  };
+  // Colocar en el mapa
+  if (typeof tokens !== 'undefined') {
+    tokens[tok.id] = tok;
+    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
+    if (typeof refresh === 'function') refresh();
+    if (typeof redraw === 'function') redraw();
+    switchSection('jugar');
+    setTimeout(() => { if(typeof addLog==='function') addLog('spawn', `🦸 <b>${tok.name}</b> ha llegado al mapa desde el gestor de personajes.`); }, 300);
+  } else {
+    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INICIALIZACIÓN DE SESIÓN PERSISTENTE
+// ══════════════════════════════════════════════════════════
+(function restoreSession() {
+  try {
+    const saved = localStorage.getItem(AUTH_KEY);
+    if (saved) {
+      const u = JSON.parse(saved);
+      if (u && u.uid) {
+        currentUser = u;
+        // verificar que el usuario sigue en Firebase
+        const waitForDb = setInterval(() => {
+          if (typeof db !== 'undefined' && db) {
+            clearInterval(waitForDb);
+            db.ref('users/' + u.uid).once('value').then(snap => {
+              if (snap.val()) { onUserLoggedIn(); }
+              else { doLogout(); }
+            }).catch(() => { onUserLoggedIn(); }); // si offline, creer al usuario
+          }
+        }, 200);
+        setTimeout(() => clearInterval(waitForDb), 5000);
+      }
+    }
+  } catch(e) {}
+})();
+
+</script>
+<script>
+
+// ══════════════════════════════════════════════════════════
+//  FICHA DE PERSONAJE — TABS INTERNOS
+// ══════════════════════════════════════════════════════════
+function cfSwitchTab(tab, btn) {
+  document.querySelectorAll('.cf-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cf-tab').forEach(b => b.classList.remove('active'));
+  const pane = document.querySelector('.cf-pane[data-cfpane="'+tab+'"]');
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── PLUS ULTRA ──
+let cfPUActive = false;
+function cfTogglePU() {
+  cfPUActive = !cfPUActive;
+  const btn = document.getElementById('cfPuBtn');
+  const st  = document.getElementById('cfPuSt');
+  const pk  = document.getElementById('cfPuck');
+  if (btn) btn.classList.toggle('on', cfPUActive);
+  if (st)  st.textContent  = cfPUActive ? 'ACTIVO' : 'inactivo';
+  if (pk)  pk.textContent  = cfPUActive ? '✓' : '';
+}
+
+// ── ESTADOS ──
+const CF_ESTADOS_DATA = [
+  {key:'aturdido',  icon:'😵', color:'#e74c3c', label:'Aturdido'},
+  {key:'derribado', icon:'⬇',  color:'#e67e22', label:'Derribado'},
+  {key:'cegado',    icon:'👁',  color:'#95a5a6', label:'Cegado'},
+  {key:'paralizado',icon:'⛓',  color:'#8e44ad', label:'Paralizado'},
+  {key:'asustado',  icon:'😨', color:'#9b59b6', label:'Asustado'},
+  {key:'quemado',   icon:'🔥', color:'#e74c3c', label:'Quemado'},
+  {key:'envenenado',icon:'☠',  color:'#27ae60', label:'Envenenado'},
+  {key:'silenciado',icon:'🔇', color:'#7f8c8d', label:'Silenciado'},
+  {key:'confundido',icon:'💫', color:'#f39c12', label:'Confundido'},
+  {key:'enredado',  icon:'🕸', color:'#95a5a6', label:'Enredado'},
+];
+let cfEstados = {};
+
+function cfBuildEstadosGrid() {
+  const grid = document.getElementById('cfEstadosGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  CF_ESTADOS_DATA.forEach(ed => {
+    const btn = document.createElement('div');
+    btn.className = 'estado-btn' + (cfEstados[ed.key] ? ' active' : '');
+    btn.style.borderColor = cfEstados[ed.key] ? ed.color : '';
+    btn.style.background  = cfEstados[ed.key] ? ed.color+'22' : '';
+    btn.innerHTML = `<span class="estado-icon">${ed.icon}</span><span class="estado-lbl">${ed.label}</span>`;
+    btn.onclick = () => {
+      cfEstados[ed.key] = !cfEstados[ed.key];
+      cfBuildEstadosGrid();
+      cfUpdateEstadoInfo();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function cfUpdateEstadoInfo() {
+  const el = document.getElementById('cfEstadoInfo');
+  if (!el) return;
+  const activos = CF_ESTADOS_DATA.filter(e => cfEstados[e.key]);
+  if (activos.length === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = activos.map(e =>
+    `<span style="display:inline-flex;align-items:center;gap:3px;margin:2px 3px;padding:2px 7px;background:${e.color}22;border:1px solid ${e.color}66;border-radius:10px;font-size:.72rem;">${e.icon} ${e.label}</span>`
+  ).join('');
+}
+
+// ── CABECERA DINÁMICA ──
+function cfRefreshHeader() {
+  const nombre = (document.getElementById('cf_nombre')?.value || 'Personaje').trim() || 'Personaje';
+  const heroname = document.getElementById('cf_heroname')?.value.trim();
+  const clase = document.getElementById('cf_clase')?.value || '';
+  const nivel = document.getElementById('cf_nivel')?.value || '1';
+  const color = document.getElementById('cf_color')?.value || '#c8941a';
+  const sym = document.getElementById('cf_sym')?.value || nombre[0].toUpperCase();
+
+  const nameEl = document.getElementById('cfNameDisplay');
+  const subEl  = document.getElementById('cfSubDisplay');
+  const avEl   = document.getElementById('cfAvatarDisplay');
+  const prevEl = document.getElementById('cfTokenPreview');
+
+  if (nameEl) nameEl.textContent = heroname ? `${nombre} — ${heroname}` : nombre;
+  if (subEl)  subEl.textContent  = `${clase || 'Sin clase'} · Nivel ${nivel}`;
+  if (avEl) {
+    avEl.style.background = color;
+    avEl.style.color = isLight(color) ? '#1a0f08' : '#fff';
+    avEl.textContent = sym || nombre[0].toUpperCase();
+  }
+  if (prevEl) {
+    prevEl.style.background = color;
+    prevEl.style.color = isLight(color) ? '#1a0f08' : '#fff';
+    prevEl.textContent = sym || nombre[0].toUpperCase();
+    // sync color pickers
+    const colorExtra = document.getElementById('cf_color_extra');
+    if (colorExtra) colorExtra.value = color;
+  }
+
+  // Title
+  const titleEl = document.getElementById('charFormTitle');
+  if (titleEl) {
+    titleEl.textContent = editingCharId
+      ? 'Editando: ' + nombre
+      : 'Nuevo Personaje';
+  }
+}
+
+// ── CÁLCULOS (igual lógica que el mapa) ──
+function cfMod(base, bono) {
+  return Math.trunc((base + bono) / 2 - 5);
+}
+
+function cfGetMF(stat) {
+  const KEY = stat[0].toUpperCase() + stat.slice(1);
+  const el = document.getElementById('cfMFinal'+KEY);
+  if (el) { const v = parseInt(el.textContent); return isNaN(v) ? 0 : v; }
+  return 0;
+}
+
+function cfUpdateCalcs() {
+  const nivel  = parseInt(document.getElementById('cf_nivel')?.value) || 1;
+  const pod    = parseInt(document.getElementById('cf_pod')?.value) || 10;
+  const agi    = parseInt(document.getElementById('cf_agi')?.value) || 10;
+  const res    = parseInt(document.getElementById('cf_res')?.value) || 10;
+  const tec    = parseInt(document.getElementById('cf_tec')?.value) || 10;
+  const int_   = parseInt(document.getElementById('cf_int')?.value) || 10;
+  const bPod   = parseInt(document.getElementById('cf_bPod')?.value) || 0;
+  const bAgi   = parseInt(document.getElementById('cf_bAgi')?.value) || 0;
+  const bRes   = parseInt(document.getElementById('cf_bRes')?.value) || 0;
+  const bTec   = parseInt(document.getElementById('cf_bTec')?.value) || 0;
+  const bInt   = parseInt(document.getElementById('cf_bInt')?.value) || 0;
+  const clase  = (document.getElementById('cf_clase')?.value || '').toLowerCase();
+
+  const MAINS = [
+    ['pod','Pod',pod,bPod],['agi','Agi',agi,bAgi],
+    ['res','Res',res,bRes],['tec','Tec',tec,bTec],['int','Int',int_,bInt]
+  ];
+  const pu = cfPUActive ? 2 : 0;
+
+  MAINS.forEach(([key, Key, base, bono]) => {
+    const mb = cfMod(base, bono);
+    const mf = mb + pu;
+    const elBase  = document.getElementById('cfMBase'+Key);
+    const elFinal = document.getElementById('cfMFinal'+Key);
+    if (elBase)  elBase.textContent  = mb >= 0 ? '+'+mb : ''+mb;
+    if (elFinal) elFinal.textContent = mf >= 0 ? '+'+mf : ''+mf;
+  });
+
+  // BC
+  const bc = Math.ceil(nivel/3)+1;
+  const bcEl = document.getElementById('cfBC');
+  if (bcEl) bcEl.textContent = '+'+bc;
+
+  // XP max
+  let xpMax = 10;
+  for (let i = 1; i < nivel; i++) xpMax = Math.round(xpMax*1.5);
+  const xmEl = document.getElementById('cf_xp_m');
+  if (xmEl) xmEl.value = xpMax;
+
+  // Vitales auto
+  const mAgi = cfMod(agi,bAgi)+pu;
+  const mRes = cfMod(res,bRes)+pu;
+  const mTec = cfMod(tec,bTec)+pu;
+  const mInt = cfMod(int_,bInt)+pu;
+
+  const vel = Math.max(2, mAgi);
+  let def, hp, stam, reg;
+
+  if      (clase==='ofensivo')  { hp=(8*(nivel+1))+(mRes*2); stam=(6*nivel)+(mTec*2); def=10+mRes; }
+  else if (clase==='defensivo') { hp=(12*(nivel+1))+(mRes*3); stam=(5*nivel)+(mTec*1); def=10+mRes; }
+  else if (clase==='agil')      { hp=(7*(nivel+1))+(mRes*2); stam=(6*nivel)+(mTec*2); def=10+vel; }
+  else if (clase==='tecnico')   { hp=(6*(nivel+1))+(mRes*2); stam=(8*nivel)+(mTec*3); def=10+vel; }
+  else if (clase==='mental')    { hp=(6*(nivel+1))+(mRes*1); stam=(7*nivel)+(mTec*2); def=10+vel; }
+  else if (clase==='apoyo')     { hp=(9*(nivel+1))+(mRes*2); stam=(7*nivel)+(mTec*2); def=9+mRes; }
+  else { hp=50; stam=30; def=10; }
+  reg = 1+mInt;
+  hp = Math.max(1,hp); stam = Math.max(1,stam);
+
+  ['cf_vel','cf_def','cf_ini','cf_reg'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el) el.value = [vel,def,mAgi,reg][i];
+  });
+  ['cf_vida_m','cf_est_m'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (el) el.value = [hp,stam][i];
+  });
+
+  // Preview box
+  const prev = document.getElementById('cfCalcPreview');
+  if (prev && clase) {
+    prev.innerHTML = `<b>HP:</b> ${hp} &nbsp;|&nbsp; <b>STAM:</b> ${stam} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Ini:</b> ${mAgi>=0?'+'+mAgi:mAgi} &nbsp;|&nbsp; <b>Regen:</b> ${reg} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
+  }
+
+  cfUpdateAttrTotals();
+  cfUpdateVitalTotals();
+  cfUpdateBars();
+  cfRefreshHeader();
+}
+
+function cfUpdateVitalTotals() {
+  const vitals = [
+    {id:'cfTVel', base:'cf_vel', bv:'cf_bvVel'},
+    {id:'cfTDef', base:'cf_def', bv:'cf_bvDef'},
+    {id:'cfTIni', base:'cf_ini', bv:'cf_bvIni'},
+    {id:'cfTReg', base:'cf_reg', bv:'cf_bvReg'},
+  ];
+  vitals.forEach(v => {
+    const base = parseInt(document.getElementById(v.base)?.value)||0;
+    const bv   = parseInt(document.getElementById(v.bv)?.value)||0;
+    const el   = document.getElementById(v.id);
+    if (el) {
+      el.textContent = base + bv;
+      el.style.background = bv>0 ? 'rgba(39,174,96,.18)' : bv<0 ? 'rgba(192,57,43,.13)' : 'rgba(200,160,100,.1)';
+      el.style.color = bv>0 ? '#1a4a1a' : bv<0 ? 'var(--red)' : 'var(--ink2)';
+    }
+  });
+}
+
+function cfUpdateAttrTotals() {
+  const bc = parseInt(document.getElementById('cfBC')?.textContent?.replace('+',''))||2;
+  const attrMap = [
+    {lbl:'Fue', srcStat:'Pod'}, {lbl:'Intim', srcStat:'Pod'},
+    {lbl:'Eva', srcStat:'Agi'}, {lbl:'Acr',  srcStat:'Agi'}, {lbl:'Sig', srcStat:'Agi'},
+    {lbl:'Agu', srcStat:'Res'}, {lbl:'Vol',  srcStat:'Res'},
+    {lbl:'Ctq', srcStat:'Tec'}, {lbl:'Ing',  srcStat:'Tec'}, {lbl:'Tac', srcStat:'Tec'},
+    {lbl:'Per', srcStat:'Int'}, {lbl:'Eng',  srcStat:'Int'}, {lbl:'Inv', srcStat:'Int'}, {lbl:'Prc', srcStat:'Int'},
+  ];
+  attrMap.forEach(({lbl, srcStat}) => {
+    const base = parseInt(document.getElementById('cfA'+lbl)?.value)||0;
+    const bono = parseInt(document.getElementById('cfBa'+lbl)?.value)||0;
+    const comp = document.getElementById('cfComp'+lbl)?.checked ? bc : 0;
+    // sync base from mFinal
+    const mfEl = document.getElementById('cfMFinal'+srcStat);
+    if (mfEl) {
+      const mf = parseInt(mfEl.textContent)||0;
+      const baseEl = document.getElementById('cfA'+lbl);
+      if (baseEl) baseEl.value = mf;
+    }
+    const newBase = parseInt(document.getElementById('cfA'+lbl)?.value)||0;
+    const total = newBase + bono + comp;
+    const totEl = document.getElementById('cfTA'+lbl);
+    if (totEl) totEl.textContent = total >= 0 ? '+'+total : ''+total;
+  });
+}
+
+function cfUpdateBars() {
+  const vida_c = parseInt(document.getElementById('cf_vida_c')?.value)||0;
+  const vida_m = parseInt(document.getElementById('cf_vida_m')?.value)||100;
+  const est_c  = parseInt(document.getElementById('cf_est_c')?.value)||0;
+  const est_m  = parseInt(document.getElementById('cf_est_m')?.value)||100;
+  const xp_c   = parseInt(document.getElementById('cf_xp_c')?.value)||0;
+  const xp_m   = parseInt(document.getElementById('cf_xp_m')?.value)||10;
+  const hpTemp = parseInt(document.getElementById('cf_hp_temp')?.value)||0;
+
+  const set = (id, cur, max) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = Math.max(0, Math.min(100, Math.round(cur/Math.max(1,max)*100))) + '%';
+  };
+  set('cfBVida', vida_c, vida_m);
+  set('cfBEst',  est_c,  est_m);
+  set('cfBXp',   xp_c,   xp_m);
+
+  const hpRow = document.getElementById('cfBHpTempRow');
+  if (hpRow) hpRow.style.display = hpTemp > 0 ? 'block' : 'none';
+  if (hpTemp > 0) set('cfBHpTemp', hpTemp, vida_m);
+}
+
+// ── HABILIDADES ACTIVAS ──
+function cfAddHab(h) {
+  const body = document.getElementById('cfHabBody');
+  if (!body) return;
+  const tr = document.createElement('tr');
+  const statOpts = ['pod','agi','res','tec','int','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
+    .map(s => `<option value="${s}" ${h?.stat===s?'selected':''}>${s}</option>`).join('');
+  tr.innerHTML = `
+    <td><input type="text" class="hab-input cfh-nombre" placeholder="Nombre" value="${h?.nombre||''}"></td>
+    <td><select class="hab-sel cfh-stat">${statOpts}</select></td>
+    <td><input type="text" class="hab-input cfh-dano" placeholder="2d6" value="${h?.dano||''}"></td>
+    <td><input type="text" class="hab-input cfh-rango" placeholder="3" value="${h?.rango||''}"></td>
+    <td><input type="number" class="hab-num cfh-stam" placeholder="0" value="${h?.stam||0}" min="0"></td>
+    <td><input type="text" class="hab-input cfh-desc" placeholder="Descripción..." value="${h?.desc||''}"></td>
+    <td><button class="hab-del" onclick="this.closest('tr').remove()" title="Eliminar">✕</button></td>
+  `;
+  body.appendChild(tr);
+}
+
+// ── PASIVAS ──
+function cfAddPasiva(p) {
+  const list = document.getElementById('cfPasivaList');
+  if (!body && !list) return;
+  const div = document.createElement('div');
+  div.className = 'pasiva-row' + (p?.activa ? ' activa' : '');
+  const statOpts = ['pod','agi','res','tec','int','vel','def','ini','reg','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
+    .map(s => `<option value="${s}" ${p?.stat===s?'selected':''}>${s}</option>`).join('');
+  div.innerHTML = `
+    <div><div class="pasiva-lbl">Nombre</div><input type="text" class="pasiva-input cfp-nombre" placeholder="Nombre de la pasiva" value="${p?.nombre||''}"></div>
+    <div>
+      <div class="pasiva-lbl">Stat + Bono</div>
+      <div class="pasiva-stat-row">
+        <select class="pasiva-stat-sel cfp-stat">${statOpts}</select>
+        <input type="number" class="pasiva-bono-inp cfp-bono" placeholder="0" value="${p?.bono||0}">
+      </div>
+    </div>
+    <div><div class="pasiva-lbl">Descripción</div><input type="text" class="pasiva-input cfp-desc" placeholder="Efecto..." value="${p?.desc||''}"></div>
+    <div><div class="pasiva-lbl">Estado</div>
+      <button class="pasiva-toggle${p?.activa?' on':''}" onclick="this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa')">${p?.activa?'Activa':'Inactiva'}</button>
+    </div>
+    <button class="pasiva-del" onclick="this.closest('.pasiva-row').remove()" title="Eliminar">✕</button>
+  `;
+  div.querySelector('.pasiva-toggle').addEventListener('click', function() {
+    this.textContent = this.classList.contains('on') ? 'Activa' : 'Inactiva';
+  });
+  list.appendChild(div);
+}
+
+// ── EQUIPAMIENTO ──
+const CF_EQUIP_SLOTS = [
+  {id:'cabeza',   label:'🪖 Cabeza'},
+  {id:'torso',    label:'🥋 Torso'},
+  {id:'brazos',   label:'🧤 Brazos'},
+  {id:'piernas',  label:'🥾 Piernas'},
+  {id:'acc1',     label:'📡 Accesorio 1'},
+  {id:'acc2',     label:'📡 Accesorio 2'},
+  {id:'obj1',     label:'🎒 Objeto 1'},
+  {id:'obj2',     label:'🎒 Objeto 2'},
+  {id:'obj3',     label:'🎒 Objeto 3'},
+];
+const CF_STAT_OPTS = ['','pod','agi','res','tec','int','vel','def','ini','reg','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
+  .map(s => `<option value="${s}">${s||'—'}</option>`).join('');
+
+function cfBuildEquipTable(equipo) {
+  const body = document.getElementById('cfEquipBody');
+  if (!body) return;
+  body.innerHTML = '';
+  CF_EQUIP_SLOTS.forEach(slot => {
+    const eq = equipo?.[slot.id] || {nombre:'',desc:'',stat:'',bono:0};
+    const tr = document.createElement('tr');
+    const statSel = CF_STAT_OPTS.replace(`value="${eq.stat}"`, `value="${eq.stat}" selected`);
+    tr.innerHTML = `
+      <td style="font-size:.72rem;color:var(--ink2);white-space:nowrap;">${slot.label}</td>
+      <td><input type="text" class="hab-input cfeq-nombre" data-slot="${slot.id}" placeholder="Nombre" value="${eq.nombre||''}"></td>
+      <td><input type="text" class="hab-input cfeq-desc" data-slot="${slot.id}" placeholder="Descripción" value="${eq.desc||''}"></td>
+      <td><select class="hab-sel cfeq-stat" data-slot="${slot.id}">${statSel}</select></td>
+      <td><input type="number" class="hab-num cfeq-bono" data-slot="${slot.id}" value="${eq.bono||0}" style="width:46px;"></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+// ── INVENTARIO ──
+function cfAddInventario(inv) {
+  const body = document.getElementById('cfInvBody');
+  if (!body) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" style="width:100%;padding:2px 4px;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-nombre" placeholder="Ítem" value="${inv?.nombre||''}"></td>
+    <td><input type="text" style="width:100%;padding:2px 4px;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-desc" placeholder="Descripción" value="${inv?.desc||''}"></td>
+    <td><input type="number" style="width:50px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-cant" value="${inv?.cant||1}" min="0"></td>
+    <td><button class="hab-del" onclick="this.closest('tr').remove()" title="Eliminar">✕</button></td>
+  `;
+  body.appendChild(tr);
+}
+
+// ══════════════════════════════════════════════════════════
+//  RECOGER DATOS PERSONAJE (VERSIÓN COMPLETA)
+// ══════════════════════════════════════════════════════════
+function recogerDatosPersonaje() {
+  // Habilidades activas
+  const habilidades = [];
+  document.querySelectorAll('#cfHabBody tr').forEach(tr => {
+    habilidades.push({
+      nombre: tr.querySelector('.cfh-nombre')?.value||'',
+      stat:   tr.querySelector('.cfh-stat')?.value||'pod',
+      dano:   tr.querySelector('.cfh-dano')?.value||'',
+      rango:  tr.querySelector('.cfh-rango')?.value||'',
+      stam:   parseInt(tr.querySelector('.cfh-stam')?.value)||0,
+      desc:   tr.querySelector('.cfh-desc')?.value||'',
+    });
+  });
+
+  // Pasivas
+  const pasivas = [];
+  document.querySelectorAll('#cfPasivaList .pasiva-row').forEach(row => {
+    pasivas.push({
+      nombre: row.querySelector('.cfp-nombre')?.value||'',
+      stat:   row.querySelector('.cfp-stat')?.value||'',
+      bono:   parseFloat(row.querySelector('.cfp-bono')?.value)||0,
+      desc:   row.querySelector('.cfp-desc')?.value||'',
+      activa: row.querySelector('.pasiva-toggle')?.classList.contains('on')||false,
+    });
+  });
+
+  // Equipamiento
+  const equipo = {};
+  CF_EQUIP_SLOTS.forEach(slot => {
+    equipo[slot.id] = {
+      nombre: document.querySelector(`.cfeq-nombre[data-slot="${slot.id}"]`)?.value||'',
+      desc:   document.querySelector(`.cfeq-desc[data-slot="${slot.id}"]`)?.value||'',
+      stat:   document.querySelector(`.cfeq-stat[data-slot="${slot.id}"]`)?.value||'',
+      bono:   parseFloat(document.querySelector(`.cfeq-bono[data-slot="${slot.id}"]`)?.value)||0,
+    };
+  });
+
+  // Inventario
+  const inventario = [];
+  document.querySelectorAll('#cfInvBody tr').forEach(tr => {
+    inventario.push({
+      nombre: tr.querySelector('.cfinv-nombre')?.value||'',
+      desc:   tr.querySelector('.cfinv-desc')?.value||'',
+      cant:   parseInt(tr.querySelector('.cfinv-cant')?.value)||1,
+    });
+  });
+
+  // Atributos (bonos y competencias)
+  const attrKeys = ['Fue','Intim','Eva','Acr','Sig','Agu','Vol','Ctq','Ing','Tac','Per','Eng','Inv','Prc'];
+  const attrBonos = {}, attrComps = {};
+  attrKeys.forEach(k => {
+    attrBonos['ba'+k] = parseFloat(document.getElementById('cfBa'+k)?.value)||0;
+    attrComps['comp'+k] = document.getElementById('cfComp'+k)?.checked||false;
+  });
+
+  return {
+    // Identidad
+    nombre:    document.getElementById('cf_nombre')?.value.trim()||'Sin nombre',
+    heroname:  document.getElementById('cf_heroname')?.value.trim()||'',
+    clase:     document.getElementById('cf_clase')?.value||'',
+    espec:     document.getElementById('cf_espec')?.value||'',
+    subclase:  document.getElementById('cf_subclase')?.value||'',
+    nivel:     parseInt(document.getElementById('cf_nivel')?.value)||1,
+    rango:     document.getElementById('cf_rango')?.value.trim()||'',
+    agencia:   document.getElementById('cf_agencia')?.value.trim()||'',
+    instructor:document.getElementById('cf_instructor')?.value.trim()||'',
+    // Stats principales
+    pod: parseInt(document.getElementById('cf_pod')?.value)||10,
+    agi: parseInt(document.getElementById('cf_agi')?.value)||10,
+    res: parseInt(document.getElementById('cf_res')?.value)||10,
+    tec: parseInt(document.getElementById('cf_tec')?.value)||10,
+    int: parseInt(document.getElementById('cf_int')?.value)||10,
+    bPod: parseInt(document.getElementById('cf_bPod')?.value)||0,
+    bAgi: parseInt(document.getElementById('cf_bAgi')?.value)||0,
+    bRes: parseInt(document.getElementById('cf_bRes')?.value)||0,
+    bTec: parseInt(document.getElementById('cf_bTec')?.value)||0,
+    bInt: parseInt(document.getElementById('cf_bInt')?.value)||0,
+    // Vitales
+    vida_c: parseInt(document.getElementById('cf_vida_c')?.value)||100,
+    vida_m: parseInt(document.getElementById('cf_vida_m')?.value)||100,
+    est_c:  parseInt(document.getElementById('cf_est_c')?.value)||100,
+    est_m:  parseInt(document.getElementById('cf_est_m')?.value)||100,
+    xp_c:   parseInt(document.getElementById('cf_xp_c')?.value)||0,
+    xp_m:   parseInt(document.getElementById('cf_xp_m')?.value)||10,
+    hp_temp: parseInt(document.getElementById('cf_hp_temp')?.value)||0,
+    bvVel:  parseInt(document.getElementById('cf_bvVel')?.value)||0,
+    bvDef:  parseInt(document.getElementById('cf_bvDef')?.value)||0,
+    bvIni:  parseInt(document.getElementById('cf_bvIni')?.value)||0,
+    bvReg:  parseInt(document.getElementById('cf_bvReg')?.value)||0,
+    // Acciones
+    mov:  parseInt(document.getElementById('cf_mov')?.value)||1,
+    acc:  parseInt(document.getElementById('cf_acc')?.value)||1,
+    acca: parseInt(document.getElementById('cf_acca')?.value)||0,
+    rea:  parseInt(document.getElementById('cf_rea')?.value)||1,
+    // Recursos
+    cua: parseInt(document.getElementById('cf_cua')?.value)||0,
+    yh:  parseInt(document.getElementById('cf_yh')?.value)||0,
+    ct:  parseInt(document.getElementById('cf_ct')?.value)||0,
+    mer: parseInt(document.getElementById('cf_mer')?.value)||0,
+    // Plus Ultra y estados
+    plus_ultra: cfPUActive,
+    estados: {...cfEstados},
+    // Atributos
+    ...attrBonos,
+    ...attrComps,
+    // Arsenal
+    habilidades,
+    pasivas,
+    equipo,
+    inventario,
+    // Quirk
+    quirk_nombre: document.getElementById('cf_quirk_nombre')?.value.trim()||'',
+    quirk_tipo:   document.getElementById('cf_quirk_tipo')?.value||'Emisor',
+    quirk_desc:   document.getElementById('cf_quirk_desc')?.value.trim()||'',
+    // Lore
+    personalidad:   document.getElementById('cf_personalidad')?.value.trim()||'',
+    ideologia:      document.getElementById('cf_ideologia')?.value.trim()||'',
+    trasfondo:      document.getElementById('cf_trasfondo')?.value.trim()||'',
+    motivaciones:   document.getElementById('cf_motivaciones')?.value.trim()||'',
+    vinculos:       document.getElementById('cf_vinculos')?.value.trim()||'',
+    trinket:        document.getElementById('cf_trinket')?.value.trim()||'',
+    apariencia:     document.getElementById('cf_apariencia')?.value.trim()||'',
+    traje:          document.getElementById('cf_traje')?.value.trim()||'',
+    origen_social:  document.getElementById('cf_origen_social')?.value.trim()||'',
+    // Extra
+    notas:    document.getElementById('cf_notas')?.value.trim()||'',
+    color:    document.getElementById('cf_color')?.value||'#c8941a',
+    sym:      document.getElementById('cf_sym')?.value||'',
+    password: document.getElementById('cf_password')?.value||'',
+    updatedAt: Date.now(),
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  CARGAR PERSONAJE EN EL FORM (VERSIÓN COMPLETA)
+// ══════════════════════════════════════════════════════════
+function editarPersonaje(id) {
+  const ch = myChars[id];
+  if (!ch) return;
+  editingCharId = id;
+  document.querySelectorAll('.char-list-card').forEach(c => c.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+
+  // Identidad
+  const setVal = (elId, val) => { const el = document.getElementById(elId); if(el) el.value = val||''; };
+  setVal('cf_nombre', ch.nombre); setVal('cf_heroname', ch.heroname);
+  setVal('cf_clase', ch.clase); setVal('cf_espec', ch.espec); setVal('cf_subclase', ch.subclase);
+  setVal('cf_nivel', ch.nivel||1); setVal('cf_rango', ch.rango);
+  setVal('cf_agencia', ch.agencia); setVal('cf_instructor', ch.instructor);
+  // Stats
+  setVal('cf_pod', ch.pod||10); setVal('cf_agi', ch.agi||10); setVal('cf_res', ch.res||10);
+  setVal('cf_tec', ch.tec||10); setVal('cf_int', ch.int||10);
+  setVal('cf_bPod', ch.bPod||0); setVal('cf_bAgi', ch.bAgi||0); setVal('cf_bRes', ch.bRes||0);
+  setVal('cf_bTec', ch.bTec||0); setVal('cf_bInt', ch.bInt||0);
+  // Vitales
+  setVal('cf_vida_c', ch.vida_c); setVal('cf_vida_m', ch.vida_m);
+  setVal('cf_est_c', ch.est_c); setVal('cf_est_m', ch.est_m);
+  setVal('cf_xp_c', ch.xp_c||0); setVal('cf_xp_m', ch.xp_m||10);
+  setVal('cf_hp_temp', ch.hp_temp||0);
+  setVal('cf_bvVel', ch.bvVel||0); setVal('cf_bvDef', ch.bvDef||0);
+  setVal('cf_bvIni', ch.bvIni||0); setVal('cf_bvReg', ch.bvReg||0);
+  // Acciones
+  setVal('cf_mov', ch.mov||1); setVal('cf_acc', ch.acc||1);
+  setVal('cf_acca', ch.acca||0); setVal('cf_rea', ch.rea||1);
+  // Recursos
+  setVal('cf_cua', ch.cua||0); setVal('cf_yh', ch.yh||0);
+  setVal('cf_ct', ch.ct||0); setVal('cf_mer', ch.mer||0);
+  // Plus Ultra
+  cfPUActive = ch.plus_ultra||false;
+  const puBtn = document.getElementById('cfPuBtn');
+  if (puBtn) {
+    puBtn.classList.toggle('on', cfPUActive);
+    const st = document.getElementById('cfPuSt');
+    if (st) st.textContent = cfPUActive ? 'ACTIVO' : 'inactivo';
+    const pk = document.getElementById('cfPuck');
+    if (pk) pk.textContent = cfPUActive ? '✓' : '';
+  }
+  // Estados
+  cfEstados = ch.estados ? {...ch.estados} : {};
+  cfBuildEstadosGrid();
+  cfUpdateEstadoInfo();
+  // Quirk
+  setVal('cf_quirk_nombre', ch.quirk_nombre); setVal('cf_quirk_tipo', ch.quirk_tipo||'Emisor');
+  setVal('cf_quirk_desc', ch.quirk_desc);
+  // Habilidades
+  const habBody = document.getElementById('cfHabBody');
+  if (habBody) { habBody.innerHTML = ''; (ch.habilidades||[]).forEach(h => cfAddHab(h)); }
+  // Pasivas
+  const pasivaList = document.getElementById('cfPasivaList');
+  if (pasivaList) { pasivaList.innerHTML = ''; (ch.pasivas||[]).forEach(p => cfAddPasiva(p)); }
+  // Equipo
+  cfBuildEquipTable(ch.equipo);
+  // Inventario
+  const invBody = document.getElementById('cfInvBody');
+  if (invBody) { invBody.innerHTML = ''; (ch.inventario||[]).forEach(inv => cfAddInventario(inv)); }
+  // Atributos bonos y comps
+  const attrKeys = ['Fue','Intim','Eva','Acr','Sig','Agu','Vol','Ctq','Ing','Tac','Per','Eng','Inv','Prc'];
+  attrKeys.forEach(k => {
+    const baEl = document.getElementById('cfBa'+k);
+    if (baEl) baEl.value = ch['ba'+k]||0;
+    const compEl = document.getElementById('cfComp'+k);
+    if (compEl) compEl.checked = ch['comp'+k]||false;
+  });
+  // Lore
+  setVal('cf_personalidad', ch.personalidad); setVal('cf_ideologia', ch.ideologia);
+  setVal('cf_trasfondo', ch.trasfondo); setVal('cf_motivaciones', ch.motivaciones);
+  setVal('cf_vinculos', ch.vinculos); setVal('cf_trinket', ch.trinket);
+  setVal('cf_apariencia', ch.apariencia); setVal('cf_traje', ch.traje);
+  setVal('cf_origen_social', ch.origen_social);
+  // Extra
+  setVal('cf_notas', ch.notas); setVal('cf_sym', ch.sym||'');
+  setVal('cf_color', ch.color||'#c8941a');
+  const colorExtra = document.getElementById('cf_color_extra');
+  if (colorExtra) colorExtra.value = ch.color||'#c8941a';
+
+  document.getElementById('charsFormEmpty').style.display = 'none';
+  document.getElementById('charForm').style.display = '';
+  document.getElementById('cfSavedMsg').textContent = '';
+
+  cfUpdateCalcs();
+  cfUpdateBars();
+  cfRefreshHeader();
+}
+
+// ══════════════════════════════════════════════════════════
+//  NUEVO PERSONAJE — RESETEO COMPLETO
+// ══════════════════════════════════════════════════════════
+function nuevoPersonaje() {
+  editingCharId = null;
+  cfPUActive = false;
+  cfEstados = {};
+
+  const fields = [
+    'cf_nombre','cf_heroname','cf_rango','cf_agencia','cf_instructor',
+    'cf_quirk_nombre','cf_quirk_desc','cf_personalidad','cf_ideologia',
+    'cf_trasfondo','cf_motivaciones','cf_vinculos','cf_trinket',
+    'cf_apariencia','cf_traje','cf_origen_social','cf_notas','cf_sym',
+    'cf_password','cf_password2'
+  ];
+  fields.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  ['cf_pod','cf_agi','cf_res','cf_tec','cf_int'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 10; });
+  ['cf_bPod','cf_bAgi','cf_bRes','cf_bTec','cf_bInt',
+   'cf_bvVel','cf_bvDef','cf_bvIni','cf_bvReg',
+   'cf_hp_temp','cf_xp_c','cf_cua','cf_yh','cf_ct','cf_mer'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 0; });
+  ['cf_nivel'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 1; });
+  ['cf_mov','cf_acc','cf_rea'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 1; });
+  const accaEl = document.getElementById('cf_acca'); if(accaEl) accaEl.value = 0;
+  ['cf_clase','cf_espec','cf_subclase'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  const colorEl = document.getElementById('cf_color'); if(colorEl) colorEl.value = '#c8941a';
+  const quirk_tipo = document.getElementById('cf_quirk_tipo'); if(quirk_tipo) quirk_tipo.value = 'Emisor';
+  // Limpiar tablas
+  ['cfHabBody','cfInvBody'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = ''; });
+  const pasivaList = document.getElementById('cfPasivaList'); if(pasivaList) pasivaList.innerHTML = '';
+  cfBuildEquipTable(null);
+  // Atributos
+  const attrKeys = ['Fue','Intim','Eva','Acr','Sig','Agu','Vol','Ctq','Ing','Tac','Per','Eng','Inv','Prc'];
+  attrKeys.forEach(k => {
+    const ba = document.getElementById('cfBa'+k); if(ba) ba.value = 0;
+    const comp = document.getElementById('cfComp'+k); if(comp) comp.checked = false;
+  });
+  // PU y estados
+  const puBtn = document.getElementById('cfPuBtn'); if(puBtn) puBtn.classList.remove('on');
+  const puSt = document.getElementById('cfPuSt'); if(puSt) puSt.textContent = 'inactivo';
+  const puck = document.getElementById('cfPuck'); if(puck) puck.textContent = '';
+  cfBuildEstadosGrid();
+  cfUpdateEstadoInfo();
+
+  document.getElementById('charsFormEmpty').style.display = 'none';
+  document.getElementById('charForm').style.display = '';
+  document.getElementById('cfSavedMsg').textContent = '';
+  cfUpdateCalcs();
+  cfRefreshHeader();
+  // Ir al tab vital
+  cfSwitchTab('vital', document.querySelector('.cf-tab'));
+}
+
+// ══════════════════════════════════════════════════════════
+//  ENVIAR AL MAPA (VERSIÓN COMPLETA)
+// ══════════════════════════════════════════════════════════
+function enviarAlMapa() {
+  const ch = recogerDatosPersonaje();
+  const tok = {
+    id: 't_' + Date.now().toString(36),
+    name: ch.nombre || 'Personaje',
+    sym: ch.sym || (ch.nombre||'?')[0].toUpperCase(),
+    color: ch.color || '#c8941a',
+    c: 0, r: 0,
+    sh: {
+      nivel: ch.nivel, clase: ch.clase, espec: ch.espec, subclase: ch.subclase,
+      pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
+      bPod: ch.bPod||0, bAgi: ch.bAgi||0, bRes: ch.bRes||0, bTec: ch.bTec||0, bInt: ch.bInt||0,
+      vida_c: ch.vida_c, vida_m: ch.vida_m,
+      est_c: ch.est_c, est_m: ch.est_m,
+      xp_c: ch.xp_c, xp_m: ch.xp_m,
+      hp_temp: ch.hp_temp||0,
+      plus_ultra: ch.plus_ultra||false,
+      estados: ch.estados||{},
+      bvVel: ch.bvVel||0, bvDef: ch.bvDef||0, bvIni: ch.bvIni||0, bvReg: ch.bvReg||0,
+      mov: ch.mov||1, acc: ch.acc||1, acca: ch.acca||0, rea: ch.rea||1,
+      cua: ch.cua||0, yh: ch.yh||0, ct: ch.ct||0, mer: ch.mer||0,
+      // atributos
+      fue:0,intim:0,eva:0,acr:0,sig:0,agu:0,vol:0,ctq:0,ing:0,tac:0,per:0,eng:0,inv:0,prc:0,
+      baFue:ch.baFue||0,baIntim:ch.baIntim||0,baEva:ch.baEva||0,baAcr:ch.baAcr||0,baSig:ch.baSig||0,
+      baAgu:ch.baAgu||0,baVol:ch.baVol||0,baCtq:ch.baCtq||0,baIng:ch.baIng||0,baTac:ch.baTac||0,
+      baPer:ch.baPer||0,baEng:ch.baEng||0,baInv:ch.baInv||0,baPrc:ch.baPrc||0,
+      compFue:ch.compFue||false,compIntim:ch.compIntim||false,compEva:ch.compEva||false,
+      compAcr:ch.compAcr||false,compSig:ch.compSig||false,compAgu:ch.compAgu||false,
+      compVol:ch.compVol||false,compCtq:ch.compCtq||false,compIng:ch.compIng||false,
+      compTac:ch.compTac||false,compPer:ch.compPer||false,compEng:ch.compEng||false,
+      compInv:ch.compInv||false,compPrc:ch.compPrc||false,
+      habilidades: (ch.habilidades||[]).map((h,i) => ({
+        id:'h'+i, nombre:h.nombre, stat:h.stat||'pod',
+        dano:h.dano||'', rango:h.rango||'', stam:h.stam||0,
+        desc:h.desc||'', tipo_uso:'accion'
+      })),
+      pasivas: ch.pasivas||[],
+      equipo: ch.equipo||{},
+      inventario: ch.inventario||[],
+      notas: ch.notas||'',
+    }
+  };
+  if (typeof tokens !== 'undefined') {
+    tokens[tok.id] = tok;
+    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
+    if (typeof refresh === 'function') refresh();
+    if (typeof redraw === 'function') redraw();
+    switchSection('jugar');
+    setTimeout(() => { if(typeof addLog==='function') addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes.`); }, 300);
+  } else {
+    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT ESTADOS GRID AL ABRIR SECCIÓN
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+  cfBuildEquipTable(null);
+  cfBuildEstadosGrid();
+});
+
 </script>
 </body>
 </html>
