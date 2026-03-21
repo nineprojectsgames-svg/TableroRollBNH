@@ -2327,10 +2327,29 @@ textarea:focus { border-color:var(--gld); }
   }
   .app-section.active { display: flex; }
 
-  /* secJugar contiene el sistema de juego original */
+  /* secJugar: ocupa todo el espacio bajo el nav, con scroll interno */
   #secJugar {
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  /* rightCol y leftCol: altura automatica, sin overflow propio en mobile */
+  #rightCol {
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  #leftCol {
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  /* mainArea: deja que el scroll de secJugar lo maneje */
+  #mainArea {
+    overflow: visible !important;
+    height: auto !important;
   }
 
   /* ── SECCIÓN GUÍA ── */
@@ -2338,42 +2357,32 @@ textarea:focus { border-color:var(--gld); }
     flex-direction: column;
     overflow: hidden;
   }
-  /* Sidebar guía → barra horizontal superior en mobile */
-  .guia-sidebar {
-    width: 100% !important;
-    height: auto;
-    max-height: 46px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border-right: none;
-    border-bottom: 1px solid rgba(200,148,26,.25);
-    padding: 0;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-    background: #110a04;
-    /* Hide scrollbar but keep scrollable */
-    scrollbar-width: none;
-  }
-  .guia-sidebar::-webkit-scrollbar { display: none; }
+  /* Guia sidebar → oculto en mobile, reemplazado por select dropdown */
+  .guia-sidebar { display: none !important; }
   .guia-sidebar-title { display: none; }
-  .guia-nav-section { display: none; }
-  .guia-nav-item {
-    white-space: nowrap;
-    padding: 10px 14px;
-    border-left: none;
-    border-bottom: 3px solid transparent;
-    font-size: .72rem;
+  #guiaDropdownWrap {
+    display: flex !important;
     flex-shrink: 0;
-    height: 46px;
-    display: flex;
-    align-items: center;
+    padding: 8px 10px;
+    background: #110a04;
+    border-bottom: 1px solid rgba(200,148,26,.25);
   }
-  .guia-nav-item.active {
-    border-left: none;
-    border-bottom-color: var(--gld);
-    background: rgba(200,148,26,.1);
+  #guiaDropdown {
+    flex: 1;
+    padding: 9px 12px;
+    background: rgba(200,148,26,.15);
+    border: 1px solid var(--ps);
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: .78rem;
+    color: var(--gld);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c8941a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
   }
   .guia-content {
     flex: 1;
@@ -2770,6 +2779,110 @@ textarea:focus { border-color:var(--gld); }
   #charsFormEmpty { padding: 20px; }
 }
 
+
+/* ═══ MOBILE TAB UNIFICATION ═══════════════════════════════════════
+   appNav oculto en mobile — tabBar inferior de 6 tabs
+   Guia / PJ / Perfil se muestran como secciones full-screen
+════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* Ocultar nav superior en mobile */
+  #appNav { display: none !important; }
+
+  /* body fijo sin scroll */
+  html, body {
+    height: 100% !important;
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
+  }
+
+  /* Todas las secciones de la app ocupan pantalla completa menos tabBar */
+  #secJugar,
+  #secGuia,
+  #secPersonajes,
+  #secPerfil {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--tab-h) !important;
+    width: 100% !important;
+    height: auto !important;
+    z-index: 1 !important;
+  }
+
+  /* secJugar: visible por defecto, scroll vertical */
+  #secJugar {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Secciones externas: ocultas por defecto, JS las muestra */
+  #secGuia,
+  #secPersonajes,
+  #secPerfil {
+    display: none;
+    overflow: hidden;
+  }
+
+  /* tabBar fijo abajo con 6 tabs */
+  #tabBar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: var(--tab-h) !important;
+    z-index: 100 !important;
+    display: flex !important;
+  }
+  .tab-btn {
+    flex: 1;
+    font-size: .48rem !important;
+    padding: 4px 1px !important;
+    letter-spacing: 0 !important;
+    gap: 2px !important;
+  }
+  .tab-btn .tab-icon { font-size: 1.1rem !important; }
+
+  /* rightCol y leftCol scrolleables */
+  #rightCol, #leftCol {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* mainArea: libre, altura auto */
+  #mainArea {
+    overflow: visible !important;
+    height: auto !important;
+    padding-bottom: calc(var(--tab-h) + 16px) !important;
+  }
+
+  /* Padding bottom para secciones externas scrolleables */
+  .chars-form-panel {
+    padding-bottom: calc(var(--tab-h) + 24px) !important;
+  }
+  .guia-content {
+    padding-bottom: calc(var(--tab-h) + 24px) !important;
+  }
+  #secPerfil {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px 16px calc(var(--tab-h) + 24px) !important;
+    background: #1a0f08;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -2826,7 +2939,9 @@ textarea:focus { border-color:var(--gld); }
   </div>
   <span id="presenceSep">|</span>
   <div id="presenceWrap">
-    <input type="text" id="userNameInput" placeholder="Tu nombre..." maxlength="20" onchange="setUserName(this.value)" onkeydown="if(event.key==='Enter')setUserName(this.value)">
+    <span id="userNameDisplay" style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gld);letter-spacing:1px;padding:2px 8px;background:rgba(200,148,26,.12);border:1px solid rgba(200,148,26,.3);border-radius:10px;white-space:nowrap;"></span>
+    <!-- input oculto mantenido para compatibilidad con setUserName -->
+    <input type="text" id="userNameInput" style="display:none;" maxlength="20">
     <div id="presenceList"></div>
   </div>
 </div>
@@ -2956,10 +3071,11 @@ textarea:focus { border-color:var(--gld); }
         <span class="conn-txt" id="connTxtM">Sin conexión</span>
       </div>
       <div style="border-top:1px solid var(--ps);padding-top:6px;">
-        <label style="margin-bottom:4px;">Tu nombre</label>
-        <input type="text" id="userNameInputM" placeholder="Ej: Midoriya" maxlength="20"
-          onchange="setUserName(this.value)"
-          onkeydown="if(event.key==='Enter')setUserName(this.value)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="font-size:.72rem;color:var(--ink2);">Conectado como:</span>
+          <span id="mobileUserNameBadge" style="font-family:'Cinzel',serif;font-size:.72rem;color:var(--gld);padding:2px 8px;background:rgba(200,148,26,.12);border:1px solid rgba(200,148,26,.3);border-radius:10px;">—</span>
+        </div>
+        <input type="text" id="userNameInputM" style="display:none;" maxlength="20">
         <div style="font-size:.72rem;color:var(--ink2);margin-bottom:4px;">Conectados ahora:</div>
         <div id="mobilePresenceList"></div>
       </div>
@@ -3733,7 +3849,19 @@ textarea:focus { border-color:var(--gld); }
       <div class="ptitle" style="margin-top:8px;">📝 Notas</div>
       <textarea id="fNotas" rows="6" placeholder="Notas privadas del personaje..." style="margin-bottom:4px;" oninput="sf('notas',this.value)"></textarea>
 
-      <!-- Editar Ficha -->
+            <!-- Reiniciar posicion -->
+      <div class="ptitle" style="margin-top:8px;">📍 Posición en el Mapa</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="btn btn-gld btn-sm" onclick="resetTokenPos()" title="Mueve la ficha a la casilla A1 del mapa">
+          📍 Reiniciar Posición
+        </button>
+        <button class="btn btn-sm" onclick="centerTokenPos()" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" title="Mueve la ficha al centro del mapa">
+          ⊕ Centrar en Mapa
+        </button>
+        <span id="tokenPosInfo" style="font-size:.72rem;color:var(--ink2);font-style:italic;"></span>
+      </div>
+
+<!-- Editar Ficha -->
       <div class="ptitle" style="margin-top:10px;">✏ Editar Ficha</div>
       <div class="frow" style="margin-bottom:6px;">
         <div class="fgrp">
@@ -3786,6 +3914,15 @@ textarea:focus { border-color:var(--gld); }
   </button>
   <button class="tab-btn" data-tab="fichas" onclick="switchTab('fichas',this)">
     <span class="tab-icon">☰</span>Menú
+  </button>
+  <button class="tab-btn" data-tab="guia" onclick="switchTab('guia',this)">
+    <span class="tab-icon">📖</span>Guía
+  </button>
+  <button class="tab-btn" data-tab="pj" onclick="switchTab('pj',this)">
+    <span class="tab-icon">⚔</span>PJ
+  </button>
+  <button class="tab-btn" data-tab="perfil" onclick="switchTab('perfil',this)">
+    <span class="tab-icon">👤</span>Perfil
   </button>
 </div>
 
@@ -4370,6 +4507,7 @@ function moveTok(id,c,r) {
   t.c=c; t.r=r;
   fbPatch(id, { c, r });
   if(selId===id) document.getElementById('sPos').textContent=to;
+  updateTokenPosInfo();
   refreshTurns(); // actualizar chips M
   redraw();
 }
@@ -5946,14 +6084,51 @@ function loadFirebase() {
 // ── TABS (mobile) ────────────────────────────────────────────────
 function switchTab(tab, btn) {
   if (window.innerWidth > 900) return;
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+  // Tabs de secciones externas (guia, pj, perfil)
+  const externalTabs = ['guia', 'pj', 'perfil'];
+  const isExternal = externalTabs.includes(tab);
+
+  // Ocultar/mostrar secJugar vs secciones externas
+  const secJugar = document.getElementById('secJugar');
+
+  if (isExternal) {
+    // Ocultar jugar, mostrar la seccion externa
+    if (secJugar) secJugar.style.display = 'none';
+    // Ocultar todas las secciones externas primero
+    ['secGuia','secPersonajes','secPerfil'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+    });
+    // Mostrar la correcta
+    const map = {guia:'secGuia', pj:'secPersonajes', perfil:'secPerfil'};
+    const targetSec = document.getElementById(map[tab]);
+    if (targetSec) {
+      targetSec.style.display = 'flex';
+      targetSec.classList.add('active');
+    }
+    // Callbacks
+    if (tab === 'pj') renderCharsList();
+    if (tab === 'perfil') renderProfileCard();
+  } else {
+    // Tab del juego: mostrar secJugar, ocultar externas
+    if (secJugar) secJugar.style.display = '';
+    ['secGuia','secPersonajes','secPerfil'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+    });
+    // Sistema de tab-pane original
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const pane = document.querySelector('[data-tab="' + tab + '"]');
+    if (pane) pane.classList.add('active');
+    // mapaBottom solo visible en Mapa
+    const mb = document.getElementById('mapaBottom');
+    if (mb) mb.style.display = (tab === 'mapa') ? 'block' : 'none';
+  }
+
+  // Highlight del tab activo
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const pane = document.querySelector('[data-tab="' + tab + '"]');
-  if (pane) pane.classList.add('active');
   btn.classList.add('active');
-  // mapaBottom solo visible cuando estamos en el tab Mapa
-  const mb = document.getElementById('mapaBottom');
-  if (mb) mb.style.display = (tab === 'mapa') ? 'block' : 'none';
 }
 
 // ── SUB-TABS (dentro de Ficha) ───────────────────────────────────
@@ -7518,6 +7693,43 @@ let af=0;
      SECCIÓN GUÍA
 ══════════════════════════════════════════════════ -->
 <div id="secGuia" class="app-section">
+  <!-- Dropdown nav para mobile -->
+  <div id="guiaDropdownWrap" style="display:none;">
+    <select id="guiaDropdown" onchange="showGuiaPageById(this.value)">
+      <optgroup label="Introducción">
+        <option value="g-bienvenida">Bienvenida al Mundo</option>
+        <option value="g-jugando">Jugando al Juego</option>
+      </optgroup>
+      <optgroup label="Mecánicas Base">
+        <option value="g-stats">Las 5 Estadísticas</option>
+        <option value="g-pruebas">Pruebas de D20</option>
+        <option value="g-combate">Combate</option>
+        <option value="g-acciones">Acciones por Turno</option>
+        <option value="g-condiciones">Estados y Condiciones</option>
+      </optgroup>
+      <optgroup label="Creación de Personaje">
+        <option value="g-creacion">Paso a Paso</option>
+        <option value="g-clases">Clases</option>
+        <option value="g-espec">Especializaciones</option>
+        <option value="g-quirk">Quirks / Dones</option>
+        <option value="g-habilidades">Habilidades del Quirk</option>
+        <option value="g-plusultra">Plus Ultra</option>
+      </optgroup>
+      <optgroup label="Progresión">
+        <option value="g-niveles">Niveles y XP</option>
+        <option value="g-vida">Vida en la U.A.</option>
+      </optgroup>
+      <optgroup label="Equipamiento">
+        <option value="g-equipo">Slots y Armas</option>
+        <option value="g-crafting">Creación Tecnológica</option>
+        <option value="g-mascotas">Mascotas e Invocaciones</option>
+      </optgroup>
+      <optgroup label="Referencia">
+        <option value="g-glosario">Glosario</option>
+        <option value="g-dm">Guía para el DM</option>
+      </optgroup>
+    </select>
+  </div>
   <div class="guia-sidebar" id="guiaSidebar">
     <div class="guia-sidebar-title">📖 Manual del Jugador</div>
 
@@ -8603,6 +8815,8 @@ let af=0;
     <div class="profile-avatar" id="profileAvatar">?</div>
     <div class="profile-name" id="profileName">Héroe</div>
     <div class="profile-meta" id="profileMeta">Aspirante a la U.A.</div>
+
+    <!-- Stats -->
     <div class="profile-stats-row">
       <div class="profile-stat-box">
         <div class="profile-stat-num" id="profileCharCount">0</div>
@@ -8617,6 +8831,41 @@ let af=0;
         <div class="profile-stat-lbl">Nivel Máximo</div>
       </div>
     </div>
+
+    <!-- DM Checkbox -->
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(139,26,26,.1);border:1px solid rgba(139,26,26,.3);border-radius:6px;margin-bottom:14px;cursor:pointer;" onclick="profileToggleDM()" id="dmCheckRow">
+      <div id="dmCheckBox" style="width:18px;height:18px;border:2px solid var(--red);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;"></div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:.78rem;color:var(--red);letter-spacing:1px;">MODO DM</div>
+        <div style="font-size:.7rem;color:var(--ink2);font-style:italic;margin-top:1px;">Activa los controles del Director del Mundo</div>
+      </div>
+      <span id="dmBadgeProfile" style="display:none;margin-left:auto;padding:2px 8px;background:rgba(139,26,26,.2);border:1px solid var(--red);border-radius:10px;font-family:'Cinzel',serif;font-size:.62rem;color:var(--red);">👑 DM</span>
+    </div>
+
+    <!-- Editar nombre -->
+    <div style="margin-bottom:10px;">
+      <div style="font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:2px;color:var(--gld);text-transform:uppercase;margin-bottom:5px;">✏ Cambiar Nombre</div>
+      <div style="display:flex;gap:6px;">
+        <input type="text" id="profileNewName" placeholder="Nuevo nombre de usuario" maxlength="20"
+          style="flex:1;padding:8px 10px;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:4px;font-family:'Crimson Text',serif;font-size:.9rem;color:var(--ink);outline:none;">
+        <button class="btn btn-gld" style="width:auto;padding:7px 12px;margin-bottom:0;" onclick="profileChangeName()">✓</button>
+      </div>
+      <div id="profileNameMsg" style="font-size:.7rem;min-height:16px;margin-top:4px;font-style:italic;"></div>
+    </div>
+
+    <!-- Cambiar contraseña -->
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:2px;color:var(--gld);text-transform:uppercase;margin-bottom:5px;">🔒 Cambiar Contraseña</div>
+      <input type="password" id="profileOldPass" placeholder="Contraseña actual" maxlength="32"
+        style="width:100%;padding:8px 10px;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:4px;font-family:'Crimson Text',serif;font-size:.9rem;color:var(--ink);outline:none;margin-bottom:6px;">
+      <input type="password" id="profileNewPass" placeholder="Nueva contraseña (mín 6)" maxlength="32"
+        style="width:100%;padding:8px 10px;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:4px;font-family:'Crimson Text',serif;font-size:.9rem;color:var(--ink);outline:none;margin-bottom:6px;">
+      <input type="password" id="profileNewPass2" placeholder="Repetir nueva contraseña" maxlength="32"
+        style="width:100%;padding:8px 10px;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:4px;font-family:'Crimson Text',serif;font-size:.9rem;color:var(--ink);outline:none;margin-bottom:6px;">
+      <button class="btn btn-red" style="margin-bottom:0;" onclick="profileChangePass()">Cambiar Contraseña</button>
+      <div id="profilePassMsg" style="font-size:.7rem;min-height:16px;margin-top:4px;font-style:italic;"></div>
+    </div>
+
     <button class="btn btn-gld" style="margin-bottom:10px;" onclick="switchSection('personajes')">Ver Mis Personajes</button>
     <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
   </div>
@@ -8630,6 +8879,16 @@ let currentSection = 'jugar';
 
 function switchSection(sec) {
   currentSection = sec;
+
+  // On mobile, delegate to switchTab system
+  if (window.innerWidth <= 900) {
+    const mobileTabMap = { jugar: 'mapa', guia: 'guia', personajes: 'pj', perfil: 'perfil' };
+    const tabId = mobileTabMap[sec] || sec;
+    const tabBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+    if (tabBtn) { switchTab(tabId, tabBtn); return; }
+  }
+
+  // Desktop behavior
   document.querySelectorAll('.app-section').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
   const secEl = document.getElementById('sec' + sec.charAt(0).toUpperCase() + sec.slice(1));
@@ -8638,10 +8897,9 @@ function switchSection(sec) {
   if (navEl) navEl.classList.add('active');
   if (sec === 'personajes') { renderCharsList(); }
   if (sec === 'perfil') renderProfileCard();
-  // Scroll new sections back to top
   if (sec !== 'jugar') {
-    const content = secEl && secEl.querySelector('.guia-content, .chars-form-panel, #secPerfil');
-    if (content) content.scrollTop = 0;
+    const sc = secEl && secEl.querySelector('.guia-content, .chars-form-panel');
+    if (sc) sc.scrollTop = 0;
     else if (secEl) secEl.scrollTop = 0;
   }
 }
@@ -9815,6 +10073,262 @@ document.addEventListener('DOMContentLoaded', function() {
   cfBuildEquipTable(null);
   cfBuildEstadosGrid();
 });
+
+</script>
+<script>
+// ── RESETEAR / CENTRAR POSICION DE FICHA ─────────────────────────
+function resetTokenPos() {
+  if (!selId || !tokens[selId]) {
+    alert('Seleccioná una ficha primero.');
+    return;
+  }
+  const t = tokens[selId];
+  // Buscar primera casilla libre empezando desde A1
+  let placed = false;
+  outer: for (let r = 0; r < ROWS && !placed; r++) {
+    for (let c = 0; c < COLS && !placed; c++) {
+      const occupied = Object.values(tokens).some(tok => tok.id !== t.id && tok.c === c && tok.r === r);
+      if (!occupied) {
+        moveTok(selId, c, r);
+        placed = true;
+      }
+    }
+  }
+  if (!placed) moveTok(selId, 0, 0);
+  updateTokenPosInfo();
+  redraw();
+  addLog('move', '📍 <b>' + t.name + '</b> reposicionada en el mapa.');
+}
+
+function centerTokenPos() {
+  if (!selId || !tokens[selId]) {
+    alert('Seleccioná una ficha primero.');
+    return;
+  }
+  const t = tokens[selId];
+  const centerC = Math.floor(COLS / 2);
+  const centerR = Math.floor(ROWS / 2);
+  // Casilla libre más cercana al centro
+  let best = null, bestDist = Infinity;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const occupied = Object.values(tokens).some(tok => tok.id !== t.id && tok.c === c && tok.r === r);
+      if (!occupied) {
+        const dist = Math.max(Math.abs(c - centerC), Math.abs(r - centerR));
+        if (dist < bestDist) { bestDist = dist; best = {c, r}; }
+      }
+    }
+  }
+  if (best) moveTok(selId, best.c, best.r);
+  else moveTok(selId, centerC, centerR);
+  updateTokenPosInfo();
+  redraw();
+  addLog('move', '⊕ <b>' + tokens[selId].name + '</b> centrada en el mapa.');
+}
+
+function updateTokenPosInfo() {
+  const el = document.getElementById('tokenPosInfo');
+  if (!el) return;
+  if (!selId || !tokens[selId]) { el.textContent = ''; return; }
+  const t = tokens[selId];
+  const col = String.fromCharCode(65 + (t.c || 0));
+  el.textContent = 'Posición actual: ' + col + ((t.r || 0) + 1);
+}
+
+</script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  GUIA DROPDOWN — mostrar página desde select
+// ══════════════════════════════════════════════════════════
+function showGuiaPageById(pageId) {
+  showGuiaPage(pageId, null);
+  // sync sidebar button active state
+  document.querySelectorAll('.guia-nav-item').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick')?.includes(pageId));
+  });
+}
+
+// Show/hide dropdown vs sidebar based on screen size
+function guiaResponsive() {
+  const wrap = document.getElementById('guiaDropdownWrap');
+  if (!wrap) return;
+  wrap.style.display = window.innerWidth <= 900 ? 'flex' : 'none';
+}
+window.addEventListener('resize', guiaResponsive);
+document.addEventListener('DOMContentLoaded', guiaResponsive);
+// Also call immediately
+setTimeout(guiaResponsive, 100);
+
+// ══════════════════════════════════════════════════════════
+//  SYNC USERNAME FROM ACCOUNT → PRESENCE SYSTEM
+// ══════════════════════════════════════════════════════════
+function syncAccountToPresence() {
+  if (!currentUser) return;
+  const name = currentUser.username;
+  // Update the hidden inputs so the existing setUserName() works
+  const inp = document.getElementById('userNameInput');
+  if (inp) inp.value = name;
+  const inpM = document.getElementById('userNameInputM');
+  if (inpM) inpM.value = name;
+  // Update display elements
+  const disp = document.getElementById('userNameDisplay');
+  if (disp) disp.textContent = name;
+  const badge = document.getElementById('mobileUserNameBadge');
+  if (badge) badge.textContent = name;
+  // Call original setUserName
+  if (typeof setUserName === 'function') setUserName(name);
+}
+
+// Patch onUserLoggedIn to also sync presence name
+const _origOnUserLoggedIn = typeof onUserLoggedIn === 'function' ? onUserLoggedIn : null;
+function onUserLoggedIn() {
+  renderProfileCard();
+  renderNavUser();
+  document.getElementById('authCard').style.display = 'none';
+  document.getElementById('profileCard').style.display = '';
+  if (currentSection === 'personajes') renderCharsList();
+  // Auto-sync name and DM mode from account
+  syncAccountToPresence();
+  restoreDMMode();
+}
+
+// ══════════════════════════════════════════════════════════
+//  DM MODE — checkbox en perfil
+// ══════════════════════════════════════════════════════════
+const DM_KEY = 'bnhrpg_dm';
+
+function profileToggleDM() {
+  const isDM = !localStorage.getItem(DM_KEY);
+  if (isDM) localStorage.setItem(DM_KEY, '1');
+  else localStorage.removeItem(DM_KEY);
+  applyDMFromProfile(isDM);
+}
+
+function applyDMFromProfile(isDM) {
+  // Update checkbox UI
+  const box = document.getElementById('dmCheckBox');
+  if (box) {
+    box.style.background = isDM ? 'var(--red)' : 'transparent';
+    box.innerHTML = isDM ? '<span style="color:#fff;font-size:.7rem;">✓</span>' : '';
+  }
+  const badge = document.getElementById('dmBadgeProfile');
+  if (badge) badge.style.display = isDM ? 'inline-block' : 'none';
+  // Feed into the existing admin system:
+  // The original isAdmin() checks if userName === 'DM'
+  // We override it here so any logged-in user with DM checkbox active is admin
+  window._isDMOverride = isDM;
+  // Re-apply admin panels
+  if (typeof applyAdminMode === 'function') applyAdminMode();
+}
+
+function restoreDMMode() {
+  const isDM = !!localStorage.getItem(DM_KEY);
+  applyDMFromProfile(isDM);
+}
+
+// Override isAdmin to check our DM override flag
+// The original isAdmin checked username === 'DM', we extend that
+const _origIsAdmin = window.isAdmin;
+window.isAdmin = function() {
+  return window._isDMOverride === true || (_origIsAdmin && _origIsAdmin());
+};
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE — CAMBIAR NOMBRE
+// ══════════════════════════════════════════════════════════
+async function profileChangeName() {
+  if (!currentUser || !db) return;
+  const newName = document.getElementById('profileNewName')?.value.trim();
+  const msg = document.getElementById('profileNameMsg');
+  if (!newName || newName.length < 2) {
+    if (msg) { msg.textContent = 'El nombre debe tener al menos 2 caracteres.'; msg.style.color = 'var(--red)'; }
+    return;
+  }
+  if (newName.toLowerCase() === currentUser.username.toLowerCase()) {
+    if (msg) { msg.textContent = 'Ese ya es tu nombre.'; msg.style.color = 'var(--ink2)'; }
+    return;
+  }
+  try {
+    // Check if new name is already taken
+    const newUid = newName.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+    if (!newUid || newUid.length < 2) {
+      if (msg) { msg.textContent = 'Solo letras, números y guión bajo.'; msg.style.color = 'var(--red)'; }
+      return;
+    }
+    const snap = await db.ref('users/' + newUid).once('value');
+    if (snap.val() && newUid !== currentUser.uid) {
+      if (msg) { msg.textContent = 'Ese nombre ya está en uso.'; msg.style.color = 'var(--red)'; }
+      return;
+    }
+    // Copy user data to new uid
+    const oldSnap = await db.ref('users/' + currentUser.uid).once('value');
+    const userData = oldSnap.val();
+    userData.displayName = newName;
+    await db.ref('users/' + newUid).set(userData);
+    // Copy chars
+    const charSnap = await db.ref('userChars/' + currentUser.uid).once('value');
+    if (charSnap.val()) await db.ref('userChars/' + newUid).set(charSnap.val());
+    // Delete old
+    await db.ref('users/' + currentUser.uid).remove();
+    await db.ref('userChars/' + currentUser.uid).remove();
+    // Update local state
+    currentUser.uid = newUid;
+    currentUser.username = newName;
+    localStorage.setItem(AUTH_KEY, JSON.stringify(currentUser));
+    syncAccountToPresence();
+    renderProfileCard();
+    document.getElementById('profileNewName').value = '';
+    if (msg) { msg.textContent = '✓ Nombre actualizado.'; msg.style.color = 'var(--grn)'; }
+    setTimeout(() => { if(msg) msg.textContent = ''; }, 3000);
+  } catch(e) {
+    if (msg) { msg.textContent = 'Error: ' + e.message; msg.style.color = 'var(--red)'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE — CAMBIAR CONTRASEÑA
+// ══════════════════════════════════════════════════════════
+async function profileChangePass() {
+  if (!currentUser || !db) return;
+  const oldPass = document.getElementById('profileOldPass')?.value;
+  const newPass = document.getElementById('profileNewPass')?.value;
+  const newPass2 = document.getElementById('profileNewPass2')?.value;
+  const msg = document.getElementById('profilePassMsg');
+
+  if (!oldPass) { if(msg){msg.textContent='Ingresá tu contraseña actual.';msg.style.color='var(--red)';}return; }
+  if (newPass.length < 6) { if(msg){msg.textContent='La nueva contraseña debe tener al menos 6 caracteres.';msg.style.color='var(--red)';}return; }
+  if (newPass !== newPass2) { if(msg){msg.textContent='Las contraseñas no coinciden.';msg.style.color='var(--red)';}return; }
+
+  try {
+    // Verify current password
+    const snap = await db.ref('users/' + currentUser.uid).once('value');
+    const data = snap.val();
+    const oldHash = await hashPassword(oldPass);
+    if (data.passwordHash !== oldHash) {
+      if(msg){msg.textContent='Contraseña actual incorrecta.';msg.style.color='var(--red)';}return;
+    }
+    const newHash = await hashPassword(newPass);
+    await db.ref('users/' + currentUser.uid + '/passwordHash').set(newHash);
+    document.getElementById('profileOldPass').value = '';
+    document.getElementById('profileNewPass').value = '';
+    document.getElementById('profileNewPass2').value = '';
+    if(msg){msg.textContent='✓ Contraseña cambiada correctamente.';msg.style.color='var(--grn)';}
+    setTimeout(() => { if(msg) msg.textContent = ''; }, 3000);
+  } catch(e) {
+    if(msg){msg.textContent='Error: ' + e.message;msg.style.color='var(--red)';}
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  RESTORE DM on page load (if user was already logged in)
+// ══════════════════════════════════════════════════════════
+setTimeout(() => {
+  if (currentUser) {
+    syncAccountToPresence();
+    restoreDMMode();
+  }
+  guiaResponsive();
+}, 500);
 
 </script>
 </body>
