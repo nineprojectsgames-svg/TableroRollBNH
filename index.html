@@ -2445,32 +2445,38 @@ textarea:focus { border-color:var(--gld); }
   .chars-list-panel {
     width: 100% !important;
     flex-shrink: 0;
-    max-height: 90px;
-    min-height: 80px;
+    height: 74px;
+    min-height: 74px;
+    max-height: 74px;
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     border-right: none;
     border-bottom: 1px solid rgba(200,148,26,.25);
-    padding: 6px;
+    padding: 5px 8px;
     gap: 6px;
-    align-items: center;
+    align-items: stretch;
     scrollbar-width: none;
   }
   .chars-list-panel::-webkit-scrollbar { display: none; }
   .char-list-card {
     flex-shrink: 0;
-    width: 130px;
-    flex-direction: column;
-    gap: 3px;
-    padding: 6px 8px;
-    align-items: flex-start;
+    width: 115px;
+    height: 100%;
+    flex-direction: row;
+    gap: 7px;
+    padding: 5px 7px;
+    align-items: center;
     position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
   }
-  .char-list-card .char-list-avatar { width: 28px; height: 28px; font-size: .7rem; }
-  .char-list-name  { font-size: .66rem; }
-  .char-list-meta  { font-size: .58rem; }
+  .char-list-avatar { width: 30px; height: 30px; font-size: .72rem; flex-shrink: 0; }
+  .char-list-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .char-list-name  { font-size: .63rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .char-list-meta  { font-size: .55rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .char-list-del { position: absolute; top: 2px; right: 2px; font-size: .65rem; padding: 0; opacity: .4; background: none; border: none; color: var(--red); cursor: pointer; line-height: 1; }
   /* Form panel scrolleable */
   .chars-form-panel {
     flex: 1;
@@ -2721,6 +2727,48 @@ textarea:focus { border-color:var(--gld); }
   padding-bottom: 3px;
 }
 
+
+/* ── DADOS EN SECRETO ─────────────────────────────────────────── */
+.secret-roll-btn {
+  padding: 3px 9px;
+  font-size: .6rem;
+  font-family: 'Cinzel', serif;
+  letter-spacing: .5px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid rgba(142,68,173,.4);
+  background: rgba(142,68,173,.08);
+  color: #8e44ad;
+  white-space: nowrap;
+  min-height: 0;
+}
+.secret-roll-btn.active {
+  background: #8e44ad;
+  color: #fff;
+  border-color: #8e44ad;
+}
+
+/* ── TOGGLE BARRAS ─────────────────────────────────────────────── */
+.bar-toggle-btn {
+  font-size: .72rem;
+  padding: 0 3px;
+  line-height: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: .4;
+  transition: opacity .15s, filter .15s;
+  min-height: 0;
+  vertical-align: middle;
+}
+.bar-toggle-btn:hover { opacity: .9; }
+.bar-toggle-btn.off {
+  opacity: .25;
+  filter: grayscale(1);
+  text-decoration: line-through;
+}
+
 </style>
 </head>
 <body>
@@ -2807,7 +2855,10 @@ textarea:focus { border-color:var(--gld); }
   <div id="diceWrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;user-select:none;" onclick="toggleDicePanel(event)">
     <span class="turn-title">🎲 Tirada de Dados</span>
-    <span id="dicePanelArrow" style="font-size:.7rem;color:var(--ps);margin-left:4px;">▲</span>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:auto;" onclick="event.stopPropagation()">
+      <button id="secretRollBtn" class="admin-only secret-roll-btn" onclick="toggleSecretRoll()" title="Modo secreto: las tiradas no se muestran a los jugadores" style="display:none;">🔇 Secreto: OFF</button>
+    </div>
+    <span id="dicePanelArrow" style="font-size:.7rem;color:var(--ps);margin-left:6px;">▲</span>
     <div style="display:flex;align-items:center;gap:6px;">
       <label style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">Tirar:</label>
       <input type="number" id="diceQty" value="1" min="1" max="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.8rem;color:#2c1a0e;outline:none;">
@@ -3221,7 +3272,9 @@ textarea:focus { border-color:var(--gld); }
       <div class="ptitle" style="margin-top:8px;">♥ Recursos Vitales</div>
       <div style="margin-bottom:6px;">
         <div class="brow" style="margin-bottom:3px;">
-          <span class="blbl">Vida</span>
+          <span class="blbl" style="display:flex;align-items:center;gap:4px;">Vida
+            <button class="bar-toggle-btn" id="btnToggleVida" onclick="toggleBar('vida')" title="Mostrar/ocultar barra en el mapa">👁</button>
+          </span>
           <input class="bnum" type="number" id="fVidaC" value="100" onchange="sf('vida_c',this.value);ub()">
           <span class="bsep">/</span>
           <input class="bnum" type="number" id="fVidaM" value="100" readonly title="Calculado automaticamente" style="background:rgba(41,128,185,.1);cursor:default;">
@@ -3233,7 +3286,9 @@ textarea:focus { border-color:var(--gld); }
       <!-- HP Temporal -->
       <div style="margin-bottom:6px;">
         <div class="brow-temp" style="margin-bottom:3px;">
-          <span class="blbl" style="color:#8e44ad;">🛡 HP Temp</span>
+          <span class="blbl" style="color:#8e44ad;display:flex;align-items:center;gap:4px;">🛡 HP Temp
+            <button class="bar-toggle-btn" id="btnToggleHpTemp" onclick="toggleBar('hptemp')" title="Mostrar/ocultar barra en el mapa">👁</button>
+          </span>
           <input class="bnum" type="number" min="0" id="fHpTemp" value="0"
             onchange="sf('hp_temp',this.value);ub()"
             style="border-color:rgba(142,68,173,.4);background:rgba(142,68,173,.08);">
@@ -3246,7 +3301,9 @@ textarea:focus { border-color:var(--gld); }
       </div>
       <div style="margin-bottom:6px;">
         <div class="brow" style="margin-bottom:3px;">
-          <span class="blbl">Estamina</span>
+          <span class="blbl" style="display:flex;align-items:center;gap:4px;">Estamina
+            <button class="bar-toggle-btn" id="btnToggleEst" onclick="toggleBar('est')" title="Mostrar/ocultar barra en el mapa">👁</button>
+          </span>
           <input class="bnum" type="number" id="fEstC" value="100" onchange="sf('est_c',this.value);ub()">
           <span class="bsep">/</span>
           <input class="bnum" type="number" id="fEstM" value="100" readonly title="Calculado automaticamente" style="background:rgba(41,128,185,.1);cursor:default;">
@@ -4037,45 +4094,57 @@ function drawTok(t, ox, oy) {
     }
   }
   // ── Barras circulares de vida y estamina ──
-  // Vida:     mitad superior — de -π (izq) a 0 (der) en sentido HORARIO (false), pasando por arriba (-π/2)
-  // Estamina: mitad inferior — de  0 (der) a π (izq) en sentido HORARIO (false), pasando por abajo (+π/2)
   if (t.sh) {
+    const showVida   = t.sh.show_vida   !== false;
+    const showEst    = t.sh.show_est    !== false;
+    const showHpTemp = t.sh.show_hptemp !== false;
     const R  = rd + 3.5;
     const sw = 3.5;
-
     const vp = Math.max(0, Math.min(1, (t.sh.vida_c||0) / Math.max(1, t.sh.vida_m||100)));
-    const ep = Math.max(0, Math.min(1, (t.sh.est_c||0) / Math.max(1, t.sh.est_m||100)));
+    const ep = Math.max(0, Math.min(1, (t.sh.est_c||0)  / Math.max(1, t.sh.est_m||100)));
 
     ctx.save();
     ctx.lineWidth = sw;
     ctx.lineCap = 'round';
 
-    // — Fondo mitad superior (vida) —
-    ctx.strokeStyle = 'rgba(0,0,0,.35)';
-    ctx.beginPath();
-    ctx.arc(x, y, R, -Math.PI, 0, false);  // horario: izq(-π)→arriba(-π/2)→der(0)
-    ctx.stroke();
-
-    // — Arco vida: empieza izquierda(-π), avanza horario una fracción de π —
-    if (vp > 0) {
-      const color = vp > 0.5 ? '#2ecc71' : vp > 0.25 ? '#f39c12' : '#e74c3c';
-      ctx.strokeStyle = color;
+    if (showVida) {
+      ctx.strokeStyle = 'rgba(0,0,0,.35)';
       ctx.beginPath();
-      ctx.arc(x, y, R, -Math.PI, -Math.PI + Math.PI * vp, false);
+      ctx.arc(x, y, R, -Math.PI, 0, false);
       ctx.stroke();
+      if (vp > 0) {
+        const color = vp > 0.5 ? '#2ecc71' : vp > 0.25 ? '#f39c12' : '#e74c3c';
+        ctx.strokeStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, R, -Math.PI, -Math.PI + Math.PI * vp, false);
+        ctx.stroke();
+      }
     }
 
-    // — Fondo mitad inferior (estamina) —
-    ctx.strokeStyle = 'rgba(0,0,0,.35)';
-    ctx.beginPath();
-    ctx.arc(x, y, R, 0, Math.PI, false);   // horario: der(0)→abajo(π/2)→izq(π)
-    ctx.stroke();
-
-    // — Arco estamina: empieza derecha(0), avanza horario una fracción de π —
-    if (ep > 0) {
-      ctx.strokeStyle = '#f1c40f';
+    if (showEst) {
+      ctx.strokeStyle = 'rgba(0,0,0,.35)';
       ctx.beginPath();
-      ctx.arc(x, y, R, 0, Math.PI * ep, false);
+      ctx.arc(x, y, R, 0, Math.PI, false);
+      ctx.stroke();
+      if (ep > 0) {
+        ctx.strokeStyle = '#f1c40f';
+        ctx.beginPath();
+        ctx.arc(x, y, R, 0, Math.PI * ep, false);
+        ctx.stroke();
+      }
+    }
+
+    if (showHpTemp && (t.sh.hp_temp||0) > 0) {
+      const Rout = R + sw + 1.5;
+      const tp = Math.min(1, (t.sh.hp_temp||0) / Math.max(1, t.sh.vida_m||100));
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(0,0,0,.25)';
+      ctx.beginPath();
+      ctx.arc(x, y, Rout, -Math.PI, Math.PI, false);
+      ctx.stroke();
+      ctx.strokeStyle = '#8e44ad';
+      ctx.beginPath();
+      ctx.arc(x, y, Rout, -Math.PI, -Math.PI + Math.PI * 2 * tp, false);
       ctx.stroke();
     }
 
@@ -8610,11 +8679,12 @@ let af=0;
 
   <!-- Contraseña para ficha en mapa -->
   <div class="ptitle" style="font-size:.65rem;">🔒 Contraseña para Ficha en Mapa</div>
-  <div style="margin-bottom:4px;">
-    <span class="flbl">Contraseña (vacío = sin contraseña)</span>
-    <input type="password" id="cf_password" class="fin" placeholder="Contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
-    <input type="password" id="cf_password2" class="fin" placeholder="Confirmar contraseña..." maxlength="32" style="letter-spacing:2px;">
-    <div id="cfPwMsg" style="font-size:.72rem;min-height:14px;margin-top:3px;font-style:italic;color:var(--grn);"></div>
+  <div style="background:rgba(139,26,26,.06);border:1px solid rgba(139,26,26,.2);border-radius:5px;padding:10px 12px;margin-bottom:6px;">
+    <span class="flbl" style="display:block;margin-bottom:6px;color:var(--ink2);font-size:.72rem;">Protege esta ficha para que solo vos puedas editarla en el mapa. Dejá vacío para que sea pública.</span>
+    <input type="password" id="cf_password" class="fin" placeholder="Nueva contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:6px;">
+    <input type="password" id="cf_password2" class="fin" placeholder="Confirmar contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:10px;">
+    <button class="btn btn-red" onclick="cfSavePassword()" style="margin-bottom:0;">🔒 Guardar Contraseña de Ficha</button>
+    <div id="cfPwMsg" style="font-size:.72rem;min-height:18px;margin-top:6px;font-style:italic;"></div>
   </div>
 
 </div><!-- /extra -->
@@ -10220,6 +10290,230 @@ function _updateMidbarState() {
   const mb = document.getElementById('midbar');
   if (mb) mb.classList.toggle('both-collapsed', !_turnOpen && !_diceOpen);
 }
+
+</script>
+<script>
+// ── GUARDAR CONTRASEÑA DE FICHA EN PERSONAJES ────────────────────
+function cfSavePassword() {
+  const p1  = document.getElementById('cf_password')?.value  || '';
+  const p2  = document.getElementById('cf_password2')?.value || '';
+  const msg = document.getElementById('cfPwMsg');
+
+  if (p1 !== p2) {
+    if (msg) { msg.textContent = 'Las contraseñas no coinciden.'; msg.style.color = 'var(--red)'; }
+    return;
+  }
+
+  // Guardar en Firebase si el personaje ya existe
+  if (editingCharId && currentUser && typeof db !== 'undefined' && db) {
+    const ref = db.ref('userChars/' + currentUser.uid + '/' + editingCharId + '/password');
+    if (p1 === '') {
+      ref.remove();
+    } else {
+      const hash = typeof simpleHash === 'function' ? simpleHash(p1) : p1;
+      ref.set(hash);
+    }
+    if (typeof myChars !== 'undefined' && myChars[editingCharId]) {
+      myChars[editingCharId].password = p1 === ''
+        ? ''
+        : (typeof simpleHash === 'function' ? simpleHash(p1) : p1);
+    }
+  }
+
+  // Feedback
+  if (msg) {
+    msg.textContent   = p1 === '' ? '✓ Contraseña eliminada.' : '✓ Contraseña guardada.';
+    msg.style.color   = p1 === '' ? 'var(--ink2)' : 'var(--grn)';
+  }
+  // Limpiar campos
+  const i1 = document.getElementById('cf_password');
+  const i2 = document.getElementById('cf_password2');
+  if (i1) i1.value = '';
+  if (i2) i2.value = '';
+  setTimeout(() => { if (msg) msg.textContent = ''; }, 3000);
+}
+</script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  DADOS EN SECRETO
+// ══════════════════════════════════════════════════════════
+let _secretRoll = false;
+
+function toggleSecretRoll() {
+  _secretRoll = !_secretRoll;
+  const btn = document.getElementById('secretRollBtn');
+  if (btn) {
+    btn.textContent = _secretRoll ? '🔇 Secreto: ON' : '🔇 Secreto: OFF';
+    btn.classList.toggle('active', _secretRoll);
+  }
+}
+
+// Parchear rollDice para modo secreto
+const _origRollDice = window.rollDice;
+window.rollDice = function(sides, qty, mod) {
+  if (!_secretRoll || !isAdmin()) {
+    return _origRollDice(sides, qty, mod);
+  }
+  // === TIRADA SECRETA ===
+  const adv = getAdv();
+  const rolls = [];
+  let advLabel = '';
+
+  if (sides === 20 && qty === 1 && adv !== 'normal') {
+    const { result, both } = rollD20Adv(adv);
+    rolls.push(result);
+    advLabel = adv === 'ventaja' ? ` ⬆[${both[0]},${both[1]}]` : ` ⬇[${both[0]},${both[1]}]`;
+  } else {
+    for (let i = 0; i < qty; i++) rolls.push(Math.floor(Math.random() * sides) + 1);
+  }
+
+  const sum = rolls.reduce((a,b) => a+b, 0);
+  const total = sum + (mod||0);
+  const isCrit = sides === 20 && qty === 1 && rolls[0] === 20;
+  const isFail = sides === 20 && qty === 1 && rolls[0] === 1;
+  const roller = (selId && tokens[selId]) ? tokens[selId].name : 'DM';
+
+  // Mostrar resultado SOLO en la interfaz local (no al log compartido, no a Firebase)
+  const totalEl = document.getElementById('diceTotal');
+  if (totalEl) { totalEl.textContent = total; totalEl.style.color = isCrit ? '#c8941a' : isFail ? '#c0392b' : '#8b1a1a'; }
+
+  let breakdown = `<span style="color:#8e44ad;">🔇 [SECRETO]</span> <b>${roller}</b> tiró ${qty}d${sides}${advLabel}`;
+  if (qty > 1) breakdown += ` → [${rolls.join(', ')}] = ${sum}`;
+  else breakdown += ` → <b>${rolls[0]}</b>`;
+  if ((mod||0) !== 0) breakdown += ` ${(mod||0) >= 0 ? '+' : ''}${mod} = <b>${total}</b>`;
+  if (isCrit) breakdown += ' ✨ <b>¡CRÍTICO!</b>';
+  if (isFail) breakdown += ' 💀 <b>¡PIFIA!</b>';
+  const breakEl = document.getElementById('diceBreakdown');
+  if (breakEl) breakEl.innerHTML = breakdown;
+
+  // Historial LOCAL únicamente (no a Firebase)
+  const hist = document.getElementById('diceHistory');
+  if (hist) {
+    const entry = document.createElement('div');
+    entry.className = 'dhentry' + (isCrit?' crit':isFail?' fail':'');
+    entry.style.opacity = '0.65';
+    let short = `🔇 ${roller}: ${qty}d${sides}${advLabel}`;
+    if (qty > 1) short += ` [${rolls.join(',')}]`;
+    if ((mod||0) !== 0) short += ` ${(mod||0)>=0?'+':''}${mod}`;
+    short += ` = <b>${total}</b>`;
+    if (isCrit) short += ' ✨';
+    if (isFail) short += ' 💀';
+    entry.innerHTML = `<span class="dhtime">${diceTime()}</span><span style="color:#8e44ad;">🔇</span> ${short}`;
+    hist.appendChild(entry);
+    while (hist.children.length > 30) hist.removeChild(hist.lastChild);
+  }
+
+  // Toast solo local
+  const label = qty > 1 ? `${qty}d${sides}` : `d${sides}`;
+  const detail = (mod||0) !== 0 ? `${rolls[0]}${(mod||0)>=0?'+':''}${mod}` : `${rolls[0]}`;
+  if (isFail)      showToast('PIFIA',   label, `d20(1) — ¡Fallo total!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', label, detail, 'crit');
+  else             showToast(total,     label, detail, 'normal');
+
+  // Log LOCAL con indicador secreto (no a Firebase)
+  const logList = document.getElementById('loglist');
+  if (logList) {
+    const el = document.createElement('div');
+    el.className = 'logentry move';
+    el.style.opacity = '0.6';
+    const hh = new Date().getHours().toString().padStart(2,'0');
+    const mm = new Date().getMinutes().toString().padStart(2,'0');
+    el.innerHTML = `<span class="logtime">${hh}:${mm}</span><span style="color:#8e44ad;">🔇 Secreto — </span>${short}`;
+    logList.appendChild(el);
+    while (logList.children.length > 100) logList.removeChild(logList.firstChild);
+  }
+
+  return total;
+};
+
+// También parchear quickRoll para modo secreto
+const _origQuickRoll = window.quickRoll;
+window.quickRoll = function(stat, label) {
+  if (!_secretRoll || !isAdmin()) {
+    return _origQuickRoll(stat, label);
+  }
+  // Tirada rápida secreta
+  const mod  = getStatTotal(stat);
+  const die  = Math.ceil(Math.random() * 20);
+  const total = die + mod;
+  const isCrit = die === 20;
+  const isFail = die === 1;
+  const tName = (selId && tokens[selId]) ? tokens[selId].name : 'DM';
+
+  if (isFail)      showToast('PIFIA',   label, `d20(1) — ¡Fallo total!`, 'fail');
+  else if (isCrit) showToast('CRÍTICO', label, `d20(20) ${mod>=0?'+':''}${mod} = ${total}`, 'crit');
+  else             showToast(total,     label, `d20(${die}) ${mod>=0?'+':''}${mod}`, 'normal');
+
+  const clr = isCrit ? '#c8941a' : isFail ? '#c0392b' : '#8b1a1a';
+  ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el){el.textContent=total;el.style.color=clr;} });
+
+  let msg = `🔇 <b>${tName}</b> tiró <b>${label}</b>: d20(${die}) ${mod>=0?'+':''}${mod} = <b>${total}</b>`;
+  if (isCrit) msg += ' ✨';
+  if (isFail) msg += ' 💀';
+  ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML = msg; });
+
+  // Solo log local
+  const logList = document.getElementById('loglist');
+  if (logList) {
+    const el = document.createElement('div');
+    el.className = 'logentry move';
+    el.style.opacity = '0.6';
+    const hh = new Date().getHours().toString().padStart(2,'0');
+    const mm = new Date().getMinutes().toString().padStart(2,'0');
+    el.innerHTML = `<span class="logtime">${hh}:${mm}</span><span style="color:#8e44ad;">🔇 Secreto — </span>${msg}`;
+    logList.appendChild(el);
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+//  TOGGLE BARRAS EN EL MAPA
+// ══════════════════════════════════════════════════════════
+function toggleBar(barKey) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const sh = tokens[selId].sh;
+  const fieldMap = { vida: 'show_vida', est: 'show_est', hptemp: 'show_hptemp' };
+  const field = fieldMap[barKey];
+  if (!field) return;
+
+  // Toggle: si era true (o undefined = true), poner false; si era false, poner true
+  const current = sh[field] !== false; // default true
+  sh[field] = !current;
+  fbPatch(selId, { ['sh/' + field]: sh[field] });
+
+  // Actualizar botón visualmente
+  const btnMap = { vida: 'btnToggleVida', est: 'btnToggleEst', hptemp: 'btnToggleHpTemp' };
+  const btn = document.getElementById(btnMap[barKey]);
+  if (btn) {
+    btn.classList.toggle('off', !sh[field]);
+    btn.title = sh[field] ? 'Ocultar barra en el mapa' : 'Mostrar barra en el mapa';
+  }
+
+  redraw();
+
+  const nameMap = { vida: 'Vida', est: 'Estamina', hptemp: 'HP Temporal' };
+  addLog('move', `${sh[field] ? '👁' : '🚫'} <b>${tokens[selId].name}</b>: barra de ${nameMap[barKey]} ${sh[field] ? 'visible' : 'oculta'}`);
+}
+
+// Sincronizar estado de botones al mostrar ficha
+const _origShowStats = window.showStats;
+window.showStats = function() {
+  if (_origShowStats) _origShowStats.apply(this, arguments);
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  const pairs = [
+    ['show_vida',   'btnToggleVida'],
+    ['show_est',    'btnToggleEst'],
+    ['show_hptemp', 'btnToggleHpTemp'],
+  ];
+  pairs.forEach(([field, btnId]) => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const visible = sh[field] !== false;
+    btn.classList.toggle('off', !visible);
+    btn.title = visible ? 'Ocultar barra en el mapa' : 'Mostrar barra en el mapa';
+  });
+};
 
 </script>
 </body>
