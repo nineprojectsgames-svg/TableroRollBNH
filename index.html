@@ -21,13 +21,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
-  --p: #f4e4b8;
-  --ps: #c8a96e;
-  --ink: #2c1a0e;
-  --ink2: #5c3d1e;
-  --red: #8b1a1a;
-  --grn: #1a4a1a;
-  --gld: #c8941a;
+  --p:    #f4e4b8;   /* crema parchment */
+  --ps:   #c8a96e;   /* borde dorado */
+  --ink:  #12080c;   /* casi-negro cálido: ratio ~14:1 sobre crema */
+  --ink2: #3d1f0a;   /* marrón oscuro: ratio ~7:1 sobre crema */
+  --ink3: #6b3d14;   /* marrón medio: solo en fondos oscuros */
+  --red:  #8b1a1a;
+  --grn:  #1a4a1a;
+  --gld:  #c8941a;
   --gld2: #e8b430;
   --tab-h: 60px;
 }
@@ -114,7 +115,7 @@ body {
 .conn-offline .conn-dot { background: #c0392b; }
 .conn-wait    .conn-dot { background: var(--gld); animation: blink 1s infinite; }
 @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-.conn-txt { font-family: 'Cinzel', serif; font-size: .65rem; color: #a07850; white-space: nowrap; }
+.conn-txt { font-family: 'Cinzel', serif; font-size: .65rem; color: var(--ink3); white-space: nowrap; }
 
 /* ── TURN + DICE BAR ── */
 #midbar {
@@ -160,7 +161,7 @@ body {
 .turn-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: .6rem; font-weight: 700; flex-shrink: 0; }
 .turn-ini { font-size: .68rem; color: var(--ink2); font-style: italic; }
 .turn-arrow { color: var(--ps); font-size: .85rem; flex-shrink: 0; }
-.turn-empty { font-size: .8rem; color: #a07850; font-style: italic; }
+.turn-empty { font-size: .8rem; color: var(--ink3); font-style: italic; }
 
 /* dice compact */
 #diceWrap {
@@ -211,7 +212,7 @@ body {
 .dhentry { font-size:.72rem; color:var(--ink2); padding:2px 5px; background:rgba(200,160,100,.12); border-radius:3px; border-left:3px solid var(--ps); }
 .dhentry.crit { border-color:#e8b430; color:#8b5a00; font-weight:700; }
 .dhentry.fail { border-color:#c0392b; color:#7a1a1a; }
-.dhtime { float:right; font-size:.65rem; color:#a07850; }
+.dhtime { float:right; font-size:.65rem; color:var(--ink3); }
 
 /* ── PRESENCIA ── */
 #presenceWrap {
@@ -765,7 +766,7 @@ input[type=text]:focus, input[type=number]:focus { border-color: var(--gld); }
 .mapbox { background:var(--p); border:3px solid var(--ps); box-shadow:4px 4px 12px rgba(0,0,0,.6); display:inline-block; position:relative; overflow:hidden; flex-shrink:0; }
 canvas { display:block; }
 .mapctrl { display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
-.mapctrl span { color:#a07850; font-style:italic; font-size:.82rem; }
+.mapctrl span { color:var(--ink3); font-style:italic; font-size:.82rem; }
 
 .empty-msg { text-align:center; padding:24px 10px; color:var(--ink2); font-style:italic; font-size:.88rem; }
 
@@ -849,7 +850,7 @@ textarea:focus { border-color:var(--gld); }
 .loglist::-webkit-scrollbar-thumb { background: #c8a96e; }
 .logentry {
   font-size: .78rem;
-  color: #5c3d1e;
+  color: var(--ink2);
   padding: 3px 6px;
   background: rgba(200,160,100,.15);
   border-radius: 3px;
@@ -859,7 +860,7 @@ textarea:focus { border-color:var(--gld); }
 .logentry.move  { border-color: #2980b9; }
 .logentry.spawn { border-color: #27ae60; }
 .logentry.del   { border-color: #c0392b; }
-.logtime { font-size: .7rem; color: #a07850; float: right; }
+.logtime { font-size: .7rem; color: var(--ink3); float: right; }
 
 /* TURNO */
 .turn-panel {
@@ -903,7 +904,7 @@ textarea:focus { border-color:var(--gld); }
   border: 2px solid transparent;
   background: rgba(200,160,100,.2);
   font-size: .8rem;
-  color: #2c1a0e;
+  color: var(--ink);
   cursor: pointer;
   transition: background .15s;
   white-space: nowrap;
@@ -915,7 +916,7 @@ textarea:focus { border-color:var(--gld); }
   font-weight: 700;
   box-shadow: 0 0 8px rgba(200,148,26,.4);
 }
-.turn-card.active .turn-num { background: #c8941a; color: #2c1a0e; }
+.turn-card.active .turn-num { background: #c8941a; color: var(--ink); }
 .turn-avatar {
   width: 22px; height: 22px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -925,16 +926,16 @@ textarea:focus { border-color:var(--gld); }
 .turn-num {
   font-family: 'Cinzel', serif; font-size: .65rem;
   background: rgba(0,0,0,.15); border-radius: 10px;
-  padding: 1px 5px; color: #5c3d1e;
+  padding: 1px 5px; color: var(--ink2);
 }
 .turn-ini {
-  font-size: .72rem; color: #5c3d1e; font-style: italic;
+  font-size: .72rem; color: var(--ink2); font-style: italic;
 }
 .turn-arrow {
   color: #c8a96e; font-size: .9rem; flex-shrink: 0;
 }
 .turn-empty {
-  font-size: .82rem; color: #a07850; font-style: italic;
+  font-size: .82rem; color: var(--ink3); font-style: italic;
 }
 .turn-round {
   font-family: 'Cinzel', serif; font-size: .75rem;
@@ -968,7 +969,7 @@ textarea:focus { border-color:var(--gld); }
   cursor: pointer;
   font-family: 'Cinzel', serif;
   font-size: .72rem;
-  color: #5c3d1e;
+  color: var(--ink2);
   transition: background .15s, transform .1s, border-color .15s;
   user-select: none;
   flex-shrink: 0;
@@ -997,28 +998,28 @@ textarea:focus { border-color:var(--gld); }
   width: 44px; padding: 4px 5px; text-align: center;
   background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
   border-radius: 3px; font-family: 'Cinzel', serif;
-  font-size: .8rem; color: #2c1a0e; outline: none;
+  font-size: .8rem; color: var(--ink); outline: none;
 }
 .dice-custom input[type=number]:focus { border-color: #c8941a; }
 .dice-custom label {
-  font-size: .72rem; color: #5c3d1e; white-space: nowrap;
+  font-size: .72rem; color: var(--ink2); white-space: nowrap;
 }
 .dice-mod-row {
   display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap;
 }
-.dice-mod-row label { font-size: .78rem; color: #5c3d1e; }
+.dice-mod-row label { font-size: .78rem; color: var(--ink2); }
 .dice-mod-row input[type=number] {
   width: 50px; padding: 3px 5px; text-align: center;
   background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
   border-radius: 3px; font-family: 'Cinzel', serif;
-  font-size: .82rem; color: #2c1a0e; outline: none;
+  font-size: .82rem; color: var(--ink); outline: none;
 }
 .dice-mod-row input[type=number]:focus { border-color: #c8941a; }
 .dice-stat-sel {
   padding: 3px 6px;
   background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
   border-radius: 3px; font-family: 'Cinzel', serif;
-  font-size: .75rem; color: #2c1a0e; outline: none; cursor: pointer;
+  font-size: .75rem; color: var(--ink); outline: none; cursor: pointer;
 }
 .dice-stat-sel:focus { border-color: #c8941a; }
 .dice-result-area {
@@ -1037,9 +1038,9 @@ textarea:focus { border-color:var(--gld); }
   min-width: 55px; text-align: center;
 }
 .dice-breakdown {
-  font-size: .82rem; color: #5c3d1e; line-height: 1.5; flex: 1;
+  font-size: .82rem; color: var(--ink2); line-height: 1.5; flex: 1;
 }
-.dice-breakdown b { color: #2c1a0e; }
+.dice-breakdown b { color: var(--ink); }
 .dice-history {
   max-height: 90px; overflow-y: auto;
   display: flex; flex-direction: column-reverse; gap: 2px;
@@ -1048,13 +1049,13 @@ textarea:focus { border-color:var(--gld); }
 .dice-history::-webkit-scrollbar { width: 3px; }
 .dice-history::-webkit-scrollbar-thumb { background: #c8a96e; }
 .dhentry {
-  font-size: .75rem; color: #5c3d1e; padding: 2px 6px;
+  font-size: .75rem; color: var(--ink2); padding: 2px 6px;
   background: rgba(200,160,100,.12); border-radius: 3px;
   border-left: 3px solid #c8a96e;
 }
 .dhentry.crit  { border-color: #e8b430; color: #8b5a00; font-weight: 700; }
 .dhentry.fail  { border-color: #c0392b; color: #7a1a1a; }
-.dhtime { float: right; font-size: .68rem; color: #a07850; }
+.dhtime { float: right; font-size: .68rem; color: var(--ink3); }
 
 /* SALA ONLINE */
 .sala-panel {
@@ -1075,7 +1076,7 @@ textarea:focus { border-color:var(--gld); }
   flex: 1; padding: 4px 7px;
   background: rgba(200,160,100,.2); border: 1px solid #c8a96e;
   border-radius: 3px; font-family: 'Cinzel', serif; font-size: .78rem;
-  color: #2c1a0e; outline: none; text-transform: uppercase;
+  color: var(--ink); outline: none; text-transform: uppercase;
   margin-bottom: 0 !important;
 }
 .sala-input::placeholder { opacity: .5; text-transform: none; }
@@ -1086,7 +1087,7 @@ textarea:focus { border-color:var(--gld); }
 .conn-offline .conn-dot { background: #c0392b; }
 .conn-wait    .conn-dot { background: #c8941a; animation: blink 1s infinite; }
 @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-.conn-txt { font-family: 'Cinzel', serif; font-size: .68rem; color: #5c3d1e; }
+.conn-txt { font-family: 'Cinzel', serif; font-size: .68rem; color: var(--ink2); }
 .btn-xs { display:inline-block;width:auto;padding:3px 8px;font-size:.68rem;margin-bottom:0; }
 
 
@@ -1098,7 +1099,7 @@ textarea:focus { border-color:var(--gld); }
 .logentry.move { border-color:#2980b9; }
 .logentry.spawn { border-color:#27ae60; }
 .logentry.del { border-color:#c0392b; }
-.logtime { font-size:.67rem; color:#a07850; float:right; }
+.logtime { font-size:.67rem; color:var(--ink3); float:right; }
 
 /* ── SALA inline CSS (cleanup) ── */
 .sala-panel,.sala-row,.sala-code,.sala-input { display:none; } /* replaced by topbar */
@@ -1225,7 +1226,7 @@ textarea:focus { border-color:var(--gld); }
   background: none;
   border: none;
   cursor: pointer;
-  color: #a07850;
+  color: var(--ink3);
   font-family: 'Cinzel', serif;
   font-size: .55rem;
   letter-spacing: 1px;
@@ -1255,7 +1256,7 @@ textarea:focus { border-color:var(--gld); }
   padding: 8px 2px 7px;
   background: none;
   border: none;
-  color: #a07850;
+  color: var(--ink3);
   font-family: 'Cinzel', serif;
   font-size: .52rem;
   letter-spacing: .5px;
@@ -1612,7 +1613,7 @@ textarea:focus { border-color:var(--gld); }
   font-family: 'Cinzel', serif;
   font-size: .68rem;
   letter-spacing: 2px;
-  color: #a07850;
+  color: var(--ink3);
   cursor: pointer;
   text-transform: uppercase;
   transition: color .15s, border-color .15s, background .15s;
@@ -1725,7 +1726,7 @@ textarea:focus { border-color:var(--gld); }
   text-transform: uppercase; transition: background .15s;
 }
 .auth-btn:hover { background: var(--gld2); }
-.auth-btn:disabled { background: #a07850; cursor: not-allowed; }
+.auth-btn:disabled { background: #6b3d14; cursor: not-allowed; color: rgba(244,228,184,.5) !important; }
 
 /* perfil logueado */
 .profile-card {
@@ -1819,7 +1820,7 @@ textarea:focus { border-color:var(--gld); }
   text-align: left;
   font-family: 'Crimson Text', serif;
   font-size: .82rem;
-  color: #a07850;
+  color: var(--ink3);
   cursor: pointer;
   transition: color .12s, border-color .12s, background .12s;
   line-height: 1.3;
@@ -2371,7 +2372,7 @@ textarea:focus { border-color:var(--gld); }
     display: block;
     text-align: center;
     font-size: .68rem;
-    color: #a07850;
+    color: var(--ink3);
     font-style: italic;
     padding: 3px 0 4px;
     width: 100%;
@@ -2590,9 +2591,9 @@ textarea:focus { border-color:var(--gld); }
     width: 100%;
     box-sizing: border-box;
   }
-  #modebar .mlbl { font-family:'Cinzel',serif; font-size:.62rem; color:#a07850; letter-spacing:1px; text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
-  #modebar .mbtn { flex:1; padding:8px 4px; border:1px solid var(--ps); background:rgba(200,160,100,.1); border-radius:4px; font-family:'Cinzel',serif; font-size:.68rem; color:#a07850; cursor:pointer; text-align:center; transition:all .15s; white-space:nowrap; }
-  #modebar .mbtn.active { background:var(--gld); color:#2c1a0e; border-color:var(--gld); font-weight:700; }
+  #modebar .mlbl { font-family:'Cinzel',serif; font-size:.62rem; color:var(--ink3); letter-spacing:1px; text-transform:uppercase; white-space:nowrap; flex-shrink:0; }
+  #modebar .mbtn { flex:1; padding:8px 4px; border:1px solid var(--ps); background:rgba(200,160,100,.1); border-radius:4px; font-family:'Cinzel',serif; font-size:.68rem; color:var(--ink3); cursor:pointer; text-align:center; transition:all .15s; white-space:nowrap; }
+  #modebar .mbtn.active { background:var(--gld); color:var(--ink); border-color:var(--gld); font-weight:700; }
   #modebar.painting { background:rgba(100,20,20,.4); border-bottom-color:var(--red); }
 }
 
@@ -3089,6 +3090,328 @@ textarea:focus { border-color:var(--gld); }
   margin-bottom: 4px;
 }
 
+
+/* ════════════════════════════════════════════════════════════
+   CONTRAST FIX v2.0 — Sistema de color rediseñado
+   
+   Problema: texto marrón (#a07850, #5c3d1e, #2c1a0e) sobre
+   fondos crema (#f4e4b8) o sobre fondo oscuro (#1a0f08)
+   generaba contraste insuficiente y todo se veía "borroso".
+   
+   Solución:
+   - --ink  : negro profundo con mínimo tinte cálido
+   - --ink2 : marrón oscuro legible (ratio mínimo 4.5:1)
+   - Paneles: fondo crema más definido con borde dorado
+   - Texto en áreas oscuras: siempre claro / dorado
+════════════════════════════════════════════════════════════ */
+
+/* ── VARIABLES GLOBALES REDEFINIDAS ──────────────────────── */
+:root {
+  --p:    #f4e4b8;   /* crema parchment (sin cambio) */
+  --ps:   #c8a96e;   /* borde dorado suave (sin cambio) */
+  --ink:  #12080c;   /* casi-negro cálido: ratio ~14:1 sobre crema ✅ */
+  --ink2: #3d1f0a;   /* marrón muy oscuro: ratio ~7:1 sobre crema ✅ */
+  --ink3: #6b3d14;   /* marrón medio (solo para texto en DARK bg) */
+  --red:  #8b1a1a;
+  --grn:  #1a4a1a;
+  --gld:  #c8941a;
+  --gld2: #e8b430;
+  --tab-h: 60px;
+}
+
+/* ── TEXTO EN FONDO CLARO (paneles crema) ────────────────── */
+/* Todo lo que estaba como #a07850, #5c3d1e, #2c1a0e
+   sobre fondo claro ahora usa las nuevas variables */
+
+/* Labels y hints en paneles */
+.flbl, .blbl, .slbl, label,
+.ptitle, .brow .blbl,
+.stat-mini-lbl, .attr-header span,
+.pasiva-lbl, .cf-section,
+.guia-nav-section, .guia-sidebar-title,
+.rtbl th,
+.cf-field label {
+  color: var(--ink2) !important;
+  font-weight: 600;
+}
+
+/* Texto principal de panel */
+.panel, .rightCol, #rightCol,
+.fgrp, .cf-pane,
+.chars-form-panel, .guia-content,
+.turn-panel, .sala-panel,
+.auth-card, .profile-card {
+  color: var(--ink);
+}
+
+/* Inputs: texto negro nítido */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="email"],
+select, textarea,
+.fin, .bnum, .sval-main, .sval-bono,
+.attr-num, .rval, .hab-input,
+.hab-num, .equip-input, .equip-bonus,
+.pasiva-input, .pasiva-bono-inp {
+  color: var(--ink) !important;
+}
+
+/* ── TEXTO EN FONDO OSCURO (#1a0f08) ─────────────────────── */
+/* Nav, topbar, tabBar, etc. — siempre usar crema o dorado */
+
+#topbar,
+#topbar * {
+  /* topbar ya usa --p correctamente en su color base */
+}
+
+/* Turn list items */
+.turn-card { color: var(--ink); }
+.turn-empty { color: var(--ink3) !important; }
+.turn-ini   { color: var(--ink2) !important; }
+.turn-round { color: var(--gld2) !important; }
+.turn-title { color: var(--ink); }
+
+/* Dice panel */
+.dice-custom label { color: var(--ink2) !important; }
+.dhtime { color: var(--ink3) !important; }
+
+/* Log entries */
+.logentry { color: var(--ink) !important; }
+.logtime  { color: var(--ink3) !important; }
+
+/* Map controls */
+.mapctrl span { color: var(--ink2) !important; }
+.empty-msg    { color: var(--ink2) !important; }
+
+/* Fichas lista */
+.titem      { color: var(--ink); }
+.ttext      { color: var(--ink) !important; }
+
+/* Left panel info text */
+.info   { color: var(--ink2) !important; }
+.slbl   { color: var(--ink2) !important; }
+
+/* Stat rows */
+.stat-main-lbl { color: var(--ink) !important; font-weight: 600; }
+.attr-lbl      { color: var(--ink) !important; font-weight: 500; }
+
+/* Sub-tab bar labels */
+.stab  { color: var(--ink2) !important; }
+.stab.active { color: var(--ink) !important; font-weight: 700; }
+
+/* Navigation principal */
+.nav-tab        { color: var(--p) !important; }
+.nav-tab.active { color: var(--gld) !important; }
+.nav-tab:hover  { color: var(--gld2) !important; }
+.nav-brand      { color: var(--gld) !important; }
+
+/* Tab bar del juego (mobile) */
+.tab-btn        { color: rgba(244,228,184,.6) !important; }
+.tab-btn.active { color: var(--gld) !important; }
+.tab-btn:hover  { color: var(--p) !important; }
+
+/* Modebar */
+#modebar .mlbl { color: rgba(244,228,184,.55) !important; }
+#modebar .mbtn { color: rgba(244,228,184,.55) !important; }
+#modebar .mbtn.active { color: #2c1a0e !important; }
+
+/* Presencia */
+.presence-badge     { color: rgba(244,228,184,.7) !important; }
+.presence-badge.me  { color: var(--gld) !important; }
+
+/* Sala panel (sobre fondo oscuro) */
+.sala-code { color: var(--gld) !important; }
+.conn-txt  { color: rgba(244,228,184,.7) !important; }
+
+/* Chat */
+.chat-msg  { color: var(--ink) !important; }
+.chat-msg.chat-system { color: var(--ink2) !important; }
+.chat-author { color: var(--gld2) !important; }
+
+/* ── GUÍA ─────────────────────────────────────────────────── */
+.guia-h1, .guia-h2, .guia-h3 { color: var(--ink) !important; }
+.guia-p  { color: var(--ink) !important; line-height: 1.7; }
+.guia-ul li { color: var(--ink) !important; }
+.guia-callout { color: var(--ink) !important; }
+.guia-table th { color: var(--ink) !important; font-weight: 700; }
+.guia-table td { color: var(--ink) !important; }
+.guia-class-card h3 { color: var(--ink) !important; }
+.guia-class-card p  { color: var(--ink2) !important; }
+.guia-nav-item   { color: rgba(244,228,184,.65) !important; }
+.guia-nav-item.active { color: var(--gld) !important; }
+.guia-nav-item:hover  { color: var(--p) !important; }
+
+/* Stat boxes en guía */
+.guia-stat-box .guia-stat-name { color: var(--gld2) !important; }
+.guia-stat-box .guia-stat-desc { color: var(--ink2) !important; }
+
+/* ── PERSONAJES ───────────────────────────────────────────── */
+.chars-title   { color: var(--gld) !important; }
+.char-list-name { color: var(--ink) !important; font-weight: 700; }
+.char-list-meta { color: var(--ink2) !important; }
+.chars-empty-panel p { color: var(--ink2) !important; }
+
+/* cf-pane content */
+.cf-title { color: var(--gld2) !important; }
+.cf-tab   { color: var(--ink2) !important; }
+.cf-tab.active { color: var(--ink) !important; }
+.cf-pulbl { color: var(--ink2) !important; }
+.cf-pu.on .cf-pulbl { color: var(--gld) !important; }
+
+/* ── PERFIL / AUTH ────────────────────────────────────────── */
+.auth-title { color: var(--gld2) !important; }
+.auth-sub   { color: var(--ink2) !important; }
+.auth-tab   { color: var(--ink2) !important; }
+.auth-tab.active { color: var(--ink) !important; }
+.auth-field label { color: var(--ink2) !important; font-weight: 600; }
+.profile-name { color: var(--ink) !important; }
+.profile-meta { color: var(--ink2) !important; }
+.profile-stat-lbl { color: var(--ink2) !important; }
+.profile-stat-num { color: var(--gld2) !important; }
+
+/* ── FICHA DEL MAPA (rightCol) ───────────────────────────── */
+#sName { color: var(--ink) !important; font-weight: 700; }
+#sPos  { color: var(--ink2) !important; }
+
+/* Recursos vitales labels en rightCol */
+.brow .blbl { color: var(--ink2) !important; font-weight: 600; }
+
+/* Mod boxes */
+.mod-base-box  { color: var(--ink2) !important; }
+.mod-final-box { color: var(--ink) !important; font-weight: 700; }
+
+/* Recursos tabla */
+.rtbl td { color: var(--ink) !important; }
+
+/* Habilidades */
+#habResult { color: var(--ink) !important; }
+
+/* Acciones panel */
+.acc-title { color: var(--gld2) !important; }
+
+/* Estados */
+.estado-info { color: var(--ink2) !important; }
+
+/* ── FIXES INLINE HARDCODED ──────────────────────────────── */
+/* Sobreescribir todos los hardcodes problemáticos con mayor especificidad */
+
+/* #a07850 siempre fue texto secundario — reemplazar globalmente */
+[style*="color:#a07850"],
+[style*="color: #a07850"] {
+  color: var(--ink2) !important;
+}
+/* En fondos oscuros estos hardcodes deben ser más claros */
+#topbar [style*="color:#a07850"],
+#topbar [style*="color: #a07850"],
+#leftCol [style*="color:#a07850"],
+#leftCol [style*="color: #a07850"],
+#midbar [style*="color:#a07850"],
+#midbar [style*="color: #a07850"],
+#tabBar [style*="color:#a07850"],
+.panel [style*="color:#a07850"],
+.panel [style*="color: #a07850"] {
+  color: var(--ink3) !important;
+}
+
+/* #5c3d1e en paneles claros → ink2 más oscuro */
+[style*="color:#5c3d1e"],
+[style*="color: #5c3d1e"] {
+  color: var(--ink2) !important;
+}
+
+/* #2c1a0e en paneles claros → ink más oscuro */
+[style*="color:#2c1a0e"],
+[style*="color: #2c1a0e"] {
+  color: var(--ink) !important;
+}
+
+/* ── BADGES Y CHIPS ──────────────────────────────────────── */
+/* Turnos chips */
+.tc   { color: rgba(244,228,184,.85) !important; }
+.tc-m { background: rgba(41,128,185,.25) !important; color: #a8d4f5 !important; }
+.tc-a { background: rgba(192,57,43,.25) !important; color: #f5a8a8 !important; }
+.tc-aa{ background: rgba(200,148,26,.25) !important; color: var(--gld2) !important; }
+.tc-r { background: rgba(39,174,96,.25) !important; color: #a8f5c0 !important; }
+
+/* Turn card activa */
+.turn-card.active { 
+  background: linear-gradient(135deg, rgba(200,148,26,.2), rgba(200,148,26,.08)) !important;
+  border-color: var(--gld) !important;
+}
+.turn-card.active .turn-num { color: var(--gld2) !important; }
+
+/* ── PANEL BORDERS más definidos ─────────────────────────── */
+.panel {
+  border: 1px solid rgba(200,148,26,.25) !important;
+  border-radius: 4px;
+}
+
+/* rightCol más definida */
+#rightCol {
+  border: 2px solid rgba(200,148,26,.4) !important;
+}
+
+/* ── INPUTS mejorados ────────────────────────────────────── */
+.fin:focus, .bnum:focus, .sval-main:focus, .sval-bono:focus {
+  border-color: var(--gld) !important;
+  background: rgba(200,148,26,.08) !important;
+  outline: none;
+}
+
+/* ── BUTTONS: siempre legibles ───────────────────────────── */
+.btn { 
+  font-weight: 600;
+}
+.btn-gld { 
+  color: #12080c !important;  /* texto oscuro sobre dorado */
+}
+.btn-red { color: #fff !important; }
+.btn-grn { color: #fff !important; }
+
+/* ── MOBILE TAB BAR ──────────────────────────────────────── */
+/* Ya definido arriba, reforzar */
+#tabBar {
+  background: #0d0702 !important;
+  border-top: 2px solid rgba(200,148,26,.4) !important;
+}
+
+/* ── SCROLLBARS ──────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,.15); }
+::-webkit-scrollbar-thumb { background: rgba(200,148,26,.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(200,148,26,.7); }
+
+/* ── PANEL TITLES (ptitle) más visible ───────────────────── */
+.ptitle {
+  color: var(--gld2) !important;
+  border-bottom-color: rgba(200,148,26,.35) !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px;
+}
+
+/* ── GUÍA DROPDOWN en mobile ─────────────────────────────── */
+#guiaDropdown {
+  color: var(--gld) !important;
+}
+
+/* ── LOCK BADGE ──────────────────────────────────────────── */
+.locked:not(#statsOverlay) { 
+  color: var(--red) !important; 
+  font-weight: 700;
+}
+.unlocked { color: #27ae60 !important; font-weight: 700; }
+
+/* ── NOTA FINAL: asegurar que todo texto en cards sea legible */
+.turn-card,
+.titem,
+.obs-item,
+.zona-item,
+.pasiva-row,
+.char-list-card {
+  color: var(--ink) !important;
+}
+
 </style>
 </head>
 <body>
@@ -3190,9 +3513,9 @@ textarea:focus { border-color:var(--gld); }
     </div>
     <span id="dicePanelArrow" style="font-size:.7rem;color:var(--ps);margin-left:6px;">▲</span>
     <div style="display:flex;align-items:center;gap:6px;">
-      <label style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">Tirar:</label>
-      <input type="number" id="diceQty" value="1" min="1" max="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.8rem;color:#2c1a0e;outline:none;">
-      <span style="font-size:.75rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
+      <label style="font-size:.75rem;color:var(--ink2);font-family:'Cinzel',serif;">Tirar:</label>
+      <input type="number" id="diceQty" value="1" min="1" max="20" style="width:40px;padding:3px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.8rem;color:var(--ink);outline:none;">
+      <span style="font-size:.75rem;color:var(--ink2);font-family:'Cinzel',serif;">d</span>
     </div>
   </div>
 
@@ -3217,9 +3540,9 @@ textarea:focus { border-color:var(--gld); }
 
     <!-- dado personalizado -->
     <div class="dice-custom">
-      <label style="font-size:.72rem;color:#5c3d1e;">Personalizado</label>
+      <label style="font-size:.72rem;color:var(--ink2);">Personalizado</label>
       <div class="dice-custom-row">
-        <span style="font-size:.78rem;color:#5c3d1e;font-family:'Cinzel',serif;">d</span>
+        <span style="font-size:.78rem;color:var(--ink2);font-family:'Cinzel',serif;">d</span>
         <input type="number" id="diceCustom" value="6" min="2" max="999" style="width:52px;">
         <button class="btn btn-gld" onclick="rollCustom()" style="width:auto;padding:4px 8px;font-size:.7rem;">Tirar</button>
       </div>
@@ -3229,9 +3552,9 @@ textarea:focus { border-color:var(--gld); }
 
     <!-- modificador y stat -->
     <div style="display:flex;flex-direction:column;gap:4px;">
-      <label style="font-size:.72rem;color:#5c3d1e;">Modificador</label>
+      <label style="font-size:.72rem;color:var(--ink2);">Modificador</label>
       <div style="display:flex;align-items:center;gap:4px;">
-        <input type="number" id="diceMod" value="0" style="width:50px;padding:3px 5px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.82rem;color:#2c1a0e;outline:none;">
+        <input type="number" id="diceMod" value="0" style="width:50px;padding:3px 5px;text-align:center;background:rgba(200,160,100,.2);border:1px solid #c8a96e;border-radius:3px;font-family:'Cinzel',serif;font-size:.82rem;color:var(--ink);outline:none;">
         <select id="diceStat" class="dice-stat-sel" onchange="applyStatMod()" title="Usar stat de la ficha seleccionada">
           <option value="">+ stat</option>
           <option value="pod">Poder</option>
@@ -3262,7 +3585,7 @@ textarea:focus { border-color:var(--gld); }
   <div class="dice-result-area">
     <div class="dice-last" id="diceResult">
       <div class="dice-total" id="diceTotal">—</div>
-      <div class="dice-breakdown" id="diceBreakdown" style="color:#a07850;font-style:italic;">Tirá un dado para empezar</div>
+      <div class="dice-breakdown" id="diceBreakdown" style="color:var(--ink3);font-style:italic;">Tirá un dado para empezar</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:4px;">
       <div class="dice-history" id="diceHistory" style="flex:1;"></div>
@@ -3341,7 +3664,7 @@ textarea:focus { border-color:var(--gld); }
       <input type="text" id="iSym" placeholder="M" maxlength="2" style="text-align:center;">
       <label>Color</label>
       <div class="cgrid" id="cgrid"></div>
-      <label>Contraseña <span style="color:#a07850;font-size:.72rem;">(opcional)</span></label>
+      <label>Contraseña <span style="color:var(--ink3);font-size:.72rem;">(opcional)</span></label>
       <input type="password" id="iPassword" placeholder="Solo vos podrás editar" maxlength="32" style="letter-spacing:2px;">
       <button class="btn btn-gld" onclick="addToken()">+ Colocar en mapa</button>
     </div>
@@ -3565,7 +3888,7 @@ textarea:focus { border-color:var(--gld); }
         <div id="sAvatar" style="width:44px;height:44px;border-radius:50%;border:2px solid #c8a96e;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;flex-shrink:0;"></div>
         <div style="flex:1;min-width:0;">
           <div id="sName" style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;"></div>
-          <div id="sPos" style="font-size:.78rem;color:#5c3d1e;font-style:italic;"></div>
+          <div id="sPos" style="font-size:.78rem;color:var(--ink2);font-style:italic;"></div>
         </div>
         <span id="lockBadge" class="locked" onclick="promptPassword()" title="Clic para desbloquear">🔒 Bloqueada</span>
       </div>
@@ -4153,7 +4476,7 @@ textarea:focus { border-color:var(--gld); }
       <div class="ptitle" style="margin-top:6px;font-size:.65rem;">🔒 Contraseña</div>
       <div class="frow" style="margin-bottom:4px;">
         <div class="fgrp">
-          <span class="flbl">Nueva contraseña <span style="color:#a07850;font-size:.72rem;">(vacío = sin contraseña)</span></span>
+          <span class="flbl">Nueva contraseña <span style="color:var(--ink3);font-size:.72rem;">(vacío = sin contraseña)</span></span>
           <input type="password" id="editPw1" class="fin" placeholder="Nueva contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
           <input type="password" id="editPw2" class="fin" placeholder="Repetir contraseña..." maxlength="32" style="letter-spacing:2px;margin-bottom:4px;">
           <button class="btn btn-red" onclick="applyEditPassword()" style="margin-bottom:0;">Cambiar contraseña</button>
@@ -5378,7 +5701,7 @@ function clearRolls() {
     if (el) el.innerHTML = '';
   });
   ['diceTotal','mDiceTotal'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='—'; });
-  ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) { el.innerHTML='Tirá un dado para empezar'; el.style.color='#a07850'; } });
+  ['diceBreakdown','mDiceBreak'].forEach(id => { const el=document.getElementById(id); if(el) { el.innerHTML='Tirá un dado para empezar'; el.style.color='var(--ink3)'; } });
   // Firebase
   if (roomRef) roomRef.child('rolls').remove();
   myRollKeys.clear();
@@ -6570,7 +6893,7 @@ function renderHabilidades() {
   body.innerHTML = '';
 
   if (habs.length === 0) {
-    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#a07850;font-style:italic;padding:6px;font-size:.75rem;">Sin habilidades. Hacé clic en + Agregar.</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);font-style:italic;padding:6px;font-size:.75rem;">Sin habilidades. Hacé clic en + Agregar.</td></tr>';
     return;
   }
 
@@ -6646,7 +6969,7 @@ function renderInventario() {
   body.innerHTML = '';
 
   if (inv.length === 0) {
-    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a07850;font-style:italic;padding:6px;font-size:.75rem;">Inventario vacío. Hacé clic en + Agregar.</td></tr>';
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--ink3);font-style:italic;padding:6px;font-size:.75rem;">Inventario vacío. Hacé clic en + Agregar.</td></tr>';
     return;
   }
 
@@ -6729,7 +7052,7 @@ function renderPasivas() {
   list.innerHTML = '';
 
   if (pasivas.length === 0) {
-    list.innerHTML = '<p style="font-size:.75rem;color:#a07850;font-style:italic;padding:4px 2px;">Sin pasivas. Hacé clic en + Agregar.</p>';
+    list.innerHTML = '<p style="font-size:.75rem;color:var(--ink3);font-style:italic;padding:4px 2px;">Sin pasivas. Hacé clic en + Agregar.</p>';
     return;
   }
 
@@ -7071,7 +7394,7 @@ function refreshZonaList() {
     div.className = 'zona-item' + (z.id === selZoneId ? ' sel' : '');
     div.innerHTML = `<div class="zona-swatch" style="background:${z.color}"></div>
       <span style="flex:1;">${z.label||'Sin nombre'}</span>
-      <span style="font-size:.7rem;color:#a07850;">${cells} cel.</span>`;
+      <span style="font-size:.7rem;color:var(--ink3);">${cells} cel.</span>`;
     div.onclick = () => {
       selZoneId = z.id; selZoneColor = z.color;
       const inp = document.getElementById('zonaLabelInput');
@@ -7258,7 +7581,7 @@ function refreshObsList() {
     const ot = OBS_TYPES.find(t => t.id === ob.type) || { icon:'?', label:ob.type };
     const div = document.createElement('div');
     div.className = 'obs-item' + (ob.id === selObsId ? ' sel' : '');
-    div.innerHTML = `${ot.icon} <span style="flex:1;">${ot.label}</span> <span style="font-size:.72rem;color:#a07850;">${String.fromCharCode(65+ob.c)}${ob.r+1}</span>`;
+    div.innerHTML = `${ot.icon} <span style="flex:1;">${ot.label}</span> <span style="font-size:.72rem;color:var(--ink3);">${String.fromCharCode(65+ob.c)}${ob.r+1}</span>`;
     div.onclick = () => { selObsId = ob.id; selId = null; placingObs = null; buildObsGrid(); refreshObsList(); redraw(); };
     list.appendChild(div);
   });
