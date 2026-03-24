@@ -2769,14 +2769,344 @@ textarea:focus { border-color:var(--gld); }
   text-decoration: line-through;
 }
 
+
+
+/* ════════════════════════════════════════════════════════════
+   BNH RPG v2.0 — Mejoras visuales y funcionales
+════════════════════════════════════════════════════════════ */
+
+/* ── TOPBAR v2: versión badge ─────────────────────────────── */
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  height: 42px;
+  background: #110a04;
+  border-bottom: 2px solid var(--ps);
+  flex-shrink: 0;
+}
+#topbar h1 {
+  font-size: .82rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  margin: 0;
+  white-space: nowrap;
+}
+#versionBadge {
+  font-family: 'Cinzel', serif;
+  font-size: .52rem;
+  color: var(--gld2);
+  opacity: .6;
+  letter-spacing: 1px;
+  padding: 1px 5px;
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+/* ── CHAT DE SALA ─────────────────────────────────────────── */
+#chatPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#chatLog {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 120px;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 2px;
+  scrollbar-width: thin;
+}
+.chat-msg {
+  font-size: .75rem;
+  line-height: 1.35;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.chat-msg .chat-author {
+  font-family: 'Cinzel', serif;
+  font-size: .62rem;
+  color: var(--gld);
+  margin-right: 4px;
+  font-weight: 700;
+}
+.chat-msg.chat-me { background: rgba(200,148,26,.08); }
+.chat-msg.chat-system { color: var(--ink2); font-style: italic; font-size: .7rem; }
+.chat-input-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 5px;
+}
+.chat-input-row input {
+  flex: 1;
+  padding: 5px 8px;
+  background: rgba(200,160,100,.2);
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  font-family: 'Crimson Text', serif;
+  font-size: .82rem;
+  color: var(--ink);
+  outline: none;
+}
+.chat-input-row input:focus { border-color: var(--gld); }
+.chat-send-btn {
+  padding: 5px 10px;
+  background: var(--gld);
+  border: none;
+  border-radius: 4px;
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 0;
+}
+.chat-send-btn:hover { background: var(--gld2); }
+
+/* ── NOTIFICACIÓN DE ACCIÓN (jugadores) ───────────────────── */
+#actionNotif {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  z-index: 9000;
+  background: rgba(17,10,4,.95);
+  border: 1px solid var(--ps);
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: .78rem;
+  color: var(--p);
+  box-shadow: 0 4px 20px rgba(0,0,0,.6);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+#actionNotif.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ── PANTALLA DE CARGA ────────────────────────────────────── */
+#loadingScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #110a04;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: opacity .5s;
+}
+#loadingScreen.fade-out { opacity: 0; pointer-events: none; }
+.loading-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  color: var(--gld);
+  text-transform: uppercase;
+}
+.loading-sub {
+  font-size: .8rem;
+  color: var(--ink2);
+  font-style: italic;
+  letter-spacing: 1px;
+}
+.loading-bar-wrap {
+  width: 200px;
+  height: 3px;
+  background: rgba(200,148,26,.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.loading-bar {
+  height: 100%;
+  background: var(--gld);
+  border-radius: 2px;
+  animation: loadPulse 1.4s ease-in-out infinite;
+}
+@keyframes loadPulse {
+  0% { width: 0%; margin-left: 0; }
+  50% { width: 60%; margin-left: 20%; }
+  100% { width: 0%; margin-left: 100%; }
+}
+
+/* ── PRESENCIA mejorada ──────────────────────────────────── */
+.presence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: rgba(200,148,26,.1);
+  border: 1px solid rgba(200,148,26,.2);
+  border-radius: 12px;
+  font-size: .68rem;
+  color: var(--ink2);
+}
+.presence-badge.me {
+  border-color: var(--gld);
+  color: var(--gld);
+  background: rgba(200,148,26,.15);
+}
+.pdot {
+  width: 6px; height: 6px;
+  background: #2ecc71;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: presencePulse 2s ease-in-out infinite;
+}
+@keyframes presencePulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+
+/* ── TOKEN NAMES en el mapa ──────────────────────────────── */
+/* Controlado por CSS variable en canvas, no hay CSS aquí */
+/* El toggle está en el leftCol */
+.mapopt-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: .7rem;
+  color: var(--ink2);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background .1s;
+}
+.mapopt-row:hover { background: rgba(200,148,26,.08); }
+.mapopt-row input[type=checkbox] {
+  accent-color: var(--gld);
+  width: 13px; height: 13px;
+  flex-shrink: 0;
+}
+
+/* ── AUTO-SAVE INDICATOR ─────────────────────────────────── */
+#autoSaveIndicator {
+  position: fixed;
+  bottom: calc(var(--tab-h, 60px) + 8px);
+  right: 12px;
+  z-index: 1000;
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  color: var(--grn);
+  letter-spacing: 1px;
+  opacity: 0;
+  transition: opacity .4s;
+  pointer-events: none;
+}
+#autoSaveIndicator.show { opacity: 1; }
+
+/* ── MEJORAR TOAST ────────────────────────────────────────── */
+#rollToast {
+  backdrop-filter: blur(4px);
+  border-width: 2px !important;
+}
+
+/* ── SALA - panel de chat integrado en leftCol ───────────── */
+#chatPanelWrap {
+  padding: 6px 8px;
+  border-top: 1px solid rgba(200,148,26,.15);
+  flex-shrink: 0;
+}
+.chat-panel-title {
+  font-family: 'Cinzel', serif;
+  font-size: .6rem;
+  letter-spacing: 2px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.chat-unread-dot {
+  width: 7px; height: 7px;
+  background: var(--red);
+  border-radius: 50%;
+  display: none;
+  flex-shrink: 0;
+}
+.chat-unread-dot.show { display: block; }
+
+/* ── INDICADOR DE CONEXIÓN mejorado ──────────────────────── */
+.conn-online .conn-dot { background: #2ecc71; animation: presencePulse 2s infinite; }
+.conn-wait   .conn-dot { background: #f39c12; animation: presencePulse 1s infinite; }
+.conn-offline .conn-dot { background: var(--red); animation: none; }
+
+/* ── FICHAS: mejor card en tlist ─────────────────────────── */
+.titem {
+  transition: background .12s;
+  border-left: 3px solid transparent;
+}
+.titem.sel {
+  border-left-color: var(--gld);
+}
+.titem:hover { border-left-color: rgba(200,148,26,.4); }
+
+/* ── v2.0 badge en nav ───────────────────────────────────── */
+.nav-v2 {
+  font-family: 'Cinzel', serif;
+  font-size: .48rem;
+  color: var(--gld2);
+  opacity: .5;
+  letter-spacing: 1px;
+  padding: 1px 4px;
+  border: 1px solid rgba(200,148,26,.2);
+  border-radius: 6px;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+/* ── MOBILE: chat panel ───────────────────────────────────── */
+@media (max-width: 900px) {
+  #chatPanelWrap { padding: 8px 10px; }
+  #chatLog { max-height: 80px; }
+  #actionNotif { top: 8px; font-size: .72rem; }
+}
+
+/* ── MAPA OPCIONES VISUALES ───────────────────────────────── */
+#mapOptionsPanel {
+  padding: 4px 8px 8px;
+  border-bottom: 1px solid rgba(200,148,26,.15);
+}
+.map-options-title {
+  font-family: 'Cinzel', serif;
+  font-size: .58rem;
+  letter-spacing: 1.5px;
+  color: var(--ink2);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
 </style>
 </head>
 <body>
+<!-- ── PANTALLA DE CARGA v2.0 ──────────────────────────────── -->
+<div id="loadingScreen">
+  <div class="loading-title">⚔ BNH RPG</div>
+  <div class="loading-sub">Academia de Héroes · v2.0</div>
+  <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+</div>
+<!-- ── NOTIF DE ACCIONES ─────────────────────────────────────── -->
+<div id="actionNotif"></div>
+<!-- ── AUTO-SAVE INDICATOR ──────────────────────────────────── -->
+<div id="autoSaveIndicator"></div>
 <!-- ══════════════════════════════════════════════════
      NAVEGACIÓN PRINCIPAL
 ══════════════════════════════════════════════════ -->
 <nav id="appNav">
-  <span class="nav-brand">⚔ BNH RPG</span>
+  <span class="nav-brand">⚔ BNH RPG <span class="nav-v2">v2.0</span></span>
   <div class="nav-tabs">
     <button class="nav-tab active" id="navJugar" onclick="switchSection('jugar')">
       <span class="nav-icon">🗺</span>Jugar
@@ -2975,6 +3305,31 @@ textarea:focus { border-color:var(--gld); }
         <input type="text" id="userNameInputM" style="display:none;" maxlength="20">
         <div style="font-size:.72rem;color:var(--ink2);margin-bottom:4px;">Conectados ahora:</div>
         <div id="mobilePresenceList"></div>
+        <!-- Chat mobile -->
+        <div style="margin-top:8px;border-top:1px solid rgba(200,148,26,.2);padding-top:8px;">
+          <div class="chat-panel-title">💬 Chat
+            <div class="chat-unread-dot" id="mobileChatUnreadDot"></div>
+          </div>
+          <div id="mobileChatLog" class="chat-msg-log" style="max-height:80px;overflow-y:auto;margin-bottom:5px;display:flex;flex-direction:column;gap:3px;"></div>
+          <div class="chat-input-row">
+            <input type="text" id="mobileChatInput" placeholder="Escribí un mensaje..." maxlength="200"
+              onkeydown="sendChatOnEnter(event,'mobileChatInput')">
+            <button class="chat-send-btn" onclick="sendChat('mobileChatInput')">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHAT DE SALA ───────────────────────────────────── -->
+    <div class="panel" id="chatPanelWrap">
+      <div class="chat-panel-title">💬 Chat de Sala
+        <div class="chat-unread-dot" id="chatUnreadDot"></div>
+      </div>
+      <div id="chatLog" class="chat-log"></div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Escribí un mensaje..." maxlength="200"
+          onkeydown="sendChatOnEnter(event,'chatInput')">
+        <button class="chat-send-btn" onclick="sendChat('chatInput')">→</button>
       </div>
     </div>
 
@@ -3031,6 +3386,13 @@ textarea:focus { border-color:var(--gld); }
 
     <div class="panel">
       <div class="ptitle">✧ Controles</div>
+      <!-- Opciones visuales del mapa -->
+      <div style="padding-bottom:6px;border-bottom:1px solid rgba(200,148,26,.15);margin-bottom:6px;">
+        <label class="mapopt-row" title="Mostrar/ocultar nombres bajo los tokens (tecla N)">
+          <input type="checkbox" id="cbTokenNames" onchange="toggleTokenNames()">
+          Nombres en el mapa
+        </label>
+      </div>
       <p class="info" style="line-height:1.8;">
         <b>Clic / Tocar ficha</b> — Seleccionar<br>
         <b>Arrastrar</b> — Mover ficha<br>
@@ -3874,6 +4236,7 @@ function blank() {
     cua:0, yh:0, ct:0, mer:0,
     habilidades:[], pasivas:[], inventario:[], plus_ultra:false,
     estados:{}, notas:'',
+    show_vida:true, show_est:true, show_hptemp:true,
     mov:1, acc:1, acca:0, rea:1,
     baFue:0,baIntim:0,baEva:0,baAcr:0,baSig:0,baAgu:0,baVol:0,baCtq:0,baIng:0,baTac:0,baPer:0,baEng:0,baInv:0,baPrc:0,
     compFue:false,compIntim:false,compEva:false,compAcr:false,compSig:false,compAgu:false,compVol:false,compCtq:false,compIng:false,compTac:false,compPer:false,compEng:false,compInv:false,compPrc:false,
@@ -8907,13 +9270,6 @@ function doLogout() {
   onUserLoggedOut();
 }
 
-function onUserLoggedIn() {
-  renderProfileCard();
-  renderNavUser();
-  document.getElementById('authCard').style.display = 'none';
-  document.getElementById('profileCard').style.display = '';
-  if (currentSection === 'personajes') renderCharsList();
-}
 
 function onUserLoggedOut() {
   document.getElementById('authCard').style.display = '';
@@ -8999,64 +9355,7 @@ function renderCharsList() {
   });
 }
 
-function nuevoPersonaje() {
-  editingCharId = null;
-  // limpiar form
-  ['cf_nombre','cf_heroname','cf_rango','cf_quirk_nombre','cf_quirk_desc','cf_personalidad','cf_ideologia','cf_trasfondo','cf_trinket'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
-  ['cf_pod','cf_agi','cf_res','cf_tec','cf_int'].forEach(id => { const el = document.getElementById(id); if(el) el.value = 10; });
-  document.getElementById('cf_nivel').value = 1;
-  document.getElementById('cf_clase').value = '';
-  document.getElementById('cf_espec').value = '';
-  document.getElementById('cf_quirk_tipo').value = 'Emisor';
-  document.getElementById('cf_color').value = '#e74c3c';
-  document.getElementById('cfHabsList').innerHTML = '';
-  document.getElementById('charFormTitle').textContent = 'Nuevo Personaje';
-  document.getElementById('charsFormEmpty').style.display = 'none';
-  document.getElementById('charForm').style.display = '';
-  document.getElementById('cfSavedMsg').textContent = '';
-  cfUpdateCalcs();
-}
 
-function editarPersonaje(id) {
-  const ch = myChars[id];
-  if (!ch) return;
-  editingCharId = id;
-  // highlight list
-  document.querySelectorAll('.char-list-card').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.char-list-card').forEach(c => {
-    if (c.querySelector('.char-list-name')?.textContent === ch.nombre) c.classList.add('active');
-  });
-  // fill form
-  document.getElementById('cf_nombre').value = ch.nombre||'';
-  document.getElementById('cf_heroname').value = ch.heroname||'';
-  document.getElementById('cf_clase').value = ch.clase||'';
-  document.getElementById('cf_espec').value = ch.espec||'';
-  document.getElementById('cf_nivel').value = ch.nivel||1;
-  document.getElementById('cf_rango').value = ch.rango||'';
-  document.getElementById('cf_pod').value = ch.pod||10;
-  document.getElementById('cf_agi').value = ch.agi||10;
-  document.getElementById('cf_res').value = ch.res||10;
-  document.getElementById('cf_tec').value = ch.tec||10;
-  document.getElementById('cf_int').value = ch.int||10;
-  document.getElementById('cf_quirk_nombre').value = ch.quirk_nombre||'';
-  document.getElementById('cf_quirk_tipo').value = ch.quirk_tipo||'Emisor';
-  document.getElementById('cf_quirk_desc').value = ch.quirk_desc||'';
-  document.getElementById('cf_personalidad').value = ch.personalidad||'';
-  document.getElementById('cf_ideologia').value = ch.ideologia||'';
-  document.getElementById('cf_trasfondo').value = ch.trasfondo||'';
-  document.getElementById('cf_trinket').value = ch.trinket||'';
-  document.getElementById('cf_color').value = ch.color||'#e74c3c';
-  // habilidades
-  document.getElementById('cfHabsList').innerHTML = '';
-  (ch.habilidades||[]).forEach(h => cfAddHab(h));
-  document.getElementById('charFormTitle').textContent = 'Editando: ' + (ch.nombre||'Personaje');
-  document.getElementById('charsFormEmpty').style.display = 'none';
-  document.getElementById('charForm').style.display = '';
-  document.getElementById('cfSavedMsg').textContent = '';
-  cfUpdateCalcs();
-}
 
 async function guardarPersonaje() {
   if (!currentUser || !db) return;
@@ -9084,84 +9383,8 @@ async function eliminarPersonaje(id) {
   renderProfileCard();
 }
 
-function recogerDatosPersonaje() {
-  const habs = [];
-  document.querySelectorAll('.cf-hab-row').forEach(row => {
-    habs.push({
-      nombre: row.querySelector('.cfh-nombre')?.value||'',
-      dados:  row.querySelector('.cfh-dados')?.value||'1',
-      tipo:   row.querySelector('.cfh-tipo')?.value||'d6',
-      stam:   row.querySelector('.cfh-stam')?.value||'0',
-      desc:   row.querySelector('.cfh-desc')?.value||''
-    });
-  });
-  return {
-    nombre: document.getElementById('cf_nombre').value.trim()||'Sin nombre',
-    heroname: document.getElementById('cf_heroname').value.trim(),
-    clase: document.getElementById('cf_clase').value,
-    espec: document.getElementById('cf_espec').value,
-    nivel: parseInt(document.getElementById('cf_nivel').value)||1,
-    rango: document.getElementById('cf_rango').value.trim(),
-    pod: parseInt(document.getElementById('cf_pod').value)||10,
-    agi: parseInt(document.getElementById('cf_agi').value)||10,
-    res: parseInt(document.getElementById('cf_res').value)||10,
-    tec: parseInt(document.getElementById('cf_tec').value)||10,
-    int: parseInt(document.getElementById('cf_int').value)||10,
-    quirk_nombre: document.getElementById('cf_quirk_nombre').value.trim(),
-    quirk_tipo: document.getElementById('cf_quirk_tipo').value,
-    quirk_desc: document.getElementById('cf_quirk_desc').value.trim(),
-    personalidad: document.getElementById('cf_personalidad').value.trim(),
-    ideologia: document.getElementById('cf_ideologia').value.trim(),
-    trasfondo: document.getElementById('cf_trasfondo').value.trim(),
-    trinket: document.getElementById('cf_trinket').value.trim(),
-    color: document.getElementById('cf_color').value,
-    habilidades: habs,
-    updatedAt: Date.now()
-  };
-}
 
-function cfAddHab(h) {
-  const row = document.createElement('div');
-  row.className = 'cf-hab-row';
-  row.innerHTML = `
-    <input type="text" class="cfh-nombre" placeholder="Nombre" value="${h?.nombre||''}">
-    <input type="number" class="cfh-dados" placeholder="Dados" value="${h?.dados||1}" min="1" max="8" style="width:54px;text-align:center;">
-    <select class="cfh-tipo">
-      ${['d4','d6','d8','d10','d12','d20'].map(d=>`<option value="${d}" ${h?.tipo===d?'selected':''}>${d}</option>`).join('')}
-    </select>
-    <input type="number" class="cfh-stam" placeholder="STAM" value="${h?.stam||0}" min="0" style="width:46px;text-align:center;">
-    <button class="cf-hab-del" onclick="this.parentElement.remove()" title="Eliminar">✕</button>
-    <input type="text" class="cfh-desc" placeholder="Descripción breve" value="${h?.desc||''}" style="grid-column:1/5;margin-top:3px;">
-  `;
-  document.getElementById('cfHabsList').appendChild(row);
-}
 
-function cfUpdateCalcs() {
-  const clase = document.getElementById('cf_clase').value.toLowerCase();
-  const nivel = parseInt(document.getElementById('cf_nivel').value)||1;
-  const pod = parseInt(document.getElementById('cf_pod').value)||10;
-  const agi = parseInt(document.getElementById('cf_agi').value)||10;
-  const res = parseInt(document.getElementById('cf_res').value)||10;
-  const tec = parseInt(document.getElementById('cf_tec').value)||10;
-  const int_ = parseInt(document.getElementById('cf_int').value)||10;
-  const modRes = Math.trunc(res/2 - 5);
-  const modAgi = Math.trunc(agi/2 - 5);
-  const modTec = Math.trunc(tec/2 - 5);
-  const modInt = Math.trunc(int_/2 - 5);
-  const modPod = Math.trunc(pod/2 - 5);
-  let hp, stam, def, vel;
-  if (clase==='ofensivo')      { hp=(8*(nivel+1))+(modRes*2); stam=(6*nivel)+(modTec*2); def=10+modRes; }
-  else if (clase==='defensivo'){ hp=(12*(nivel+1))+(modRes*3); stam=(5*nivel)+(modTec*1); def=10+modRes; }
-  else if (clase==='agil')     { hp=(7*(nivel+1))+(modRes*2); stam=(6*nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
-  else if (clase==='tecnico')  { hp=(6*(nivel+1))+(modRes*2); stam=(8*nivel)+(modTec*3); def=10+Math.max(2,modAgi); }
-  else if (clase==='mental')   { hp=(6*(nivel+1))+(modRes*1); stam=(7*nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
-  else if (clase==='apoyo')    { hp=(9*(nivel+1))+(modRes*2); stam=(7*nivel)+(modTec*2); def=9+modRes; }
-  else { const el = document.getElementById('cfCalcPreview'); if(el) el.textContent='Seleccioná una clase para ver los cálculos.'; return; }
-  vel = Math.max(2, modAgi);
-  const bc = Math.ceil(nivel/3)+1;
-  const el = document.getElementById('cfCalcPreview');
-  if(el) el.innerHTML = `<b>HP:</b> ${Math.max(1,hp)} &nbsp;|&nbsp; <b>STAM:</b> ${Math.max(1,stam)} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Iniciativa:</b> ${modAgi>=0?'+'+modAgi:modAgi} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
-}
 
 function exportarPersonajeActual() {
   const ch = recogerDatosPersonaje();
@@ -9581,7 +9804,7 @@ function cfAddHab(h) {
 // ── PASIVAS ──
 function cfAddPasiva(p) {
   const list = document.getElementById('cfPasivaList');
-  if (!body && !list) return;
+  if (!list) return;
   const div = document.createElement('div');
   div.className = 'pasiva-row' + (p?.activa ? ' activa' : '');
   const statOpts = ['pod','agi','res','tec','int','vel','def','ini','reg','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
@@ -10514,6 +10737,252 @@ window.showStats = function() {
     btn.title = visible ? 'Ocultar barra en el mapa' : 'Mostrar barra en el mapa';
   });
 };
+
+</script>
+<script>
+// ════════════════════════════════════════════════════════════
+//  BNH RPG v2.0 — Mejoras funcionales
+// ════════════════════════════════════════════════════════════
+
+// ── PANTALLA DE CARGA ─────────────────────────────────────
+function hideLoadingScreen() {
+  const ls = document.getElementById('loadingScreen');
+  if (!ls) return;
+  ls.classList.add('fade-out');
+  setTimeout(() => { if (ls.parentNode) ls.parentNode.removeChild(ls); }, 600);
+}
+// Se oculta cuando Firebase conecta o después de 3s
+setTimeout(hideLoadingScreen, 3000);
+
+// ── AUTO-SAVE INDICATOR ───────────────────────────────────
+let _autoSaveTimer = null;
+function showAutoSave(msg) {
+  const el = document.getElementById('autoSaveIndicator');
+  if (!el) return;
+  el.textContent = msg || '✓ Guardado';
+  el.classList.add('show');
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// Parchear fbPatch para mostrar auto-save
+const _origFbPatch = window.fbPatch;
+window.fbPatch = function(id, patch) {
+  _origFbPatch && _origFbPatch(id, patch);
+  showAutoSave('✓ Sincronizado');
+};
+
+// ── NOTIFICACIÓN DE ACCIONES (para jugadores) ─────────────
+let _notifTimer = null;
+function showActionNotif(msg) {
+  const el = document.getElementById('actionNotif');
+  if (!el) return;
+  el.innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(_notifTimer);
+  _notifTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Mostrar notif cuando otros jugadores hacen cosas
+// Parchear renderRollEntry para notificar tiradas ajenas
+const _origRenderRollEntry = window.renderRollEntry;
+window.renderRollEntry = function(d, prepend) {
+  _origRenderRollEntry && _origRenderRollEntry(d, prepend);
+  // Solo notificar tiradas NUEVAS (prepend=true) que no son propias
+  if (prepend && d.msg) {
+    showActionNotif('🎲 ' + d.msg.replace(/<[^>]+>/g, ''));
+  }
+};
+
+// ── CHAT DE SALA ──────────────────────────────────────────
+let chatRef = null;
+let myChatKeys = new Set();
+let _unreadCount = 0;
+let _chatVisible = true;
+
+function initChat() {
+  if (!roomRef) return;
+  chatRef = roomRef.child('chat');
+  // Cargar últimos 30 mensajes
+  chatRef.orderByChild('ts').limitToLast(30).once('value', snap => {
+    const entries = [];
+    snap.forEach(c => entries.push({ key: c.key, ...c.val() }));
+    entries.forEach(msg => renderChatMsg(msg, false));
+    // Escuchar nuevos
+    const lastTs = entries.length > 0 ? entries[entries.length-1].ts : Date.now();
+    chatRef.orderByChild('ts').startAt(lastTs + 1).on('child_added', snap => {
+      const msg = snap.val();
+      if (!msg) return;
+      if (myChatKeys.has(snap.key)) { myChatKeys.delete(snap.key); return; }
+      renderChatMsg({ key: snap.key, ...msg }, true);
+      if (!_chatVisible) {
+        _unreadCount++;
+        const dot = document.getElementById('chatUnreadDot');
+        if (dot) dot.classList.add('show');
+      }
+      showActionNotif(`💬 ${msg.author}: ${msg.text}`);
+    });
+  });
+}
+
+function renderChatMsg(msg, isNew) {
+  const isMe = msg.author === userName;
+  const logs = ['chatLog', 'mobileChatLog'];
+  logs.forEach(logId => {
+    const log = document.getElementById(logId);
+    if (!log) return;
+    const div = document.createElement('div');
+    div.className = 'chat-msg' + (isMe ? ' chat-me' : '') + (msg.system ? ' chat-system' : '');
+    if (msg.system) {
+      div.innerHTML = `<span style="opacity:.6">${msg.text}</span>`;
+    } else {
+      const hh = new Date(msg.ts).getHours().toString().padStart(2,'0');
+      const mm = new Date(msg.ts).getMinutes().toString().padStart(2,'0');
+      div.innerHTML = `<span class="chat-author">${msg.author}</span><span style="opacity:.5;font-size:.6rem;margin-right:4px;">${hh}:${mm}</span>${msg.text}`;
+    }
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    // Límite de 50 mensajes visibles
+    while (log.children.length > 50) log.removeChild(log.firstChild);
+  });
+}
+
+function sendChat(inputId) {
+  const inp = document.getElementById(inputId || 'chatInput');
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text || !roomRef) return;
+  const msg = { author: userName || 'Anónimo', text, ts: Date.now() };
+  const ref = chatRef.push();
+  myChatKeys.add(ref.key);
+  ref.set(msg);
+  // Mostrar inmediatamente local
+  renderChatMsg({ key: ref.key, ...msg }, true);
+  inp.value = '';
+}
+
+function sendChatOnEnter(e, inputId) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(inputId); }
+}
+
+// Re-init chat cuando se conecta a sala
+const _origConnectRoom = window.connectRoom;
+window.connectRoom = function(code) {
+  _origConnectRoom && _origConnectRoom(code);
+  setTimeout(initChat, 800); // esperar que roomRef esté listo
+  hideLoadingScreen();
+};
+
+// ── TOGGLE NOMBRES EN EL MAPA ─────────────────────────────
+let _showTokenNames = localStorage.getItem('bnhrpg_shownames') !== 'false';
+
+function toggleTokenNames() {
+  _showTokenNames = !_showTokenNames;
+  localStorage.setItem('bnhrpg_shownames', _showTokenNames);
+  const cb = document.getElementById('cbTokenNames');
+  if (cb) cb.checked = _showTokenNames;
+  redraw();
+}
+
+// Parchear drawTok para mostrar nombres
+// Se inyecta después del texto del símbolo
+const _origDrawTok = window.drawTok;
+window.drawTok = function(t, isDragging) {
+  _origDrawTok && _origDrawTok(t, isDragging);
+  if (!_showTokenNames || !t) return;
+  // Calcular posición del token
+  const CS = window.CS || 38;
+  const x = isDragging
+    ? (window.drag && window.drag.x ? window.drag.x : t.c * CS + CS/2)
+    : t.c * CS + CS/2;
+  const y = isDragging
+    ? (window.drag && window.drag.y ? window.drag.y : t.r * CS + CS/2)
+    : t.r * CS + CS/2;
+  // Nombre debajo del token
+  const ctx = document.getElementById('cv')?.getContext('2d');
+  if (!ctx) return;
+  ctx.save();
+  ctx.font = `bold ${Math.max(7, Math.floor(CS * .22))}px 'Cinzel', serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  const name = t.name.length > 8 ? t.name.slice(0,7) + '…' : t.name;
+  const tw = ctx.measureText(name).width;
+  // Sombra de fondo
+  ctx.fillStyle = 'rgba(0,0,0,.65)';
+  ctx.beginPath();
+  ctx.roundRect(x - tw/2 - 2, y + CS/2 + 1, tw + 4, 10, 2);
+  ctx.fill();
+  ctx.fillStyle = t.id === window.selId ? '#f1c40f' : '#e8d5a8';
+  ctx.fillText(name, x, y + CS/2 + 2);
+  ctx.restore();
+};
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Solo cuando no hay input activo
+  if (document.activeElement.tagName === 'INPUT' ||
+      document.activeElement.tagName === 'TEXTAREA' ||
+      document.activeElement.tagName === 'SELECT') return;
+
+  switch(e.key) {
+    case 'Escape':
+      // Ya manejado por closePwModal
+      break;
+    case 'n': case 'N':
+      // Toggle nombres en el mapa
+      if (e.ctrlKey || e.metaKey) break;
+      toggleTokenNames();
+      break;
+    case ' ':
+      // Siguiente turno (solo DM o con Ctrl)
+      if (isAdmin()) { e.preventDefault(); nextTurn(); }
+      break;
+    case 'z': case 'Z':
+      if (e.ctrlKey || e.metaKey) { e.preventDefault(); undoMove(); }
+      break;
+    case 'Delete':
+    case 'Backspace':
+      if (e.target === document.body && selId) {
+        e.preventDefault();
+        // No hacer nada aquí - evitar borrado accidental
+      }
+      break;
+  }
+});
+
+// ── MEJORA: Mostrar HP/STAM como texto en el canvas ────────
+// Se agrega al drawTok existente via override en redraw
+const _origRedraw = window.redraw;
+window.redraw = function() {
+  _origRedraw && _origRedraw();
+  // Post-process: nada extra aquí, ya manejado en drawTok override
+};
+
+// ── SINCRONIZAR PRESENCIA AL CAMBIAR NOMBRE ───────────────
+// Ya manejado por syncAccountToPresence, pero aseguramos que el userName
+// global se actualice cuando el DM hace login
+
+// ── INIT ──────────────────────────────────────────────────
+(function v2Init() {
+  // Inicializar checkbox de nombres
+  setTimeout(() => {
+    const cb = document.getElementById('cbTokenNames');
+    if (cb) cb.checked = _showTokenNames;
+  }, 500);
+
+  // Version badge en topbar
+  const topbar = document.getElementById('topbar');
+  if (topbar) {
+    const badge = topbar.querySelector('#versionBadge');
+    if (!badge) {
+      const b = document.createElement('span');
+      b.id = 'versionBadge';
+      b.textContent = 'v2.0';
+      b.title = 'BNH RPG v2.0';
+      topbar.insertBefore(b, topbar.children[1] || null);
+    }
+  }
+})();
 
 </script>
 </body>
