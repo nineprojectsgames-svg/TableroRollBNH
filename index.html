@@ -8197,6 +8197,31 @@ let af=0;
   0%,100% { transform: translateX(-50%) translateY(0); }
   50%      { transform: translateX(-50%) translateY(-5px); }
 }
+
+/* ── TOOLTIP de descripciones ─────────────────────────────── */
+#descTooltip {
+  font-family: 'Crimson Text', serif !important;
+  letter-spacing: 0.2px;
+}
+
+/* ── Botones de turno: DM-only styling ───────────────────── */
+/* Si no sos DM los botones de turno se ven más apagados */
+.turn-controls .btn:not(.btn-red) {
+  transition: opacity .2s;
+}
+
+/* ── habResult mejorado ──────────────────────────────────── */
+#habResult {
+  font-size: .8rem !important;
+  padding: 8px 10px !important;
+  border-radius: 5px !important;
+  border-left: 3px solid var(--gld) !important;
+  background: rgba(200,148,26,.1) !important;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+#habResult b { color: var(--gld2); }
+
 </style>
 
 <button id="pwaInstallBtn" aria-label="Instalar aplicación">
@@ -11306,6 +11331,343 @@ window.redraw = function() {
     }
   }
 })();
+
+</script>
+<script>
+// ════════════════════════════════════════════════════════════
+//  FIX 1: enviarAlMapa — contraseña + stam de habilidades
+// ════════════════════════════════════════════════════════════
+// Reemplazada abajo con patch a la función existente
+
+// ════════════════════════════════════════════════════════════
+//  FIX 2 & 3: TURNO GLOBAL — solo DM avanza, Firebase sync
+// ════════════════════════════════════════════════════════════
+
+// Guardar turnIndex y turnRound en Firebase
+function fbSyncTurn() {
+  if (!roomRef) return;
+  roomRef.child('turn').set({ index: turnIndex, round: turnRound, ts: Date.now() });
+}
+
+// Escuchar cambios de turno desde Firebase (para los jugadores)
+function listenTurn() {
+  if (!roomRef) return;
+  roomRef.child('turn').on('value', snap => {
+    const d = snap.val();
+    if (!d) return;
+    // Solo aplicar si viene de otro cliente (evitar loop)
+    if (d.ts && Math.abs(d.ts - Date.now()) < 200) return; // muy reciente = propio
+    const prev = turnIndex;
+    turnIndex = d.index || 0;
+    turnRound = d.round || 1;
+    // Seleccionar la ficha del turno activo
+    const order = getTurnOrder();
+    if (order[turnIndex]) selId = order[turnIndex].id;
+    refresh();
+    refreshTurns();
+    redraw();
+  });
+}
+
+// Parchear nextTurn para que solo el DM pueda avanzar y sincronice
+const _origNextTurn = window.nextTurn;
+window.nextTurn = function() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede avanzar el turno');
+    return;
+  }
+  _origNextTurn && _origNextTurn();
+  fbSyncTurn();
+};
+
+// Parchear prevTurn
+const _origPrevTurn = window.prevTurn;
+window.prevTurn = function() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede mover el turno');
+    return;
+  }
+  _origPrevTurn && _origPrevTurn();
+  fbSyncTurn();
+};
+
+// Parchear resetTurns
+const _origResetTurns = window.resetTurns;
+window.resetTurns = function() {
+  if (!isAdmin()) return;
+  _origResetTurns && _origResetTurns();
+  fbSyncTurn();
+};
+
+// Enganchar listenTurn al conectar la sala
+const _origConnectRoom2 = window.connectRoom;
+window.connectRoom = function(code) {
+  _origConnectRoom2 && _origConnectRoom2(code);
+  setTimeout(listenTurn, 1000);
+};
+
+// ════════════════════════════════════════════════════════════
+//  FIX 4: TOOLTIP para descripciones largas en la ficha
+// ════════════════════════════════════════════════════════════
+
+// Crear el tooltip DOM una sola vez
+(function createDescTooltip() {
+  if (document.getElementById('descTooltip')) return;
+  const tt = document.createElement('div');
+  tt.id = 'descTooltip';
+  tt.style.cssText = `
+    position: fixed;
+    z-index: 9999;
+    max-width: 320px;
+    background: #12080c;
+    border: 1px solid var(--gld, #c8941a);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: .78rem;
+    color: #f4e4b8;
+    line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,.7);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Crimson Text', serif;
+  `;
+  document.body.appendChild(tt);
+})();
+
+let _ttTimer = null;
+
+function showDescTooltip(e, text) {
+  if (!text || text.length < 20) return; // no mostrar para textos cortos
+  const tt = document.getElementById('descTooltip');
+  if (!tt) return;
+  tt.textContent = text;
+  positionTooltip(e, tt);
+  tt.style.opacity = '1';
+}
+
+function hideDescTooltip() {
+  const tt = document.getElementById('descTooltip');
+  if (tt) tt.style.opacity = '0';
+}
+
+function positionTooltip(e, tt) {
+  const x = e.clientX + 14;
+  const y = e.clientY - 10;
+  const W = window.innerWidth, H = window.innerHeight;
+  tt.style.left = (x + 330 > W ? e.clientX - 334 : x) + 'px';
+  tt.style.top  = (y + 120 > H ? e.clientY - 120 : y) + 'px';
+}
+
+// Agregar tooltips a los inputs de descripción en la tabla de habilidades
+// lo hacemos con event delegation en el rightCol
+document.addEventListener('mouseover', function(e) {
+  const el = e.target;
+  // Solo en inputs/textareas con placeholder que contengan "Desc" o "desc"
+  if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') &&
+      el.value && el.value.length >= 20 &&
+      (el.classList.contains('hab-input') || el.classList.contains('equip-input') ||
+       el.classList.contains('pasiva-input') || el.type === 'text')) {
+    // Check if it's a description field (by class or placeholder)
+    const isDesc = el.placeholder && 
+      (el.placeholder.toLowerCase().includes('desc') || 
+       el.placeholder.includes('...') ||
+       el.classList.contains('cfh-desc') ||
+       el.classList.contains('equip-input'));
+    if (isDesc) {
+      showDescTooltip(e, el.value);
+    }
+  }
+});
+
+document.addEventListener('mousemove', function(e) {
+  const tt = document.getElementById('descTooltip');
+  if (tt && tt.style.opacity === '1') {
+    positionTooltip(e, tt);
+  }
+});
+
+document.addEventListener('mouseout', function(e) {
+  const el = e.target;
+  if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+    hideDescTooltip();
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+//  FIX 5: usarHabilidad — Toast grande para el que la usa
+//          + Notificación pequeña para los demás
+// ════════════════════════════════════════════════════════════
+const _origUsarHabilidad = window.usarHabilidad;
+window.usarHabilidad = function(idx) {
+  // Capturar estado antes
+  const t = selId && tokens[selId] ? tokens[selId] : null;
+  const habs = t ? (t.sh.habilidades || []) : [];
+  const h = habs[idx];
+
+  if (!t || !h) { _origUsarHabilidad && _origUsarHabilidad(idx); return; }
+
+  const cost = parseFloat(h.est) || 0;
+  const estActual = t.sh.est_c || 0;
+  if (cost > 0 && estActual < cost) {
+    // Sin stamina - mostrar toast de error
+    showToast('⚠ STAM', h.nombre || 'Habilidad', `Estamina insuficiente (${estActual}/${cost})`, 'fail');
+    _origUsarHabilidad && _origUsarHabilidad(idx);
+    return;
+  }
+
+  // Llamar la función original (que hace el roll y el log)
+  _origUsarHabilidad && _origUsarHabilidad(idx);
+
+  // Leer el resultado del habResult div que acaba de llenarse
+  const habResEl = document.getElementById('habResult');
+  const resultHTML = habResEl ? habResEl.innerHTML : '';
+
+  // Extraer datos del resultado para el toast
+  const statVal = h.stat ? getStatTotal(h.stat) : 0;
+  const rollGolpe = extractLastRoll(resultHTML);
+  const isCrit = resultHTML.includes('CRÍTICO');
+  const isFail = resultHTML.includes('PIFIA');
+  const danoMatch = resultHTML.match(/Daño:\s*<b>([^<]+)<\/b>/);
+  const danoStr = danoMatch ? danoMatch[1] : null;
+
+  // Toast grande para el que lo usó
+  const toastTotal = rollGolpe !== null ? rollGolpe : (isCrit ? '¡CRIT!' : isFail ? 'PIFIA' : '⚔');
+  const toastLabel = h.nombre || 'Habilidad';
+  const toastDetail = danoStr
+    ? `Golpe: ${rollGolpe} | Daño: ${danoStr}`
+    : `Golpe: ${rollGolpe}${isCrit ? ' ✨' : isFail ? ' 💀' : ''}`;
+
+  const mode = isCrit ? 'crit' : isFail ? 'fail' : 'normal';
+  showToast(toastTotal, toastLabel, toastDetail, mode);
+
+  // Publicar la habilidad a Firebase para que otros vean la notif
+  if (roomRef) {
+    const ts = Date.now();
+    const notifMsg = resultHTML.replace(/<[^>]+>/g, ''); // strip HTML for notif
+    roomRef.child('habnotif').set({ msg: notifMsg, html: resultHTML, ts });
+    // Auto-remove after 5s
+    setTimeout(() => roomRef.child('habnotif').remove(), 5000);
+  }
+};
+
+// Escuchar notificaciones de habilidades de otros jugadores
+function listenHabNotif() {
+  if (!roomRef) return;
+  let lastTs = 0;
+  roomRef.child('habnotif').on('value', snap => {
+    const d = snap.val();
+    if (!d || !d.ts || d.ts <= lastTs) return;
+    lastTs = d.ts;
+    // No mostrar si es reciente y es mío (evitar doble notif)
+    if (Math.abs(d.ts - Date.now()) < 300) return;
+    // Mostrar como notif pequeña para los demás
+    showActionNotif('⚔ ' + (d.msg || '').substring(0, 80));
+  });
+}
+
+// Engancharlo al connect
+const _origConnectRoom3 = window.connectRoom;
+window.connectRoom = function(code) {
+  _origConnectRoom3 && _origConnectRoom3(code);
+  setTimeout(listenHabNotif, 1200);
+};
+
+// Helper: extrae el número de roll del HTML del habResult
+function extractLastRoll(html) {
+  const m = html.match(/d20\((\d+)\)/);
+  return m ? parseInt(m[1]) : null;
+}
+
+// ════════════════════════════════════════════════════════════
+//  FIX 1: enviarAlMapa — contraseña Y stam completa
+// ════════════════════════════════════════════════════════════
+// Patch the existing enviarAlMapa to add password and fix stam field name
+const _origEnviarAlMapa = window.enviarAlMapa;
+window.enviarAlMapa = function() {
+  // Call original
+  if (!window._enviarAlMapaPatched) {
+    window._enviarAlMapaPatched = true;
+  }
+
+  const ch = recogerDatosPersonaje();
+  const tok = {
+    id: 't_' + Date.now().toString(36),
+    name: ch.nombre || 'Personaje',
+    sym: ch.sym || (ch.nombre||'?')[0].toUpperCase(),
+    color: ch.color || '#c8941a',
+    c: 0, r: 0,
+    sh: {
+      nivel: ch.nivel, clase: ch.clase, espec: ch.espec, subclase: ch.subclase,
+      pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
+      bPod: ch.bPod||0, bAgi: ch.bAgi||0, bRes: ch.bRes||0, bTec: ch.bTec||0, bInt: ch.bInt||0,
+      vida_c: ch.vida_c, vida_m: ch.vida_m,
+      est_c: ch.est_c, est_m: ch.est_m,
+      xp_c: ch.xp_c||0, xp_m: ch.xp_m||10,
+      hp_temp: ch.hp_temp||0,
+      plus_ultra: ch.plus_ultra||false,
+      estados: ch.estados||{},
+      bvVel: ch.bvVel||0, bvDef: ch.bvDef||0, bvIni: ch.bvIni||0, bvReg: ch.bvReg||0,
+      mov: ch.mov||1, acc: ch.acc||1, acca: ch.acca||0, rea: ch.rea||1,
+      cua: ch.cua||0, yh: ch.yh||0, ct: ch.ct||0, mer: ch.mer||0,
+      fue:0,intim:0,eva:0,acr:0,sig:0,agu:0,vol:0,ctq:0,ing:0,tac:0,per:0,eng:0,inv:0,prc:0,
+      baFue:ch.baFue||0,baIntim:ch.baIntim||0,baEva:ch.baEva||0,baAcr:ch.baAcr||0,baSig:ch.baSig||0,
+      baAgu:ch.baAgu||0,baVol:ch.baVol||0,baCtq:ch.baCtq||0,baIng:ch.baIng||0,baTac:ch.baTac||0,
+      baPer:ch.baPer||0,baEng:ch.baEng||0,baInv:ch.baInv||0,baPrc:ch.baPrc||0,
+      compFue:ch.compFue||false,compIntim:ch.compIntim||false,compEva:ch.compEva||false,
+      compAcr:ch.compAcr||false,compSig:ch.compSig||false,compAgu:ch.compAgu||false,
+      compVol:ch.compVol||false,compCtq:ch.compCtq||false,compIng:ch.compIng||false,
+      compTac:ch.compTac||false,compPer:ch.compPer||false,compEng:ch.compEng||false,
+      compInv:ch.compInv||false,compPrc:ch.compPrc||false,
+      // ── HABILIDADES con stam correcto ──
+      habilidades: (ch.habilidades||[]).map((h,i) => ({
+        id: 'h'+i,
+        nombre: h.nombre||'',
+        stat: h.stat||'pod',
+        dano: h.dano||'',
+        rango: h.rango||'',
+        stam: parseInt(h.stam)||0,   // FIX: usar h.stam (campo correcto del gestor)
+        est: parseInt(h.stam)||0,    // FIX: también est para compatibilidad con usarHabilidad
+        golpe: 0,
+        desc: h.desc||'',
+        tipo_uso: 'accion'
+      })),
+      pasivas: ch.pasivas||[],
+      equipo: ch.equipo||{},
+      inventario: ch.inventario||[],
+      notas: ch.notas||'',
+      show_vida: true, show_est: true, show_hptemp: true,
+    }
+  };
+
+  // ── FIX: Contraseña del personaje ──
+  const pwField = document.getElementById('cf_password');
+  const pw = pwField ? pwField.value.trim() : '';
+  // También verificar si el personaje guardado en Firebase tiene contraseña
+  const savedPw = (editingCharId && myChars[editingCharId]) ? myChars[editingCharId].password : '';
+  const finalPw = pw || savedPw || '';
+  if (finalPw) {
+    tok.pwHash = typeof simpleHash === 'function' ? simpleHash(finalPw) : finalPw;
+  }
+
+  if (typeof tokens !== 'undefined') {
+    tokens[tok.id] = tok;
+    if (typeof unlockedIds !== 'undefined') unlockedIds.add(tok.id);
+    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
+    if (typeof refresh === 'function') refresh();
+    if (typeof redraw === 'function') redraw();
+    switchSection('jugar');
+    const pwNote = finalPw ? ' 🔒' : '';
+    setTimeout(() => {
+      if (typeof addLog === 'function')
+        addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes${pwNote}.`);
+    }, 300);
+  } else {
+    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
+  }
+};
 
 </script>
 </body>
