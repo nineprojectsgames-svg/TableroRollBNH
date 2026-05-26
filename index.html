@@ -8509,6 +8509,15 @@ canvas {
   padding: 5px;
 }
 
+@media (max-width: 900px) {
+  #radarStatsChart, #barDerivedChart {
+    width: 260px !important;
+    height: 260px !important;
+    max-width: 260px !important;
+    margin: 0 auto;
+    display: block;
+  }
+}
 </style>
 
 <button id="pwaInstallBtn" aria-label="Instalar aplicación">
@@ -12471,65 +12480,53 @@ async function adminResetPassword() {
 }
 
 (function() {
-  // Esperar a que Chart.js cargue
+  // Función para inicializar gráficos si no existen
   function asegurarGraficos() {
     if (typeof Chart === 'undefined') {
       setTimeout(asegurarGraficos, 200);
       return;
     }
     if (!window.radarChart && document.getElementById('radarStatsChart')) {
-      if (typeof initGraficos === 'function') initGraficos();
+      initGraficos();
     }
-    // Actualizar datos si hay personaje
+    // Si hay personaje cargado, actualizar datos
     if (window.currentEditingCharData && window.radarChart && window.barChart) {
       actualizarGraficos();
-    } else {
-      // Mostrar valores por defecto
-      const defaultElements = ['cfGraficoNivel', 'cfGraficoClase', 'cfGraficoEspec', 'cfGraficoSub', 'cfGraficoBC', 'cfGraficoXP', 'cfGraficoXPMax'];
-      defaultElements.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.textContent === '') {
-          if (id === 'cfGraficoNivel') el.textContent = '1';
-          else if (id === 'cfGraficoBC') el.textContent = '+2';
-          else if (id === 'cfGraficoXP') el.textContent = '0';
-          else if (id === 'cfGraficoXPMax') el.textContent = '10';
-          else el.textContent = '—';
-        }
-      });
-      const bar = document.getElementById('cfGraficoBarXP');
-      if (bar && bar.style.width === '0%') bar.style.width = '0%';
     }
   }
 
   // Cuando se abre la sección Personajes
-  const observerSec = new MutationObserver(() => {
-    if (document.getElementById('secPersonajes')?.classList.contains('active')) {
+  const observerSec = new MutationObserver(function(mutations) {
+    const secPersonajes = document.getElementById('secPersonajes');
+    if (secPersonajes && secPersonajes.classList.contains('active')) {
       asegurarGraficos();
     }
   });
   observerSec.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-  // Cuando se selecciona un personaje (observer de cambios en el DOM)
-  const observerChar = new MutationObserver(() => {
+  // Cuando se selecciona un personaje (ya hay un observer más abajo, pero reforzamos)
+  const observerChar = new MutationObserver(function() {
     if (window.currentEditingCharData && window.radarChart && window.barChart) {
       actualizarGraficos();
-    } else if (window.currentEditingCharData) {
-      asegurarGraficos();
     }
   });
   observerChar.observe(document.body, { childList: true, subtree: true });
 
-  // Cuando se hace clic en la pestaña Gráficos
-  document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.cf-tab');
-    if (btn && btn.textContent.includes('Gráficos')) {
-      setTimeout(asegurarGraficos, 50);
-    }
-  });
+  // Cuando se hace clic en la pestaña Gráficos dentro del formulario
+  const graficosTab = document.querySelector('.cf-tab[onclick*="graficos"]');
+  if (graficosTab) {
+    graficosTab.addEventListener('click', function() {
+      setTimeout(() => {
+        asegurarGraficos();
+        if (window.currentEditingCharData) actualizarGraficos();
+      }, 50);
+    });
+  }
 
-  // Al cargar la página
+  // Ejecutar una vez al cargar la página
   document.addEventListener('DOMContentLoaded', asegurarGraficos);
 })();
+
 </script>
 </body>
 </html>
