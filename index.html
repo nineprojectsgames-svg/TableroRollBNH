@@ -3412,6 +3412,89 @@ select, textarea,
   color: var(--ink) !important;
 }
 
+/* ── CONTRASTE EN LISTA DE PERSONAJES (fondo oscuro) ── */
+.char-list-name {
+  color: #f4e4b8 !important;      /* blanco crema */
+}
+.char-list-meta {
+  color: #c8a96e !important;      /* dorado suave */
+}
+/* Al pasar el mouse */
+.char-list-card:hover .char-list-name {
+  color: #e8b430 !important;      /* dorado más brillante */
+}
+/* Tarjeta activa (seleccionada) */
+.char-list-card.active .char-list-name {
+  color: #ffd700 !important;      /* amarillo oro */
+}
+.char-list-card.active .char-list-meta {
+  color: #f4e4b8 !important;
+}
+
+/* ── BOTÓN ELIMINAR PERSONAJE MÁS VISIBLE ── */
+.char-list-del {
+  color: #e74c3c !important;   /* rojo claro */
+  opacity: 0.9 !important;
+  font-size: 1rem !important;
+  background: rgba(0,0,0,0.3) !important; /* fondo semitransparente para contraste */
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+.char-list-del:hover {
+  color: #ff6b6b !important;   /* rojo más brillante al pasar el mouse */
+  background: rgba(139,26,26,0.6) !important;
+  transform: scale(1.1) !important;
+  opacity: 1 !important;
+}
+
+/* ── SCROLL HORIZONTAL PARA LISTA DE PASIVAS ── */
+#pasivaList {
+  overflow-x: auto !important;
+  white-space: nowrap;
+  display: block;
+  width: 100%;
+  padding-bottom: 4px; /* espacio para la barra */
+}
+
+/* Cada pasiva se comporta como bloque en línea para que el scroll funcione */
+.pasiva-row {
+  display: inline-grid !important;
+  grid-template-columns: 180px 180px 160px 160px 90px 30px !important;
+  gap: 8px;
+  width: auto;
+  min-width: 100%;
+  margin-bottom: 8px;
+  background: rgba(200,160,100,.1);
+  border: 1px solid rgba(200,148,26,.25);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+/* Ajuste para móvil: ancho mínimo mayor */
+@media (max-width: 900px) {
+  .pasiva-row {
+    grid-template-columns: 140px 140px 130px 130px 70px 30px !important;
+    font-size: 0.75rem;
+  }
+}
+
+/* Estilo de la barra (opcional) */
+#pasivaList::-webkit-scrollbar {
+  height: 6px;
+}
+#pasivaList::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+}
+#pasivaList::-webkit-scrollbar-thumb {
+  background: var(--ps);
+  border-radius: 3px;
+}
 </style>
 </head>
 <body>
@@ -4594,15 +4677,15 @@ function redraw() {
   drawZones();
 
   // rango de movimiento — celdas alcanzables por la ficha seleccionada
-  if (selId && tokens[selId]) {
-    const t = tokens[selId];
-    // Usar getVelTotal (calcula desde sh, sin DOM) y restar mov ya usado
-    let vel = 0;
-    if (t.sh) {
-      const velTotal = getVelTotal(selId);
-      const movUsado = t.movUsado || 0;
-      vel = t.movLibre ? velTotal : Math.max(0, velTotal - movUsado);
-    }
+if (selId && tokens[selId]) {
+if (canEdit(selId) || isAdmin()) {
+  const t = tokens[selId];
+  let vel = 0;
+  if (t.sh) {
+    const velTotal = getVelTotal(selId);
+    const movUsado = t.movUsado || 0;
+    vel = t.movLibre ? velTotal : Math.max(0, velTotal - movUsado);
+  }
     if (vel > 0) {
       // resaltar todas las celdas dentro del rango de Manhattan (movimiento ortogonal + diagonal)
       // usamos distancia Chebyshev: max(|dc|, |dr|) <= vel  → cuadrado de (2*vel+1) x (2*vel+1)
@@ -4628,6 +4711,7 @@ function redraw() {
       ctx.setLineDash([]);
     }
   }
+}
 
   // grid
   for (let r = 0; r < ROWS; r++) {
@@ -4876,14 +4960,21 @@ buildZonaColors(); refreshObsList();
     redraw();
     return;
   }
-  const t = tokAt(p.c, p.r);
-  if (t) {
-    selObsId = null;
-    selId = t.id;
+const t = tokAt(p.c, p.r);
+if (t) {
+  selObsId = null;
+  selId = t.id;   // ✅ Siempre seleccionamos la ficha
+  // ✅ Solo permitir arrastrar si se puede editar o es DM
+  if (canEdit(t.id) || isAdmin()) {
     drag = { id:t.id, x:t.c*CS+CS/2, y:t.r*CS+CS/2, sc:t.c, sr:t.r };
     dragOff = { x:p.x-(t.c*CS+CS/2), y:p.y-(t.r*CS+CS/2) };
-  } else if (selId && !tokAt(p.c,p.r)) {
+  }
+}
+
+else if (selId && !tokAt(p.c,p.r)) {
+  if (canEdit(selId) || isAdmin()) {
     moveTok(selId, p.c, p.r);
+  }
   }
   refresh(); redraw();
 });
@@ -4958,16 +5049,16 @@ cv.addEventListener('touchstart', e => {
   if (zonaMode === 'none' && !placingObs) {
     // Solo marcar si hay ficha bajo el dedo para arrastrar
     if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-      const t = tokAt(p.c, p.r);
-      if (t) {
-        e.preventDefault();
-        selObsId = null;
-        selId = t.id;
-        touchIsDragging = true;
-        drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
-        dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
-        refresh(); redraw();
-      }
+const t = tokAt(p.c, p.r);
+if (t) {
+  selObsId = null;
+  selId = t.id;   // ✅ Siempre seleccionamos
+  if (canEdit(t.id) || isAdmin()) {
+    touchIsDragging = true;
+    drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
+    dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
+  }
+}
       // Sin ficha → no preventDefault → el browser scrollea
     }
     return;
@@ -5049,13 +5140,13 @@ cv.addEventListener('touchend', e => {
   touchIsDragging = false;
 
   // Tap rápido en celda vacía con ficha seleccionada → mover (solo en modo mover)
-  if (zonaMode === 'none' && duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
-    if (touchStartPos.c >= 0 && touchStartPos.c < COLS && touchStartPos.r >= 0 && touchStartPos.r < ROWS) {
-      moveTok(selId, touchStartPos.c, touchStartPos.r);
-      fbSet(selId);
-      refresh(); redraw();
-    }
+if (zonaMode === 'none' && duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
+  if (canEdit(selId) || isAdmin()) {
+    moveTok(selId, touchStartPos.c, touchStartPos.r);
+    fbSet(selId);
+    refresh(); redraw();
   }
+}
   hov = { c: -1, r: -1 };
   redraw();
 }, { passive: true });
@@ -5089,28 +5180,24 @@ function addToken() {
 function moveTok(id,c,r) {
   if(!tokens[id]) return;
   const t = tokens[id];
-  // Calcular casillas gastadas (distancia Chebyshev)
   const dist = Math.max(Math.abs(c - t.c), Math.abs(r - t.r));
-  // Acumular movimiento usado este turno (salvo que esté en modo libre)
   if (t.movUsado === undefined) t.movUsado = 0;
   if (!t.movLibre) t.movUsado += dist;
-  // guardar en historial
   history.push({ id, name:t.name, fromC:t.c, fromR:t.r, toC:c, toR:r, distMov:dist });
   if (history.length > MAX_HISTORY) history.shift();
   document.getElementById('btnUndo').style.display = 'inline-block';
-  // log con mov restante
   const velTotal = getVelTotal(id);
   const movRest  = t.movLibre ? velTotal : Math.max(0, velTotal - t.movUsado);
   const from = String.fromCharCode(65+t.c)+(t.r+1);
   const to   = String.fromCharCode(65+c)+(r+1);
   const libreTag = t.movLibre ? ' <span style="color:var(--gld)">[MOV LIBRE]</span>' : '';
   addLog('move', `<b>${t.name}</b> se movió de <b>${from}</b> → <b>${to}</b> (${dist} cas. | Mov restante: ${movRest}/${velTotal})${libreTag}`);
-  // mover
   t.c=c; t.r=r;
-  fbPatch(id, { c, r });
+  // 🔁 Guardar posición y movimiento usado en Firebase
+  fbPatch(id, { c, r, movUsado: t.movUsado });
   if(selId===id) document.getElementById('sPos').textContent=to;
   updateTokenPosInfo();
-  refreshTurns(); // actualizar chips M
+  refreshTurns();
   redraw();
 }
 
@@ -5729,16 +5816,22 @@ function undoMove() {
 // Restaurar movimiento de una ficha manualmente (DM)
 function resetMovTok(id) {
   if (!tokens[id]) return;
+  if (!canEdit(id) && !isAdmin()) return;   // ← Línea nueva
   tokens[id].movUsado = 0;
+  fbPatch(id, { movUsado: 0 });
   refreshTurns();
   redraw();
+  addLog('move', `↺ <b>${tokens[id].name}</b> ha restaurado su movimiento.`);
 }
 
 // Activar/desactivar modo movimiento libre (no gasta mov restante)
 function setMovLibre(id, val) {
   if (!tokens[id]) return;
+  if (!canEdit(id) && !isAdmin()) return;   // ← Línea nueva
   tokens[id].movLibre = val;
-  // No hace falta refreshTurns, el checkbox ya está renderizado
+  fbPatch(id, { movLibre: val });
+  refreshTurns();
+  redraw();
 }
 
 // ── ORDEN DE TURNO ───────────────────────────────────────────────
@@ -5840,22 +5933,24 @@ function refreshTurns() {
         : '#2980b9';
 
     // Bloque de movimiento (separado, más prominente)
-    const movBlock = `
-      <div class="tc-mov-block" onclick="event.stopPropagation()">
-        <span class="tc-mov-num" style="color:${mClr};">${movRest}</span>
-        <span class="tc-mov-sep">/</span>
-        <span class="tc-mov-tot">${velTotal}</span>
-        <span class="tc-mov-lbl">mov</span>
-        ${movUsado > 0
-          ? `<button class="tc-mov-reset" onclick="resetMovTok('${t.id}');event.stopPropagation();" title="Restaurar movimiento">↺</button>`
-          : ''}
-        <label class="tc-libre-lbl" title="Mover sin gastar movimiento restante">
-          <input type="checkbox" class="tc-libre-chk" id="libre_${t.id}"
-            onchange="setMovLibre('${t.id}',this.checked);event.stopPropagation();"
-            ${t.movLibre ? 'checked' : ''}>
-          <span>Libre</span>
-        </label>
-      </div>`;
+  const libreDisabled = (!canEdit(t.id) && !isAdmin()) ? 'disabled' : '';   // 👈 AGREGAR ESTA LÍNEA
+
+  const movBlock = `
+    <div class="tc-mov-block" onclick="event.stopPropagation()">
+      <span class="tc-mov-num" style="color:${mClr};">${movRest}</span>
+      <span class="tc-mov-sep">/</span>
+      <span class="tc-mov-tot">${velTotal}</span>
+      <span class="tc-mov-lbl">mov</span>
+      ${movUsado > 0
+        ? `<button class="tc-mov-reset" onclick="resetMovTok('${t.id}');event.stopPropagation();" title="Restaurar movimiento">↺</button>`
+        : ''}
+      <label class="tc-libre-lbl" title="Mover sin gastar movimiento restante">
+        <input type="checkbox" class="tc-libre-chk" id="libre_${t.id}"
+          onchange="setMovLibre('${t.id}',this.checked);event.stopPropagation();"
+          ${t.movLibre ? 'checked' : ''} ${libreDisabled}>
+        <span>Libre</span>
+      </label>
+    </div>`;
 
     // Chips A/Aa/R — M siempre presente con valor base de la ficha
     const mov  = sh.mov  ?? 1;
@@ -5898,40 +5993,52 @@ function refreshTurns() {
 }
 
 function nextTurn() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede avanzar el turno');
+    return;
+  }
   const order = getTurnOrder();
   if (order.length === 0) return;
-  // Resetear movimiento del turno anterior
+  // Resetear movimiento del turno anterior (opcional, normalmente se resetea al empezar su turno)
   const prev = order[turnIndex];
-  if (prev) prev.movUsado = 0;
+  if (prev) {
+    prev.movUsado = 0;
+    fbPatch(prev.id, { movUsado: 0 });
+  }
 
   turnIndex = (turnIndex + 1) % order.length;
   if (turnIndex === 0) turnRound++;
   const t = order[turnIndex];
   selId = t.id;
-  // Resetear movimiento del nuevo turno
+  // Resetear movimiento del NUEVO turno
   t.movUsado = 0;
+  fbPatch(t.id, { movUsado: 0 });
 
-  // regenerar estamina al inicio del turno (solo si está activado)
+  // Regenerar estamina si está activado
   const autoRegenOn = document.getElementById('autoRegen')?.checked || document.getElementById('mAutoRegen')?.checked;
   if (t.sh && autoRegenOn) {
     const reg  = (t.sh.reg||0) + (t.sh.bvReg||0);
     const max  = t.sh.est_m || 100;
-    const prev2 = t.sh.est_c || 0;
+    const prevEst = t.sh.est_c || 0;
     if (reg > 0) {
-      t.sh.est_c = Math.min(max, prev2 + reg);
+      t.sh.est_c = Math.min(max, prevEst + reg);
       fbPatch(t.id, { 'sh/est_c': t.sh.est_c });
-      const gained = t.sh.est_c - prev2;
-      addLog('spawn', `💛 <b>${t.name}</b> recuperó <b>${gained}</b> de estamina (${t.sh.est_c}/${max})`);
+      addLog('spawn', `💛 <b>${t.name}</b> recuperó ${t.sh.est_c - prevEst} de estamina (${t.sh.est_c}/${max})`);
     }
   }
 
   refresh();
   refreshTurns();
   redraw();
+  fbSyncTurn(); // ya existe, guarda índice y ronda en Firebase
   addLog('move', `🎲 Turno de <b>${t.name}</b> — Ronda ${turnRound}`);
 }
 
 function prevTurn() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede mover el turno');
+    return;
+  }
   const order = getTurnOrder();
   if (order.length === 0) return;
   turnIndex = (turnIndex - 1 + order.length) % order.length;
@@ -5940,6 +6047,7 @@ function prevTurn() {
   refresh();
   refreshTurns();
   redraw();
+  fbSyncTurn();
 }
 
 function resetTurns() {
@@ -6535,14 +6643,15 @@ function connectRoom(code) {
         if (!v || typeof v !== 'object') return [tid, null];
         const existing = prevTokens[tid] || {};
         const merged = {
-          // Campos raíz con fallback al local si Firebase los perdió
-          id:     tid,
-          name:   v.name   ?? existing.name   ?? '?',
-          sym:    v.sym    ?? existing.sym     ?? '?',
-          color:  v.color  ?? existing.color   ?? '#888',
-          c:      v.c      !== undefined ? v.c : (existing.c ?? 0),
-          r:      v.r      !== undefined ? v.r : (existing.r ?? 0),
-        };
+  id: tid,
+  name: v.name ?? existing.name ?? '?',
+  sym: v.sym ?? existing.sym ?? '?',
+  color: v.color ?? existing.color ?? '#888',
+  c: v.c !== undefined ? v.c : (existing.c ?? 0),
+  r: v.r !== undefined ? v.r : (existing.r ?? 0),
+  movUsado: v.movUsado !== undefined ? v.movUsado : (existing.movUsado ?? 0),
+  movLibre: v.movLibre !== undefined ? v.movLibre : (existing.movLibre ?? false)
+};
         if (v.pwHash)   merged.pwHash   = v.pwHash;
         if (v.pwHash === null && existing.pwHash) merged.pwHash = existing.pwHash;
 
@@ -6838,17 +6947,19 @@ function usarHabilidad(idx) {
   if (cost > 0 && estActual < cost) {
     const r = document.getElementById('habResult');
     r.className = 'show';
-    r.innerHTML = `⚠ <b>${h.nombre||'Habilidad'}</b> — Sin estamina suficiente (${estActual}/${cost})`;
-    setTimeout(()=>r.classList.remove('show'), 3000);
+    r.innerHTML = `⚠ <b>${h.nombre || 'Habilidad'}</b> — Sin estamina suficiente (${estActual}/${cost})`;
+    setTimeout(() => r.classList.remove('show'), 3000);
+    // Toast de error
+    showToast('⚠ STAM', h.nombre || 'Habilidad', `Estamina insuficiente (${estActual}/${cost})`, 'fail');
     return;
   }
 
   // Tirar dado de golpe (d20 + stat si aplica)
   const statVal = h.stat ? getStatTotal(h.stat) : 0;
   const golpeBase = parseFloat(h.golpe) || 0;
-  const rango     = parseFloat(h.rango) || 0;
+  const rango = parseFloat(h.rango) || 0;
 
-  const rollGolpe = Math.floor(Math.random()*20)+1;
+  const rollGolpe = Math.floor(Math.random() * 20) + 1;
   const totalGolpe = rollGolpe + statVal + golpeBase;
   const danoResult = h.dano ? parseDice(h.dano) : null;
   const isCrit = rollGolpe === 20;
@@ -6858,7 +6969,6 @@ function usarHabilidad(idx) {
   if (cost > 0) {
     t.sh.est_c = Math.max(0, estActual - cost);
     fbPatch(selId, { 'sh/est_c': t.sh.est_c });
-    // actualizar input visible
     const estEl = document.getElementById('fEstC');
     if (estEl) estEl.value = t.sh.est_c;
     ub();
@@ -6866,9 +6976,9 @@ function usarHabilidad(idx) {
   }
 
   // Construir mensaje
-  const statLbl = h.stat ? STATS_LIST.find(s=>s.v===h.stat)?.l||h.stat : '';
-  let msg = `⚔ <b>${t.name}</b> usa <b>${h.nombre||'Habilidad'}</b>`;
-  msg += ` — Golpe: d20(${rollGolpe})${statVal?'+'+statVal+' '+statLbl:''}${golpeBase?'+'+golpeBase:''}`;
+  const statLbl = h.stat ? STATS_LIST.find(s => s.v === h.stat)?.l || h.stat : '';
+  let msg = `⚔ <b>${t.name}</b> usa <b>${h.nombre || 'Habilidad'}</b>`;
+  msg += ` — Golpe: d20(${rollGolpe})${statVal ? '+' + statVal + ' ' + statLbl : ''}${golpeBase ? '+' + golpeBase : ''}`;
   msg += ` = <b>${totalGolpe}</b>`;
   if (danoResult && danoResult.total > 0) msg += ` | Daño: <b>${danoResult.str}</b>`;
   if (rango > 0) msg += ` | Rango: ${rango}`;
@@ -6876,13 +6986,34 @@ function usarHabilidad(idx) {
   if (isCrit) msg += ' ✨ <b>¡CRÍTICO!</b>';
   if (isFail) msg += ' 💀 <b>¡PIFIA!</b>';
 
-  // Mostrar resultado
+  // Mostrar resultado en el panel
   const r = document.getElementById('habResult');
   r.className = 'show';
   r.innerHTML = msg;
 
-  // Al log compartido
-  addLog(isCrit?'spawn':isFail?'del':'move', msg);
+  // ========== TOAST GRANDE (similar a acciones) ==========
+  const toastLabel = h.nombre || 'Habilidad';
+  let toastTotal = '';
+  let toastDetail = '';
+
+  if (isFail) {
+    toastTotal = 'PIFIA';
+    toastDetail = `d20(1) — Fallo total`;
+  } else if (isCrit) {
+    toastTotal = 'CRÍTICO';
+    toastDetail = `Golpe: d20(20) → ${totalGolpe} | Daño: ${danoResult ? danoResult.str : '?'}`;
+  } else {
+    toastTotal = totalGolpe;
+    toastDetail = `Golpe: d20(${rollGolpe})${statVal ? '+' + statVal : ''}${golpeBase ? '+' + golpeBase : ''}`;
+    if (danoResult && danoResult.total > 0) toastDetail += ` | Daño: ${danoResult.str}`;
+  }
+
+  const mode = isCrit ? 'crit' : isFail ? 'fail' : 'normal';
+  showToast(toastTotal, toastLabel, toastDetail, mode);
+  // ========================================================
+
+  // Log compartido
+  addLog(isCrit ? 'spawn' : isFail ? 'del' : 'move', msg);
 }
 
 function renderHabilidades() {
@@ -9270,6 +9401,7 @@ let af=0;
       <thead><tr>
         <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:70px;">Nombre</th>
         <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:42px;">Stat</th>
+        <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:42px;">Golpe</th>
         <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:38px;">Daño</th>
         <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:40px;">Rango</th>
         <th style="font-family:'Cinzel',serif;font-size:.58rem;padding:3px 4px;border:1px solid rgba(0,0,0,.15);background:rgba(200,148,26,.18);min-width:38px;">Est.</th>
@@ -9380,12 +9512,12 @@ let af=0;
   </div>
 
   <!-- Acciones de guardado -->
-  <div class="ptitle" style="margin-top:6px;">💾 Acciones</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
-    <button class="btn btn-gld btn-sm" onclick="guardarPersonaje()">💾 Guardar</button>
-    <button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" onclick="exportarPersonajeActual()">⬇ Exportar JSON</button>
-    <button class="btn btn-sm" style="background:none;border:1px solid var(--ps);color:var(--ink2);" onclick="enviarAlMapa()" title="Crea una ficha en el mapa con este personaje">🗺 Enviar al Mapa</button>
-  </div>
+<div class="ptitle" style="margin-top:6px;">💾 Acciones</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+  <button class="btn btn-gld btn-sm" onclick="guardarPersonaje()">💾 Guardar</button>
+  <button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" onclick="exportarPersonajeActual()">⬇ Exportar JSON</button>
+  <button class="btn btn-sm" style="background:none;border:1px solid var(--ps);color:var(--ink2);" onclick="enviarAlMapa()" title="Crea una ficha en el mapa con este personaje">🗺 Enviar al Mapa</button>
+</div>
   <div class="saved" id="cfSavedMsg" style="margin-bottom:10px;"></div>
 
   <!-- Contraseña para ficha en mapa -->
@@ -9735,106 +9867,203 @@ async function eliminarPersonaje(id) {
 
 
 function exportarPersonajeActual() {
-  const ch = recogerDatosPersonaje();
-  const blob = new Blob([JSON.stringify(ch, null, 2)], {type:'application/json'});
+const ch = recogerDatosPersonaje();
+  // Añadir explícitamente la contraseña actual (aunque esté vacía)
+  const pwField = document.getElementById('cf_password');
+  if (pwField) ch.password = pwField.value.trim();
+  const blob = new Blob([JSON.stringify(ch, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = (ch.nombre||'personaje').replace(/\s+/g,'_') + '.json';
-  a.click(); URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = (ch.nombre || 'personaje').replace(/\s+/g, '_') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function importarPersonajeLocal() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.json';
+const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
   inp.onchange = e => {
-    const f = e.target.files[0]; if(!f) return;
+    const f = e.target.files[0];
+    if (!f) return;
     const reader = new FileReader();
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
-        editingCharId = null;
+        // Crear personaje nuevo (limpio)
         nuevoPersonaje();
-        // fill fields
-        if(data.nombre) document.getElementById('cf_nombre').value = data.nombre;
-        if(data.heroname) document.getElementById('cf_heroname').value = data.heroname;
-        if(data.clase) document.getElementById('cf_clase').value = data.clase;
-        if(data.espec) document.getElementById('cf_espec').value = data.espec;
-        if(data.nivel) document.getElementById('cf_nivel').value = data.nivel;
-        if(data.rango) document.getElementById('cf_rango').value = data.rango;
-        ['pod','agi','res','tec','int'].forEach(s => { if(data[s]) document.getElementById('cf_'+s).value = data[s]; });
-        if(data.quirk_nombre) document.getElementById('cf_quirk_nombre').value = data.quirk_nombre;
-        if(data.quirk_tipo) document.getElementById('cf_quirk_tipo').value = data.quirk_tipo;
-        if(data.quirk_desc) document.getElementById('cf_quirk_desc').value = data.quirk_desc;
-        if(data.personalidad) document.getElementById('cf_personalidad').value = data.personalidad;
-        if(data.ideologia) document.getElementById('cf_ideologia').value = data.ideologia;
-        if(data.trasfondo) document.getElementById('cf_trasfondo').value = data.trasfondo;
-        if(data.trinket) document.getElementById('cf_trinket').value = data.trinket;
-        if(data.color) document.getElementById('cf_color').value = data.color;
-        if(data.habilidades) data.habilidades.forEach(h => cfAddHab(h));
-        cfUpdateCalcs();
+
+        // Identidad básica
+        if (data.nombre) document.getElementById('cf_nombre').value = data.nombre;
+        if (data.heroname) document.getElementById('cf_heroname').value = data.heroname;
+        if (data.clase) document.getElementById('cf_clase').value = data.clase;
+        if (data.espec) document.getElementById('cf_espec').value = data.espec;
+        if (data.subclase) document.getElementById('cf_subclase').value = data.subclase;
+        if (data.nivel) document.getElementById('cf_nivel').value = data.nivel;
+        if (data.rango) document.getElementById('cf_rango').value = data.rango;
+        if (data.agencia) document.getElementById('cf_agencia').value = data.agencia;
+        if (data.instructor) document.getElementById('cf_instructor').value = data.instructor;
+
+        // Stats
+        ['pod', 'agi', 'res', 'tec', 'int'].forEach(s => {
+          if (data[s] !== undefined) document.getElementById(`cf_${s}`).value = data[s];
+          if (data[`b${s.charAt(0).toUpperCase() + s.slice(1)}`] !== undefined)
+            document.getElementById(`cf_b${s.charAt(0).toUpperCase() + s.slice(1)}`).value = data[`b${s.charAt(0).toUpperCase() + s.slice(1)}`];
+        });
+
+        // Vitales
+        ['vida_c', 'vida_m', 'est_c', 'est_m', 'xp_c', 'hp_temp',
+         'bvVel', 'bvDef', 'bvIni', 'bvReg'].forEach(k => {
+          if (data[k] !== undefined) document.getElementById(`cf_${k}`).value = data[k];
+        });
+
+        // Acciones
+        ['mov', 'acc', 'acca', 'rea'].forEach(k => {
+          if (data[k] !== undefined) document.getElementById(`cf_${k}`).value = data[k];
+        });
+
+        // Recursos
+        ['cua', 'yh', 'ct', 'mer'].forEach(k => {
+          if (data[k] !== undefined) document.getElementById(`cf_${k}`).value = data[k];
+        });
+
+        // Quirk
+        if (data.quirk_nombre) document.getElementById('cf_quirk_nombre').value = data.quirk_nombre;
+        if (data.quirk_tipo) document.getElementById('cf_quirk_tipo').value = data.quirk_tipo;
+        if (data.quirk_desc) document.getElementById('cf_quirk_desc').value = data.quirk_desc;
+
+        // Lore
+        ['personalidad', 'ideologia', 'trasfondo', 'motivaciones', 'vinculos',
+         'trinket', 'apariencia', 'traje', 'origen_social'].forEach(k => {
+          if (data[k]) document.getElementById(`cf_${k}`).value = data[k];
+        });
+
+        // Extra
+        if (data.color) document.getElementById('cf_color').value = data.color;
+        if (data.sym) document.getElementById('cf_sym').value = data.sym;
+        if (data.notas) document.getElementById('cf_notas').value = data.notas;
+
+        // ▲▲▲ Restaurar arrays ▲▲▲
+        // Habilidades activas
+        const habBody = document.getElementById('cfHabBody');
+        if (habBody && Array.isArray(data.habilidades)) {
+          habBody.innerHTML = '';
+          data.habilidades.forEach(h => {
+            const tr = document.createElement('tr');
+            const statOpts = ['pod', 'agi', 'res', 'tec', 'int', 'fue', 'eva', 'acr', 'sig', 'agu', 'vol', 'ctq', 'ing', 'tac', 'per', 'eng', 'inv', 'prc']
+              .map(s => `<option value="${s}" ${h.stat === s ? 'selected' : ''}>${s}</option>`).join('');
+            tr.innerHTML = `
+              <td><input type="text" class="hab-input cfh-nombre" placeholder="Nombre" value="${h.nombre || ''}"></td>
+              <td><select class="hab-sel cfh-stat">${statOpts}</select></td>
+              <td><input type="text" class="hab-input cfh-dano" placeholder="2d6" value="${h.dano || ''}"></td>
+              <td><input type="text" class="hab-input cfh-rango" placeholder="3" value="${h.rango || ''}"></td>
+              <td><input type="number" class="hab-num cfh-stam" placeholder="0" value="${h.stam || 0}" min="0"></td>
+              <td><input type="text" class="hab-input cfh-desc" placeholder="Descripción..." value="${h.desc || ''}"></td>
+              <td><button class="hab-del" onclick="this.closest('tr').remove()" title="Eliminar">✕</button></td>
+            `;
+            habBody.appendChild(tr);
+          });
+        }
+
+        // Pasivas
+        const pasivaList = document.getElementById('cfPasivaList');
+        if (pasivaList && Array.isArray(data.pasivas)) {
+          pasivaList.innerHTML = '';
+          data.pasivas.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'pasiva-row' + (p.activa ? ' activa' : '');
+            const statOpts = ['pod', 'agi', 'res', 'tec', 'int', 'vel', 'def', 'ini', 'reg', 'fue', 'eva', 'acr', 'sig', 'agu', 'vol', 'ctq', 'ing', 'tac', 'per', 'eng', 'inv', 'prc']
+              .map(s => `<option value="${s}" ${p.stat === s ? 'selected' : ''}>${s}</option>`).join('');
+            div.innerHTML = `
+              <div><div class="pasiva-lbl">Nombre</div><input type="text" class="pasiva-input cfp-nombre" placeholder="Nombre" value="${p.nombre || ''}"></div>
+              <div><div class="pasiva-lbl">Stat + Bono</div><div class="pasiva-stat-row"><select class="pasiva-stat-sel cfp-stat">${statOpts}</select><input type="number" class="pasiva-bono-inp cfp-bono" placeholder="0" value="${p.bono || 0}"></div></div>
+              <div><div class="pasiva-lbl">Descripción</div><input type="text" class="pasiva-input cfp-desc" placeholder="Efecto..." value="${p.desc || ''}"></div>
+              <div><div class="pasiva-lbl">Estado</div><button class="pasiva-toggle${p.activa ? ' on' : ''}" onclick="this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa')">${p.activa ? 'Activa' : 'Inactiva'}</button></div>
+              <button class="pasiva-del" onclick="this.closest('.pasiva-row').remove()" title="Eliminar">✕</button>
+            `;
+            pasivaList.appendChild(div);
+          });
+        }
+
+        // Equipamiento
+        if (data.equipo) {
+          const slots = ['cabeza', 'torso', 'brazos', 'piernas', 'acc1', 'acc2', 'obj1', 'obj2', 'obj3'];
+          slots.forEach(slot => {
+            const eq = data.equipo[slot] || {};
+            const nombreInput = document.querySelector(`.cfeq-nombre[data-slot="${slot}"]`);
+            const descInput = document.querySelector(`.cfeq-desc[data-slot="${slot}"]`);
+            const statSel = document.querySelector(`.cfeq-stat[data-slot="${slot}"]`);
+            const bonoInput = document.querySelector(`.cfeq-bono[data-slot="${slot}"]`);
+            if (nombreInput) nombreInput.value = eq.nombre || '';
+            if (descInput) descInput.value = eq.desc || '';
+            if (statSel) statSel.value = eq.stat || '';
+            if (bonoInput) bonoInput.value = eq.bono || 0;
+          });
+        }
+
+        // Inventario
+        const invBody = document.getElementById('cfInvBody');
+        if (invBody && Array.isArray(data.inventario)) {
+          invBody.innerHTML = '';
+          data.inventario.forEach(inv => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><input type="text" style="width:100%;padding:2px 4px;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-nombre" placeholder="Ítem" value="${inv.nombre || ''}"></td>
+              <td><input type="text" style="width:100%;padding:2px 4px;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-desc" placeholder="Descripción" value="${inv.desc || ''}"></td>
+              <td><input type="number" style="width:50px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.15);border:none;border-radius:2px;font-size:.78rem;color:var(--ink);outline:none;" class="cfinv-cant" value="${inv.cant || 1}" min="0"></td>
+              <td><button class="hab-del" onclick="this.closest('tr').remove()" title="Eliminar">✕</button></td>
+            `;
+            invBody.appendChild(tr);
+          });
+        }
+
+        // Estados
+        if (data.estados) {
+          window.cfEstados = { ...data.estados };
+          if (typeof cfBuildEstadosGrid === 'function') cfBuildEstadosGrid();
+          if (typeof cfUpdateEstadoInfo === 'function') cfUpdateEstadoInfo();
+        }
+
+        // Plus Ultra
+        if (data.plus_ultra) {
+          window.cfPUActive = true;
+          const puBtn = document.getElementById('cfPuBtn');
+          if (puBtn) puBtn.classList.add('on');
+          const puSt = document.getElementById('cfPuSt');
+          if (puSt) puSt.textContent = 'ACTIVO';
+          const puck = document.getElementById('cfPuck');
+          if (puck) puck.textContent = '✓';
+        }
+
+        // Contraseña
+        if (data.password) {
+          const pwField = document.getElementById('cf_password');
+          if (pwField) pwField.value = data.password;
+        }
+
+        // Atributos (bonos y competencias)
+        const attrKeys = ['Fue', 'Intim', 'Eva', 'Acr', 'Sig', 'Agu', 'Vol', 'Ctq', 'Ing', 'Tac', 'Per', 'Eng', 'Inv', 'Prc'];
+        attrKeys.forEach(k => {
+          if (data[`ba${k}`] !== undefined) document.getElementById(`cfBa${k}`).value = data[`ba${k}`];
+          if (data[`comp${k}`] !== undefined) document.getElementById(`cfComp${k}`).checked = data[`comp${k}`];
+        });
+
+        // Recalcular todo
+        if (typeof cfUpdateCalcs === 'function') cfUpdateCalcs();
+        if (typeof cfRefreshHeader === 'function') cfRefreshHeader();
+
+        // Limpiar flag de edición (nuevo personaje)
+        editingCharId = null;
         switchSection('personajes');
-      } catch(err) { alert('Error al leer el archivo JSON: ' + err.message); }
+      } catch (err) {
+        alert('Error al importar: ' + err.message);
+      }
     };
     reader.readAsText(f);
   };
   inp.click();
 }
-
-function enviarAlMapa() {
-  const ch = recogerDatosPersonaje();
-  // Construir objeto sh compatible con el sistema de fichas del mapa
-  const modRes = Math.trunc(ch.res/2 - 5);
-  const modAgi = Math.trunc(ch.agi/2 - 5);
-  const modTec = Math.trunc(ch.tec/2 - 5);
-  const modInt = Math.trunc(ch.int/2 - 5);
-  const clase = (ch.clase||'').toLowerCase();
-  let hp, stam, def;
-  if (clase==='ofensivo')      { hp=(8*(ch.nivel+1))+(modRes*2); stam=(6*ch.nivel)+(modTec*2); def=10+modRes; }
-  else if (clase==='defensivo'){ hp=(12*(ch.nivel+1))+(modRes*3); stam=(5*ch.nivel); def=10+modRes; }
-  else if (clase==='agil')     { hp=(7*(ch.nivel+1))+(modRes*2); stam=(6*ch.nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
-  else if (clase==='tecnico')  { hp=(6*(ch.nivel+1))+(modRes*2); stam=(8*ch.nivel)+(modTec*3); def=10+Math.max(2,modAgi); }
-  else if (clase==='mental')   { hp=(6*(ch.nivel+1))+(modRes); stam=(7*ch.nivel)+(modTec*2); def=10+Math.max(2,modAgi); }
-  else if (clase==='apoyo')    { hp=(9*(ch.nivel+1))+(modRes*2); stam=(7*ch.nivel)+(modTec*2); def=9+modRes; }
-  else { hp=50; stam=30; def=10; }
-  hp = Math.max(1,hp); stam = Math.max(1,stam);
-
-  const tok = {
-    id: 't_' + Date.now().toString(36),
-    name: ch.nombre || 'Personaje',
-    sym: (ch.nombre||'?')[0].toUpperCase(),
-    color: ch.color || '#c8941a',
-    c: 0, r: 0,
-    sh: {
-      nivel: ch.nivel, clase: ch.clase, espec: ch.espec,
-      pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
-      vida_c: hp, vida_m: hp, est_c: stam, est_m: stam,
-      xp_c: 0, xp_m: 10,
-      hp_temp: 0, plus_ultra: false,
-      vel: Math.max(2,modAgi), def, ini: modAgi,
-      reg: 1+modInt, mov: 1, acc: 1, acca: 0, rea: 1,
-      estados: {},
-      quirk: ch.quirk_nombre,
-      habilidades: (ch.habilidades||[]).map((h,i) => ({
-        id: 'h'+i, nombre: h.nombre, dados: h.dados,
-        tipo: h.tipo, stam: parseInt(h.stam)||0, desc: h.desc,
-        stat: 'pod', tipo_uso: 'accion'
-      })),
-      equipo: {}, pasivas: [], notas: ch.trasfondo||''
-    }
-  };
-  // Colocar en el mapa
-  if (typeof tokens !== 'undefined') {
-    tokens[tok.id] = tok;
-    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
-    if (typeof refresh === 'function') refresh();
-    if (typeof redraw === 'function') redraw();
-    switchSection('jugar');
-    setTimeout(() => { if(typeof addLog==='function') addLog('spawn', `🦸 <b>${tok.name}</b> ha llegado al mapa desde el gestor de personajes.`); }, 300);
-  } else {
-    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
-  }
-}
-
 // ══════════════════════════════════════════════════════════
 //  INICIALIZACIÓN DE SESIÓN PERSISTENTE
 // ══════════════════════════════════════════════════════════
@@ -10138,8 +10367,9 @@ function cfAddHab(h) {
   const statOpts = ['pod','agi','res','tec','int','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
     .map(s => `<option value="${s}" ${h?.stat===s?'selected':''}>${s}</option>`).join('');
   tr.innerHTML = `
-    <td><input type="text" class="hab-input cfh-nombre" placeholder="Nombre" value="${h?.nombre||''}"></td>
+    <tr><input type="text" class="hab-input cfh-nombre" placeholder="Nombre" value="${h?.nombre||''}"></td>
     <td><select class="hab-sel cfh-stat">${statOpts}</select></td>
+    <td><input type="number" class="hab-num cfh-golpe" placeholder="0" value="${h?.golpe||0}" min="-10" max="20" step="1"></td>
     <td><input type="text" class="hab-input cfh-dano" placeholder="2d6" value="${h?.dano||''}"></td>
     <td><input type="text" class="hab-input cfh-rango" placeholder="3" value="${h?.rango||''}"></td>
     <td><input type="number" class="hab-num cfh-stam" placeholder="0" value="${h?.stam||0}" min="0"></td>
@@ -10231,17 +10461,18 @@ function cfAddInventario(inv) {
 // ══════════════════════════════════════════════════════════
 function recogerDatosPersonaje() {
   // Habilidades activas
-  const habilidades = [];
-  document.querySelectorAll('#cfHabBody tr').forEach(tr => {
-    habilidades.push({
-      nombre: tr.querySelector('.cfh-nombre')?.value||'',
-      stat:   tr.querySelector('.cfh-stat')?.value||'pod',
-      dano:   tr.querySelector('.cfh-dano')?.value||'',
-      rango:  tr.querySelector('.cfh-rango')?.value||'',
-      stam:   parseInt(tr.querySelector('.cfh-stam')?.value)||0,
-      desc:   tr.querySelector('.cfh-desc')?.value||'',
-    });
+const habilidades = [];
+document.querySelectorAll('#cfHabBody tr').forEach(tr => {
+  habilidades.push({
+    nombre: tr.querySelector('.cfh-nombre')?.value || '',
+    stat:   tr.querySelector('.cfh-stat')?.value || 'pod',
+  golpe: parseInt(tr.querySelector('.cfh-golpe')?.value) || 0,
+    dano:   tr.querySelector('.cfh-dano')?.value || '',
+    rango:  tr.querySelector('.cfh-rango')?.value || '',
+    stam:   parseInt(tr.querySelector('.cfh-stam')?.value) || 0,
+    desc:   tr.querySelector('.cfh-desc')?.value || '',
   });
+});
 
   // Pasivas
   const pasivas = [];
@@ -10540,7 +10771,7 @@ function enviarAlMapa() {
       compTac:ch.compTac||false,compPer:ch.compPer||false,compEng:ch.compEng||false,
       compInv:ch.compInv||false,compPrc:ch.compPrc||false,
       habilidades: (ch.habilidades||[]).map((h,i) => ({
-        id:'h'+i, nombre:h.nombre, stat:h.stat||'pod',
+        id:'h'+i, nombre:h.nombre, stat:h.stat||'pod', golpe:h.golpe||0,
         dano:h.dano||'', rango:h.rango||'', stam:h.stam||0,
         desc:h.desc||'', tipo_uso:'accion'
       })),
@@ -11587,59 +11818,141 @@ function extractLastRoll(html) {
 // Patch the existing enviarAlMapa to add password and fix stam field name
 const _origEnviarAlMapa = window.enviarAlMapa;
 window.enviarAlMapa = function() {
-  // Call original
-  if (!window._enviarAlMapaPatched) {
-    window._enviarAlMapaPatched = true;
-  }
+  if (!window._enviarAlMapaPatched) window._enviarAlMapaPatched = true;
 
   const ch = recogerDatosPersonaje();
   const tok = {
     id: 't_' + Date.now().toString(36),
     name: ch.nombre || 'Personaje',
-    sym: ch.sym || (ch.nombre||'?')[0].toUpperCase(),
+    sym: ch.sym || (ch.nombre || '?')[0].toUpperCase(),
     color: ch.color || '#c8941a',
-    c: 0, r: 0,
+    c: 0,
+    r: 0,
     sh: {
-      nivel: ch.nivel, clase: ch.clase, espec: ch.espec, subclase: ch.subclase,
-      pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
-      bPod: ch.bPod||0, bAgi: ch.bAgi||0, bRes: ch.bRes||0, bTec: ch.bTec||0, bInt: ch.bInt||0,
-      vida_c: ch.vida_c, vida_m: ch.vida_m,
-      est_c: ch.est_c, est_m: ch.est_m,
-      xp_c: ch.xp_c||0, xp_m: ch.xp_m||10,
-      hp_temp: ch.hp_temp||0,
-      plus_ultra: ch.plus_ultra||false,
-      estados: ch.estados||{},
-      bvVel: ch.bvVel||0, bvDef: ch.bvDef||0, bvIni: ch.bvIni||0, bvReg: ch.bvReg||0,
-      mov: ch.mov||1, acc: ch.acc||1, acca: ch.acca||0, rea: ch.rea||1,
-      cua: ch.cua||0, yh: ch.yh||0, ct: ch.ct||0, mer: ch.mer||0,
-      fue:0,intim:0,eva:0,acr:0,sig:0,agu:0,vol:0,ctq:0,ing:0,tac:0,per:0,eng:0,inv:0,prc:0,
-      baFue:ch.baFue||0,baIntim:ch.baIntim||0,baEva:ch.baEva||0,baAcr:ch.baAcr||0,baSig:ch.baSig||0,
-      baAgu:ch.baAgu||0,baVol:ch.baVol||0,baCtq:ch.baCtq||0,baIng:ch.baIng||0,baTac:ch.baTac||0,
-      baPer:ch.baPer||0,baEng:ch.baEng||0,baInv:ch.baInv||0,baPrc:ch.baPrc||0,
-      compFue:ch.compFue||false,compIntim:ch.compIntim||false,compEva:ch.compEva||false,
-      compAcr:ch.compAcr||false,compSig:ch.compSig||false,compAgu:ch.compAgu||false,
-      compVol:ch.compVol||false,compCtq:ch.compCtq||false,compIng:ch.compIng||false,
-      compTac:ch.compTac||false,compPer:ch.compPer||false,compEng:ch.compEng||false,
-      compInv:ch.compInv||false,compPrc:ch.compPrc||false,
-      // ── HABILIDADES con stam correcto ──
-      habilidades: (ch.habilidades||[]).map((h,i) => ({
-        id: 'h'+i,
-        nombre: h.nombre||'',
-        stat: h.stat||'pod',
-        dano: h.dano||'',
-        rango: h.rango||'',
-        stam: parseInt(h.stam)||0,   // FIX: usar h.stam (campo correcto del gestor)
-        est: parseInt(h.stam)||0,    // FIX: también est para compatibilidad con usarHabilidad
-        golpe: 0,
-        desc: h.desc||'',
-        tipo_uso: 'accion'
-      })),
-      pasivas: ch.pasivas||[],
-      equipo: ch.equipo||{},
-      inventario: ch.inventario||[],
-      notas: ch.notas||'',
-      show_vida: true, show_est: true, show_hptemp: true,
+      nivel: ch.nivel,
+      clase: ch.clase,
+      espec: ch.espec,
+      subclase: ch.subclase,
+      pod: ch.pod,
+      agi: ch.agi,
+      res: ch.res,
+      tec: ch.tec,
+      int: ch.int,
+      bPod: ch.bPod || 0,
+      bAgi: ch.bAgi || 0,
+      bRes: ch.bRes || 0,
+      bTec: ch.bTec || 0,
+      bInt: ch.bInt || 0,
+      vida_c: ch.vida_c,
+      vida_m: ch.vida_m,
+      est_c: ch.est_c,
+      est_m: ch.est_m,
+      xp_c: ch.xp_c || 0,
+      xp_m: ch.xp_m || 10,
+      hp_temp: ch.hp_temp || 0,
+      plus_ultra: ch.plus_ultra || false,
+      estados: ch.estados || {},
+      bvVel: ch.bvVel || 0,
+      bvDef: ch.bvDef || 0,
+      bvIni: ch.bvIni || 0,
+      bvReg: ch.bvReg || 0,
+      mov: ch.mov || 1,
+      acc: ch.acc || 1,
+      acca: ch.acca || 0,
+      rea: ch.rea || 1,
+      cua: ch.cua || 0,
+      yh: ch.yh || 0,
+      ct: ch.ct || 0,
+      mer: ch.mer || 0,
+      fue: 0,
+      intim: 0,
+      eva: 0,
+      acr: 0,
+      sig: 0,
+      agu: 0,
+      vol: 0,
+      ctq: 0,
+      ing: 0,
+      tac: 0,
+      per: 0,
+      eng: 0,
+      inv: 0,
+      prc: 0,
+      baFue: ch.baFue || 0,
+      baIntim: ch.baIntim || 0,
+      baEva: ch.baEva || 0,
+      baAcr: ch.baAcr || 0,
+      baSig: ch.baSig || 0,
+      baAgu: ch.baAgu || 0,
+      baVol: ch.baVol || 0,
+      baCtq: ch.baCtq || 0,
+      baIng: ch.baIng || 0,
+      baTac: ch.baTac || 0,
+      baPer: ch.baPer || 0,
+      baEng: ch.baEng || 0,
+      baInv: ch.baInv || 0,
+      baPrc: ch.baPrc || 0,
+      compFue: ch.compFue || false,
+      compIntim: ch.compIntim || false,
+      compEva: ch.compEva || false,
+      compAcr: ch.compAcr || false,
+      compSig: ch.compSig || false,
+      compAgu: ch.compAgu || false,
+      compVol: ch.compVol || false,
+      compCtq: ch.compCtq || false,
+      compIng: ch.compIng || false,
+      compTac: ch.compTac || false,
+      compPer: ch.compPer || false,
+      compEng: ch.compEng || false,
+      compInv: ch.compInv || false,
+      compPrc: ch.compPrc || false,
+      // === HABILIDADES completas ===
+habilidades: (ch.habilidades || []).map((h, i) => ({
+  id: 'h' + i,
+  nombre: h.nombre || '',
+  stat: h.stat || 'pod',
+ golpe: parseInt(h.golpe) || 0,
+  dano: h.dano || '',
+  rango: h.rango || '',
+  stam: parseInt(h.stam) || 0,
+  est: parseInt(h.stam) || 0,
+  desc: h.desc || '',
+  tipo_uso: 'accion'
+})),
+      pasivas: ch.pasivas || [],
+      equipo: ch.equipo || {},
+      inventario: ch.inventario || [],
+      notas: ch.notas || '',
+      show_vida: true,
+      show_est: true,
+      show_hptemp: true
     }
+  };
+
+  // Aplicar contraseña (si existe)
+  const pwField = document.getElementById('cf_password');
+  const pw = pwField ? pwField.value.trim() : '';
+  const savedPw = (editingCharId && myChars[editingCharId]) ? myChars[editingCharId].password : '';
+  const finalPw = pw || savedPw || '';
+  if (finalPw) {
+    tok.pwHash = typeof simpleHash === 'function' ? simpleHash(finalPw) : finalPw;
+  }
+
+  if (typeof tokens !== 'undefined') {
+    tokens[tok.id] = tok;
+    if (typeof unlockedIds !== 'undefined') unlockedIds.add(tok.id);
+    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/' + tok.id).set(tok);
+    if (typeof refresh === 'function') refresh();
+    if (typeof redraw === 'function') redraw();
+    switchSection('jugar');
+    const pwNote = finalPw ? ' 🔒' : '';
+    setTimeout(() => {
+      if (typeof addLog === 'function')
+        addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes${pwNote}.`);
+    }, 300);
+  } else {
+    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
+  }
   };
 
   // ── FIX: Contraseña del personaje ──
