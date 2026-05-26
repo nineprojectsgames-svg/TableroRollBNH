@@ -5818,7 +5818,7 @@ function resetMovTok(id) {
   if (!tokens[id]) return;
   if (!canEdit(id) && !isAdmin()) return;
   tokens[id].movUsado = 0;
-  fbPatch(id, { movUsado: 0 });
+  fbPatch(id, { movUsado: 0 });   // ✅ Ya está, pero confirmar
   refreshTurns();
   redraw();
   addLog('move', `↺ <b>${tokens[id].name}</b> ha restaurado su movimiento.`);
@@ -5827,9 +5827,9 @@ function resetMovTok(id) {
 // Activar/desactivar modo movimiento libre (no gasta mov restante)
 function setMovLibre(id, val) {
   if (!tokens[id]) return;
-  if (!canEdit(id) && !isAdmin()) return;   // ← Línea nueva
+  if (!canEdit(id) && !isAdmin()) return;
   tokens[id].movLibre = val;
-  fbPatch(id, { movLibre: val });
+  fbPatch(id, { movLibre: val });  // ✅ Sincronizar con el servidor
   refreshTurns();
   redraw();
 }
@@ -5999,22 +5999,18 @@ function nextTurn() {
   }
   const order = getTurnOrder();
   if (order.length === 0) return;
-  // Resetear movimiento del turno anterior (opcional, normalmente se resetea al empezar su turno)
   const prev = order[turnIndex];
   if (prev) {
     prev.movUsado = 0;
     fbPatch(prev.id, { movUsado: 0 });
   }
-
   turnIndex = (turnIndex + 1) % order.length;
   if (turnIndex === 0) turnRound++;
   const t = order[turnIndex];
   selId = t.id;
-  // Resetear movimiento del NUEVO turno
   t.movUsado = 0;
-  fbPatch(t.id, { movUsado: 0 });
+  fbPatch(t.id, { movUsado: 0 });   // ✅ Resetear y sincronizar
 
-  // Regenerar estamina si está activado
   const autoRegenOn = document.getElementById('autoRegen')?.checked || document.getElementById('mAutoRegen')?.checked;
   if (t.sh && autoRegenOn) {
     const reg  = (t.sh.reg||0) + (t.sh.bvReg||0);
@@ -6026,11 +6022,10 @@ function nextTurn() {
       addLog('spawn', `💛 <b>${t.name}</b> recuperó ${t.sh.est_c - prevEst} de estamina (${t.sh.est_c}/${max})`);
     }
   }
-
   refresh();
   refreshTurns();
   redraw();
-  fbSyncTurn(); // ya existe, guarda índice y ronda en Firebase
+  fbSyncTurn();
   addLog('move', `🎲 Turno de <b>${t.name}</b> — Ronda ${turnRound}`);
 }
 
@@ -6642,7 +6637,7 @@ roomRef.child('tokens').on('value', snap => {
     Object.entries(data).map(([tid, v]) => {
       if (!v || typeof v !== 'object') return [tid, null];
       const existing = prevTokens[tid] || {};
-      // ✅ Siempre priorizar el valor de Firebase para movUsado y movLibre
+      // ✅ Siempre priorizar los valores que vienen de Firebase
       const movUsado = v.movUsado !== undefined ? v.movUsado : (existing.movUsado ?? 0);
       const movLibre = v.movLibre !== undefined ? v.movLibre : (existing.movLibre ?? false);
       const merged = {
@@ -6681,7 +6676,6 @@ roomRef.child('tokens').on('value', snap => {
   redraw();
   if (selId) updateStatTotals();
 });
-
   // Escuchar grid
   roomRef.child('grid').on('value', snap => {
     const d = snap.val();
