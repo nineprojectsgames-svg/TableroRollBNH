@@ -6058,6 +6058,30 @@ function resetTurns() {
   addLog('spawn', '↺ Orden de turno reiniciado');
 }
 
+// Guardar turnIndex y turnRound en Firebase
+function fbSyncTurn() {
+  if (!roomRef) return;
+  roomRef.child('turn').set({ index: turnIndex, round: turnRound, ts: Date.now() });
+}
+
+// Escuchar cambios de turno desde Firebase (para los jugadores)
+function listenTurn() {
+  if (!roomRef) return;
+  roomRef.child('turn').on('value', snap => {
+    const d = snap.val();
+    if (!d) return;
+    // Evitar aplicar cambios si son muy recientes (propios)
+    if (d.ts && Math.abs(d.ts - Date.now()) < 200) return;
+    turnIndex = d.index || 0;
+    turnRound = d.round || 1;
+    const order = getTurnOrder();
+    if (order[turnIndex]) selId = order[turnIndex].id;
+    refresh();
+    refreshTurns();
+    redraw();
+  });
+}
+
 // ── DADOS ────────────────────────────────────────────────────────
 function diceTime() {
   const d = new Date();
@@ -11574,78 +11598,6 @@ window.redraw = function() {
 //  FIX 1: enviarAlMapa — contraseña + stam de habilidades
 // ════════════════════════════════════════════════════════════
 // Reemplazada abajo con patch a la función existente
-
-// ════════════════════════════════════════════════════════════
-//  FIX 2 & 3: TURNO GLOBAL — solo DM avanza, Firebase sync
-// ════════════════════════════════════════════════════════════
-
-// Guardar turnIndex y turnRound en Firebase
-function fbSyncTurn() {
-  if (!roomRef) return;
-  roomRef.child('turn').set({ index: turnIndex, round: turnRound, ts: Date.now() });
-}
-
-// Escuchar cambios de turno desde Firebase (para los jugadores)
-function listenTurn() {
-  if (!roomRef) return;
-  roomRef.child('turn').on('value', snap => {
-    const d = snap.val();
-    if (!d) return;
-    // Evitar aplicar cambios si son muy recientes (propios)
-    if (d.ts && Math.abs(d.ts - Date.now()) < 200) return;
-    const prevIndex = turnIndex;
-    turnIndex = d.index || 0;
-    turnRound = d.round || 1;
-    // Seleccionar la ficha del turno activo
-    const order = getTurnOrder();
-    if (order[turnIndex]) selId = order[turnIndex].id;
-    // Forzar refresco completo de la interfaz
-    refresh();
-    refreshTurns();
-    redraw();
-    // Mostrar notificación de cambio de turno (opcional)
-    if (order[turnIndex]) {
-      showActionNotif(`🎲 Turno de <b>${order[turnIndex].name}</b> — Ronda ${turnRound}`);
-    }
-  });
-}
-
-// Parchear nextTurn para que solo el DM pueda avanzar y sincronice
-const _origNextTurn = window.nextTurn;
-window.nextTurn = function() {
-  if (!isAdmin()) {
-    showActionNotif('🔒 Solo el DM puede avanzar el turno');
-    return;
-  }
-  _origNextTurn && _origNextTurn();
-  fbSyncTurn();
-};
-
-// Parchear prevTurn
-const _origPrevTurn = window.prevTurn;
-window.prevTurn = function() {
-  if (!isAdmin()) {
-    showActionNotif('🔒 Solo el DM puede mover el turno');
-    return;
-  }
-  _origPrevTurn && _origPrevTurn();
-  fbSyncTurn();
-};
-
-// Parchear resetTurns
-const _origResetTurns = window.resetTurns;
-window.resetTurns = function() {
-  if (!isAdmin()) return;
-  _origResetTurns && _origResetTurns();
-  fbSyncTurn();
-};
-
-// Enganchar listenTurn al conectar la sala
-const _origConnectRoom2 = window.connectRoom;
-window.connectRoom = function(code) {
-  _origConnectRoom2 && _origConnectRoom2(code);
-  setTimeout(listenTurn, 1000);
-};
 
 // ════════════════════════════════════════════════════════════
 //  FIX 4: TOOLTIP para descripciones largas en la ficha
