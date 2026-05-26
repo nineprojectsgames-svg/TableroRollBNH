@@ -6703,6 +6703,17 @@ roomRef.child('tokens').on('value', snap => {
     const d = snap.val();
     if (Array.isArray(d)) { turnOrderOverride = d; refreshTurns(); }
   });
+
+// Inicializar chat y escuchar turno
+  initChat();
+  listenTurn();
+
+  // ✅ FORZAR sincronización periódica del turno (cada 30 segundos, solo DM)
+  setInterval(() => {
+    if (roomRef && isAdmin()) {
+      fbSyncTurn();
+    }
+  }, 30000);
 }
 
 // Push: escribir token completo a Firebase
@@ -11580,17 +11591,22 @@ function listenTurn() {
   roomRef.child('turn').on('value', snap => {
     const d = snap.val();
     if (!d) return;
-    // Solo aplicar si viene de otro cliente (evitar loop)
-    if (d.ts && Math.abs(d.ts - Date.now()) < 200) return; // muy reciente = propio
-    const prev = turnIndex;
+    // Evitar aplicar cambios si son muy recientes (propios)
+    if (d.ts && Math.abs(d.ts - Date.now()) < 200) return;
+    const prevIndex = turnIndex;
     turnIndex = d.index || 0;
     turnRound = d.round || 1;
     // Seleccionar la ficha del turno activo
     const order = getTurnOrder();
     if (order[turnIndex]) selId = order[turnIndex].id;
+    // Forzar refresco completo de la interfaz
     refresh();
     refreshTurns();
     redraw();
+    // Mostrar notificación de cambio de turno (opcional)
+    if (order[turnIndex]) {
+      showActionNotif(`🎲 Turno de <b>${order[turnIndex].name}</b> — Ronda ${turnRound}`);
+    }
   });
 }
 
