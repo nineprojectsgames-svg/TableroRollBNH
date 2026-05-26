@@ -3495,6 +3495,23 @@ select, textarea,
   background: var(--ps);
   border-radius: 3px;
 }
+
+.hab-rango-btn {
+  background: none;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+  transition: all .15s;
+}
+.hab-rango-btn.active {
+  background: var(--gld);
+  border-color: var(--gld);
+  color: var(--ink);
+  box-shadow: 0 0 4px var(--gld);
+}
+
 </style>
 </head>
 <body>
@@ -4452,15 +4469,16 @@ select, textarea,
         <table id="habilidadesTable">
           <thead>
             <tr>
-              <th style="min-width:70px;">Nombre</th>
-              <th style="min-width:52px;">Stat</th>
-              <th style="min-width:50px;">Golpe</th>
-              <th style="min-width:36px;">Daño</th>
-              <th style="min-width:50px;">Rango</th>
-              <th style="min-width:50px;">Est.</th>
-              <th style="min-width:60px;">Desc.</th>
-              <th style="min-width:38px;">Usar</th>
-              <th style="min-width:18px;"></th>
+<th style="min-width:70px;">Nombre</th>
+<th style="min-width:52px;">Stat</th>
+<th style="min-width:50px;">Golpe</th>
+<th style="min-width:36px;">Daño</th>
+<th style="min-width:50px;">Rango</th>
+<th style="min-width:50px;">Est.</th>
+<th style="min-width:60px;">Desc.</th>
+<th style="min-width:38px;">Mostrar Rango</th>
+<th style="min-width:38px;">Usar</th>
+<th style="min-width:18px;"></th>
             </tr>
           </thead>
           <tbody id="habBody"></tbody>
@@ -4627,6 +4645,8 @@ let hov = { c:-1, r:-1 };
 let dragOff = { x:0, y:0 };
 const COLORS = ['#c0392b','#e74c3c','#e67e22','#f39c12','#f1c40f','#2ecc71','#27ae60','#1abc9c','#16a085','#3498db','#2980b9','#2c3e50','#1a5276','#9b59b6','#8e44ad','#e91e63','#ffffff','#bdc3c7','#95a5a6','#34495e','#1c2833','#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6bff','#ff9a3c','#a8ff78','#00b4d8','#f72585'];
 let selColor = COLORS[2];
+let currentRangeHabId = null;
+let lastShownTokenId = null;
 
 function blank() {
   return {
@@ -4675,6 +4695,38 @@ function redraw() {
 
   // zonas / áreas
   drawZones();
+
+  // ── DIBUJAR RANGO DE HABILIDAD ACTIVA (se dibuja DESPUÉS del rango de movimiento) ──
+  if (selId && tokens[selId] && currentRangeHabId !== null) {
+    const habs = getHabilidades();
+    const hab = habs[currentRangeHabId];
+    if (hab && hab.rango && hab.rango > 0) {
+      const t = tokens[selId];
+      const rango = parseFloat(hab.rango);
+      // Usar color rojo intenso para que destaque
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const dc = Math.abs(c - t.c);
+          const dr = Math.abs(r - t.r);
+          if (dc === 0 && dr === 0) continue;
+          if (Math.max(dc, dr) <= rango) {
+            ctx.fillStyle = 'rgba(220, 60, 30, 0.35)';   // rojo-naranja más opaco
+            ctx.fillRect(c * CS, r * CS, CS, CS);
+            ctx.strokeStyle = '#e63946';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([4, 4]);
+            ctx.strokeRect(c * CS + 2, r * CS + 2, CS - 4, CS - 4);
+            ctx.setLineDash([]);
+          }
+        }
+      }
+      // Etiqueta sobre el token
+      ctx.font = 'bold 11px Cinzel';
+      ctx.fillStyle = '#e63946';
+      ctx.shadowBlur = 0;
+      ctx.fillText(`⚔ Rango ${rango}`, t.c * CS + CS/2, t.r * CS - 8);
+    }
+  }
 
   // rango de movimiento — celdas alcanzables por la ficha seleccionada
 if (selId && tokens[selId]) {
@@ -5309,7 +5361,14 @@ function refresh() {
 
 // ── PANEL ESTADÍSTICAS ───────────────────────────────────────────
 function showStats() {
+  if (selId !== lastShownTokenId) {
+    currentRangeHabId = null;
+    lastShownTokenId = selId;
+    // Al cambiar de ficha, desmarcar todos los checkboxes
+    document.querySelectorAll('.hab-rango-chk').forEach(chk => chk.checked = false);
+  }
   const empty = document.getElementById('emptyStats');
+  // ... el resto del código no se toca
   const content = document.getElementById('statsContent');
   if (!selId || !tokens[selId]) {
     empty.style.display = 'block';
@@ -7045,6 +7104,44 @@ function usarHabilidad(idx) {
   addLog(isCrit ? 'spawn' : isFail ? 'del' : 'move', msg);
 }
 
+function toggleRangoHabilidad(idx) {
+  if (!selId || !tokens[selId]) {
+    showActionNotif('Seleccioná una ficha primero');
+    // Desmarcar el checkbox si no hay ficha
+    const chk = document.querySelector(`.hab-rango-chk[data-hab-index="${idx}"]`);
+    if (chk) chk.checked = false;
+    return;
+  }
+  const habs = getHabilidades();
+  const hab = habs[idx];
+  if (!hab) {
+    showActionNotif('Habilidad no encontrada');
+    return;
+  }
+  if (!hab.rango || hab.rango <= 0) {
+    showActionNotif('⚠ Esta habilidad no tiene rango definido');
+    const chk = document.querySelector(`.hab-rango-chk[data-hab-index="${idx}"]`);
+    if (chk) chk.checked = false;
+    return;
+  }
+  
+  // Alternar: si ya está activa, la desactivamos; si no, activamos esta y desactivamos la anterior
+  if (currentRangeHabId === idx) {
+    currentRangeHabId = null;
+  } else {
+    currentRangeHabId = idx;
+  }
+  
+  // Sincronizar todos los checkboxes
+  document.querySelectorAll('.hab-rango-chk').forEach((chk) => {
+    const habIdx = parseInt(chk.dataset.habIndex);
+    chk.checked = (habIdx === currentRangeHabId);
+  });
+  
+  // Forzar redibujo del mapa
+  redraw();
+}
+
 function renderHabilidades() {
   const body = document.getElementById('habBody');
   if (!body) return;
@@ -7053,7 +7150,7 @@ function renderHabilidades() {
   body.innerHTML = '';
 
   if (habs.length === 0) {
-    body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);font-style:italic;padding:6px;font-size:.75rem;">Sin habilidades. Hacé clic en + Agregar.</td></tr>';
+    body.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--ink3);font-style:italic;padding:6px;font-size:.75rem;">Sin habilidades. Hacé clic en + Agregar. </td></tr>';
     return;
   }
 
@@ -7069,10 +7166,12 @@ function renderHabilidades() {
       <td><input class="hab-num" type="number" value="${h.rango||0}" ${locked?'disabled':''} onchange="updateHabilidad(${i},'rango',this.value)"></td>
       <td><input class="hab-num" type="number" value="${h.est||0}" ${locked?'disabled':''} onchange="updateHabilidad(${i},'est',this.value)"></td>
       <td><input class="hab-input" type="text" value="${h.desc||''}" placeholder="..." ${locked?'disabled':''} onchange="updateHabilidad(${i},'desc',this.value)"></td>
+      <td style="text-align:center;">
+        <input type="checkbox" class="hab-rango-chk" data-hab-index="${i}" onchange="toggleRangoHabilidad(${i})" ${currentRangeHabId === i ? 'checked' : ''}>
+      </td>
       <td><button class="hab-usar" onclick="usarHabilidad(${i})">⚔ Usar</button></td>
       <td><button class="hab-del" ${locked?'disabled':''} onclick="removeHabilidad(${i})">×</button></td>
     `;
-    // Set select value after insertion
     const sel = tr.querySelector('select');
     if (sel) sel.value = h.stat || '';
     body.appendChild(tr);
@@ -8382,6 +8481,23 @@ let af=0;
 }
 #habResult b { color: var(--gld2); }
 
+.hab-rango-btn {
+  background: none;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 2px 6px;
+  transition: all .15s;
+  line-height: 1;
+}
+.hab-rango-btn.active {
+  background: #c8941a;
+  border-color: #c8941a;
+  color: #12080c;
+  box-shadow: 0 0 6px #c8941a;
+}
+
 </style>
 
 <button id="pwaInstallBtn" aria-label="Instalar aplicación">
@@ -9145,7 +9261,7 @@ let af=0;
   <div class="chars-header">
     <span class="chars-title">⚔ Mis Personajes</span>
     <button class="btn btn-grn btn-sm" id="btnNuevoChar" onclick="nuevoPersonaje()" style="display:none;">+ Nuevo Personaje</button>
-    <button class="btn btn-sm" id="btnImportChar" onclick="importarPersonajeLocal()" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);display:none;">⬆ Importar JSON</button>
+    <button class="btn btn-sm" id="btnImportChar" onclick="importarPersonajeLocal()" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--p);display:none;">⬆ Importar JSON</button>
   </div>
 
   <!-- No logueado -->
@@ -9652,6 +9768,15 @@ let af=0;
     </div>
 
     <button class="btn btn-gld" style="margin-bottom:10px;" onclick="switchSection('personajes')">Ver Mis Personajes</button>
+<div style="margin-top: 16px; border-top: 1px solid var(--ps); padding-top: 12px;">
+  <div style="font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:2px; color:var(--gld);">🔐 Restablecer contraseña de otro usuario</div>
+  <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+    <input type="text" id="adminResetUser" placeholder="Nombre de usuario" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
+    <input type="password" id="adminResetPass" placeholder="Nueva contraseña" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
+    <button class="btn btn-red" onclick="adminResetPassword()" style="width: auto; padding: 5px 12px; margin-bottom: 0;">Restablecer</button>
+  </div>
+  <div id="adminResetMsg" style="font-size:.7rem; margin-top: 4px; min-height: 20px; color: var(--ink2);"></div>
+</div>
     <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
   </div>
 </div><!-- /secPerfil -->
@@ -10954,10 +11079,24 @@ function onUserLoggedIn() {
 const DM_KEY = 'bnhrpg_dm';
 
 function profileToggleDM() {
-  const isDM = !localStorage.getItem(DM_KEY);
-  if (isDM) localStorage.setItem(DM_KEY, '1');
-  else localStorage.removeItem(DM_KEY);
-  applyDMFromProfile(isDM);
+  // Obtener el estado actual del DM (si está activado o no)
+  const isCurrentlyDM = !!localStorage.getItem(DM_KEY);
+  
+  // Si ya es DM, simplemente lo desactivamos sin pedir código
+  if (isCurrentlyDM) {
+    localStorage.removeItem(DM_KEY);
+    applyDMFromProfile(false);
+    return;
+  }
+  
+  // Si no es DM, pedimos el código para activarlo
+  const code = prompt("Ingresá el código de Director del Mundo:");
+  if (code === "1212") {
+    localStorage.setItem(DM_KEY, '1');
+    applyDMFromProfile(true);
+  } else {
+    alert("Código incorrecto. No se activó el modo DM.");
+  }
 }
 
 function applyDMFromProfile(isDM) {
@@ -11594,10 +11733,6 @@ window.redraw = function() {
 
 </script>
 <script>
-// ════════════════════════════════════════════════════════════
-//  FIX 1: enviarAlMapa — contraseña + stam de habilidades
-// ════════════════════════════════════════════════════════════
-// Reemplazada abajo con patch a la función existente
 
 // ════════════════════════════════════════════════════════════
 //  FIX 4: TOOLTIP para descripciones largas en la ficha
@@ -11917,32 +12052,45 @@ habilidades: (ch.habilidades || []).map((h, i) => ({
   }
   };
 
-  // ── FIX: Contraseña del personaje ──
-  const pwField = document.getElementById('cf_password');
-  const pw = pwField ? pwField.value.trim() : '';
-  // También verificar si el personaje guardado en Firebase tiene contraseña
-  const savedPw = (editingCharId && myChars[editingCharId]) ? myChars[editingCharId].password : '';
-  const finalPw = pw || savedPw || '';
-  if (finalPw) {
-    tok.pwHash = typeof simpleHash === 'function' ? simpleHash(finalPw) : finalPw;
+// Función para que el DM restablezca la contraseña de cualquier usuario
+async function adminResetPassword() {
+  if (!isAdmin()) {
+    alert("Solo el DM puede hacer esto.");
+    return;
   }
-
-  if (typeof tokens !== 'undefined') {
-    tokens[tok.id] = tok;
-    if (typeof unlockedIds !== 'undefined') unlockedIds.add(tok.id);
-    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
-    if (typeof refresh === 'function') refresh();
-    if (typeof redraw === 'function') redraw();
-    switchSection('jugar');
-    const pwNote = finalPw ? ' 🔒' : '';
-    setTimeout(() => {
-      if (typeof addLog === 'function')
-        addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes${pwNote}.`);
-    }, 300);
-  } else {
-    alert('El mapa no está disponible. Abrí la sección Jugar primero.');
+  const username = document.getElementById('adminResetUser').value.trim().toLowerCase();
+  const newPass = document.getElementById('adminResetPass').value;
+  const msg = document.getElementById('adminResetMsg');
+  if (!username || !newPass || newPass.length < 6) {
+    msg.textContent = "❌ Usuario y contraseña válida (mín 6 caracteres).";
+    msg.style.color = "var(--red)";
+    return;
   }
-};
+  if (!db) {
+    msg.textContent = "❌ Sin conexión a la base de datos.";
+    msg.style.color = "var(--red)";
+    return;
+  }
+  try {
+    const snap = await db.ref('users/' + username).once('value');
+    if (!snap.val()) {
+      msg.textContent = "❌ Usuario no encontrado.";
+      msg.style.color = "var(--red)";
+      return;
+    }
+    const newHash = await hashPassword(newPass);
+    await db.ref('users/' + username + '/passwordHash').set(newHash);
+    msg.textContent = "✓ Contraseña restablecida. El usuario puede iniciar sesión con la nueva clave.";
+    msg.style.color = "var(--grn)";
+    // Limpiar campos
+    document.getElementById('adminResetUser').value = '';
+    document.getElementById('adminResetPass').value = '';
+    setTimeout(() => msg.textContent = '', 4000);
+  } catch(e) {
+    msg.textContent = "❌ Error: " + e.message;
+    msg.style.color = "var(--red)";
+  }
+}
 
 </script>
 </body>
