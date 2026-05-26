@@ -5816,7 +5816,7 @@ function undoMove() {
 // Restaurar movimiento de una ficha manualmente (DM)
 function resetMovTok(id) {
   if (!tokens[id]) return;
-  if (!canEdit(id) && !isAdmin()) return;   // ← Línea nueva
+  if (!canEdit(id) && !isAdmin()) return;
   tokens[id].movUsado = 0;
   fbPatch(id, { movUsado: 0 });
   refreshTurns();
@@ -6634,56 +6634,53 @@ function connectRoom(code) {
   roomRef = db.ref('rooms/' + code);
 
   // Escuchar tokens en tiempo real
-  roomRef.child('tokens').on('value', snap => {
-    const data = snap.val();
-    const prev = selId;
-    const prevTokens = tokens; // snapshot local antes de sobrescribir
-    tokens = data ? Object.fromEntries(
-      Object.entries(data).map(([tid, v]) => {
-        if (!v || typeof v !== 'object') return [tid, null];
-        const existing = prevTokens[tid] || {};
-        const merged = {
-  id: tid,
-  name: v.name ?? existing.name ?? '?',
-  sym: v.sym ?? existing.sym ?? '?',
-  color: v.color ?? existing.color ?? '#888',
-  c: v.c !== undefined ? v.c : (existing.c ?? 0),
-  r: v.r !== undefined ? v.r : (existing.r ?? 0),
-  movUsado: v.movUsado !== undefined ? v.movUsado : (existing.movUsado ?? 0),
-  movLibre: v.movLibre !== undefined ? v.movLibre : (existing.movLibre ?? false)
-};
-        if (v.pwHash)   merged.pwHash   = v.pwHash;
-        if (v.pwHash === null && existing.pwHash) merged.pwHash = existing.pwHash;
+roomRef.child('tokens').on('value', snap => {
+  const data = snap.val();
+  const prev = selId;
+  const prevTokens = tokens;
+  tokens = data ? Object.fromEntries(
+    Object.entries(data).map(([tid, v]) => {
+      if (!v || typeof v !== 'object') return [tid, null];
+      const existing = prevTokens[tid] || {};
+      // ✅ Siempre priorizar el valor de Firebase para movUsado y movLibre
+      const movUsado = v.movUsado !== undefined ? v.movUsado : (existing.movUsado ?? 0);
+      const movLibre = v.movLibre !== undefined ? v.movLibre : (existing.movLibre ?? false);
+      const merged = {
+        id: tid,
+        name: v.name ?? existing.name ?? '?',
+        sym: v.sym ?? existing.sym ?? '?',
+        color: v.color ?? existing.color ?? '#888',
+        c: v.c !== undefined ? v.c : (existing.c ?? 0),
+        r: v.r !== undefined ? v.r : (existing.r ?? 0),
+        movUsado: movUsado,
+        movLibre: movLibre,
+      };
+      if (v.pwHash) merged.pwHash = v.pwHash;
+      if (v.pwHash === null && existing.pwHash) merged.pwHash = existing.pwHash;
 
-        // sh: partir de blank, mezclar con Firebase, luego parches
-        const sh = { ...blank(), ...(v.sh || {}) };
+      const sh = { ...blank(), ...(v.sh || {}) };
+      // restaurar arrays/objetos
+      if (!sh.equipo || typeof sh.equipo !== 'object' || Array.isArray(sh.equipo))
+        sh.equipo = (existing.sh && existing.sh.equipo) || blank().equipo;
+      if (!Array.isArray(sh.habilidades))
+        sh.habilidades = (existing.sh && existing.sh.habilidades) || [];
+      if (!Array.isArray(sh.pasivas))
+        sh.pasivas = (existing.sh && existing.sh.pasivas) || [];
+      if (!Array.isArray(sh.inventario))
+        sh.inventario = (existing.sh && existing.sh.inventario) || [];
+      if (!sh.estados || typeof sh.estados !== 'object' || Array.isArray(sh.estados))
+        sh.estados = (existing.sh && existing.sh.estados) || {};
 
-        // Restaurar arrays/objetos que Firebase convierte a null
-        if (!sh.equipo     || typeof sh.equipo !== 'object' || Array.isArray(sh.equipo))
-          sh.equipo     = (existing.sh && existing.sh.equipo)     || blank().equipo;
-        if (!Array.isArray(sh.habilidades))
-          sh.habilidades = (existing.sh && existing.sh.habilidades) || [];
-        if (!Array.isArray(sh.pasivas))
-          sh.pasivas     = (existing.sh && existing.sh.pasivas)     || [];
-        if (!Array.isArray(sh.inventario))
-          sh.inventario  = (existing.sh && existing.sh.inventario)  || [];
-        if (!sh.estados || typeof sh.estados !== 'object' || Array.isArray(sh.estados))
-          sh.estados     = (existing.sh && existing.sh.estados)     || {};
+      merged.sh = sh;
+      return [tid, merged];
+    }).filter(([, v]) => v !== null)
+  ) : {};
 
-        merged.sh = sh;
-
-        // Restaurar campos runtime-only (no están en Firebase)
-        if (existing.movUsado !== undefined) merged.movUsado = existing.movUsado;
-        if (existing.movLibre) merged.movLibre = existing.movLibre;
-
-        return [tid, merged];
-      }).filter(([, v]) => v !== null)
-    ) : {};
-
-    selId = (prev && tokens[prev]) ? prev : null;
-    refresh(); redraw();
-    if (selId) updateStatTotals();
-  });
+  selId = (prev && tokens[prev]) ? prev : null;
+  refresh();
+  redraw();
+  if (selId) updateStatTotals();
+});
 
   // Escuchar grid
   roomRef.child('grid').on('value', snap => {
@@ -6717,13 +6714,16 @@ function connectRoom(code) {
 // Push: escribir token completo a Firebase
 function fbSet(id) {
   if (!roomRef || !tokens[id]) return;
-  // Sanitizar recursivamente: eliminar undefined, convertir NaN a 0
   function sanitize(obj) {
     if (Array.isArray(obj)) return obj.map(sanitize);
     if (obj !== null && typeof obj === 'object') {
       const out = {};
       for (const k in obj) {
-        if (k === 'movUsado' || k === 'movLibre') continue; // solo en memoria
+        // ✅ Guardar también movUsado y movLibre
+        if (k === 'movUsado' || k === 'movLibre') {
+          out[k] = obj[k];
+          continue;
+        }
         const v = obj[k];
         if (v === undefined) continue;
         out[k] = sanitize(v);
