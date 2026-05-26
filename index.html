@@ -8617,6 +8617,7 @@ let af=0;
       <optgroup label="Progresión">
         <option value="g-niveles">Niveles y XP</option>
         <option value="g-vida">Vida en la U.A.</option>
+<option value="g-progresion-clases">Tablas de Nivel por Clase</option>
       </optgroup>
       <optgroup label="Equipamiento">
         <option value="g-equipo">Slots y Armas</option>
@@ -8651,9 +8652,10 @@ let af=0;
     <button class="guia-nav-item" onclick="showGuiaPage('g-habilidades',this)">Habilidades del Quirk</button>
     <button class="guia-nav-item" onclick="showGuiaPage('g-plusultra',this)">Plus Ultra</button>
 
-    <span class="guia-nav-section">Progresión</span>
-    <button class="guia-nav-item" onclick="showGuiaPage('g-niveles',this)">Niveles y XP</button>
-    <button class="guia-nav-item" onclick="showGuiaPage('g-vida',this)">Vida en la U.A.</button>
+<span class="guia-nav-section">Progresión</span>
+<button class="guia-nav-item" onclick="showGuiaPage('g-niveles',this)">Niveles y XP</button>
+<button class="guia-nav-item" onclick="showGuiaPage('g-vida',this)">Vida en la U.A.</button>
+<button class="guia-nav-item" onclick="showGuiaPage('g-progresion-clases',this)">Tablas de Nivel por Clase</button>
 
     <span class="guia-nav-section">Equipamiento</span>
     <button class="guia-nav-item" onclick="showGuiaPage('g-equipo',this)">Slots y Armas</button>
@@ -9120,6 +9122,206 @@ let af=0;
         <li><b>Méritos:</b> sistema opcional del DM para premiar buena actitud y roleplaying.</li>
       </ul>
     </div>
+
+<!-- ==================== PROGRESIÓN DE CLASES (TABLAS POR NIVEL) ==================== -->
+<div class="guia-page" id="g-progresion-clases">
+  <h1 class="guia-h1">Progresión de Clases</h1>
+  <p class="guia-p">Cada clase tiene su propia tabla de progresión. A continuación se detallan los beneficios que obtienes en cada nivel.</p>
+
+  <!-- Ofensivo -->
+  <h2 class="guia-h2">Ofensivo</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Poder</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Intimidación, Fuerza, Voluntad y Aguante)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Poder</td></tr>
+      <tr><td>7</td><td>+1 acción extra</td></tr>
+      <tr><td>8</td><td>+1 de Poder</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Intimidación, Fuerza, Voluntad y Aguante)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Poder</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>+2 de Regen Stam</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Poder</td></tr>
+      <tr><td>16</td><td>-2 de coste de Stam para todas las habilidades</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Poder</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Defensivo -->
+  <h2 class="guia-h2">Defensivo</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Resistencia</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Voluntad, Aguante, Control de Quirk y Fuerza)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Resistencia</td></tr>
+      <tr><td>7</td><td>+1 acción adicional</td></tr>
+      <tr><td>8</td><td>+1 de Resistencia</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Voluntad, Aguante, Control de Quirk y Fuerza)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Resistencia</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>+1 acción adicional y reacción</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Resistencia</td></tr>
+      <tr><td>16</td><td>Una vez por combate puedes hacer daño extra en un ataque equivalente a tu Defensa total.</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Resistencia</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Ágil -->
+  <h2 class="guia-h2">Ágil</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Agilidad</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Acrobacia, Evasión, Sigilo o Investigación)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Agilidad</td></tr>
+      <tr><td>7</td><td>+1 acción extra</td></tr>
+      <tr><td>8</td><td>+1 de Agilidad</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Acrobacia, Evasión, Sigilo o Investigación)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Agilidad</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>+1 acción extra</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Agilidad</td></tr>
+      <tr><td>16</td><td>+1 acción extra (Al tener más de 75% de vida)</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Agilidad</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Técnico -->
+  <h2 class="guia-h2">Técnico</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Técnica</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Ingeniería, Táctica, Control de Quirk, Aguante y Persuasión)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Técnica</td></tr>
+      <tr><td>7</td><td>Generas 1 de Stamina por cada 2 casillas que te muevas</td></tr>
+      <tr><td>8</td><td>+1 de Técnica</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Ingeniería, Táctica, Control de Quirk, Aguante y Persuasión)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Técnica</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>Todas las habilidades gastan la mitad de Stamina</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Técnica</td></tr>
+      <tr><td>16</td><td>Por cada 3 puntos de vida que te quiten en cada golpe recuperas 1 de Stamina</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Técnica</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Mental -->
+  <h2 class="guia-h2">Mental</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Táctica, Percepción, Engaño e Investigación)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>7</td><td>+1 acción adicional y reacción</td></tr>
+      <tr><td>8</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Táctica, Percepción, Engaño e Investigación)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>Puedes gastar 2 de Stamina por cada punto que quieras sumar a tu dado de acierto de cualquier habilidad</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>16</td><td>Puedes usar 5 de Stamina para curarte cualquier estado negativo o poder mental</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Inteligencia</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Apoyo -->
+  <h2 class="guia-h2">Apoyo</h2>
+  <table class="guia-table">
+    <thead><tr><th>Nivel</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>—</td></tr>
+      <tr><td>2</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>3</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>4</td><td>+2 a cualquiera de estas habilidades (Percepción, Control de Quirk, Voluntad, Aguante e Investigación)</td></tr>
+      <tr><td>5</td><td>Especialización</td></tr>
+      <tr><td>6</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>7</td><td>Todos los aliados cercanos a un radio de 1 casilla tienen +3 de daño y los enemigos cercanos un -3</td></tr>
+      <tr><td>8</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>9</td><td>+2 a cualquiera de estas habilidades (Percepción, Control de Quirk, Voluntad, Aguante e Investigación)</td></tr>
+      <tr><td>10</td><td>SubClase</td></tr>
+      <tr><td>11</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>12</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>13</td><td>+1 Acción adicional y reacción</td></tr>
+      <tr><td>14</td><td>+1 Estadística a elección</td></tr>
+      <tr><td>15</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>16</td><td>Una vez por combate puedes curar por completo a un aliado gastando toda tu stamina (requiere descanso largo)</td></tr>
+      <tr><td>17</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>18</td><td>+1 de Técnica o Inteligencia</td></tr>
+      <tr><td>19</td><td>+1 Estadística de SubClase</td></tr>
+      <tr><td>20</td><td>Habilidad definitiva</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Especializaciones y Subclases (resumen) -->
+  <h2 class="guia-h2">Especializaciones (Nivel 5)</h2>
+  <p class="guia-p">Cada clase tiene dos ramas de especialización. Consulta el manual completo para más detalles.</p>
+  <ul class="guia-ul">
+    <li><b>Ofensivo:</b> Ofensiva Explosiva (área, ondas de choque) / Destructor Cinético (ataques de un objetivo a distancia).</li>
+    <li><b>Defensivo:</b> Muro Imparable (proteger aliados) / Reflejo Adaptativo (contraataque).</li>
+    <li><b>Ágil:</b> Espectro Rápido (emboscadas) / Vanguardia Relámpago (ataques en cadena).</li>
+    <li><b>Técnico:</b> Ingeniero de Campo (trampas, soporte) / Tirador Preciso (ataques a distancia precisos).</li>
+    <li><b>Mental:</b> Manipulador Psíquico (control mental) / Estratega Analítico (predicción).</li>
+    <li><b>Apoyo:</b> Canalizador Vital (curación) / Potenciador de Campo (buffs).</li>
+  </ul>
+
+  <h2 class="guia-h2">Subclases (Nivel 10)</h2>
+  <p class="guia-p">Al nivel 10 puedes elegir una subclase de otra clase, ganando +1 en su estadística principal y habilidades con competencia.</p>
+  <table class="guia-table">
+    <thead><tr><th>Subclase</th><th>Estadística extra</th></tr></thead>
+    <tbody>
+      <tr><td>Ofensiva</td><td>Poder</td></tr>
+      <tr><td>Defensiva</td><td>Resistencia</td></tr>
+      <tr><td>Ágil</td><td>Agilidad</td></tr>
+      <tr><td>Técnico</td><td>Técnica</td></tr>
+      <tr><td>Mental</td><td>Inteligencia</td></tr>
+      <tr><td>Apoyo</td><td>+2 a cualquier estadística</td></tr>
+    </tbody>
+  </table>
+</div>
 
     <!-- EQUIPO -->
     <div class="guia-page" id="g-equipo">
