@@ -4643,8 +4643,8 @@ select, textarea,
 <div class="ptitle" style="margin-top: 12px;">🎁 Recompensas Rápidas</div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
   <button class="btn btn-grn btn-sm" onclick="rewardXP(1)">+1 XP</button>
-  <button class="btn btn-grn btn-sm" onclick="rewardXP(2)">+2 XP</button>
   <button class="btn btn-grn btn-sm" onclick="rewardXP(5)">+5 XP</button>
+  <button class="btn btn-grn btn-sm" onclick="rewardXP(10)">+10 XP</button>
   <button class="btn btn-gld btn-sm" onclick="rewardYH(10)">+10 ¥H</button>
   <button class="btn btn-gld btn-sm" onclick="rewardYH(100)">+100 ¥H</button>
   <button class="btn btn-gld btn-sm" onclick="rewardCT(1)">+1 CT</button>
@@ -10242,6 +10242,18 @@ canvas {
     <div id="cfPwMsg" style="font-size:.72rem;min-height:18px;margin-top:6px;font-style:italic;"></div>
   </div>
 
+<div class="ptitle" style="margin-top: 12px;">🎁 Recompensas Rápidas</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+  <button class="btn btn-grn btn-sm" onclick="rewardXPChar(1)">+1 XP</button>
+  <button class="btn btn-grn btn-sm" onclick="rewardXPChar(5)">+5 XP</button>
+  <button class="btn btn-grn btn-sm" onclick="rewardXPChar(10)">+10 XP</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardYHChar(10)">+10 ¥H</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardYHChar(100)">+100 ¥H</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardCTChar(1)">+1 CT</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardCTChar(3)">+3 CT</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardMerChar(1)">+1 Mérito</button>
+</div>
+
 </div><!-- /extra -->
 
 <!-- ═══════════════════════════════════════
@@ -13367,6 +13379,105 @@ function rewardMer(amount) {
   const el = document.getElementById('fMer'); if (el) el.value = sh.mer;
   addLog('spawn', `🏅 <b>${tokens[selId].name}</b> +${amount} Mérito(s) (Total: ${sh.mer})`);
   showToast(`+${amount} Mérito`, 'Recompensa', `Nuevo total: ${sh.mer}`, 'heal');
+}
+
+// Recompensas en la edición de personajes (gestor)
+async function rewardXPChar(amount) {
+  if (!editingCharId || !currentUser || !db) {
+    showActionNotif('❌ No hay personaje seleccionado o sesión activa.');
+    return;
+  }
+  const charRef = db.ref('userChars/' + currentUser.uid + '/' + editingCharId);
+  const snap = await charRef.once('value');
+  let char = snap.val();
+  if (!char) {
+    // Si no está guardado aún, tomar datos del formulario
+    char = recogerDatosPersonaje();
+  }
+  let currentXP = char.xp_c || 0;
+  let maxXP = char.xp_m || 10;
+  let newXP = currentXP + amount;
+  let levelUp = false;
+  let newLevel = char.nivel || 1;
+  while (newXP >= maxXP && newLevel < 20) {
+    newXP -= maxXP;
+    newLevel++;
+    let nextMax = 10;
+    for (let i = 1; i < newLevel; i++) nextMax = Math.round(nextMax * 1.5);
+    maxXP = nextMax;
+    levelUp = true;
+  }
+  if (newLevel > 20) newLevel = 20;
+  char.xp_c = newXP;
+  char.xp_m = maxXP;
+  if (levelUp) {
+    char.nivel = newLevel;
+    showToast(`¡NIVEL ${newLevel}!`, 'Subida', `+${amount} XP`, 'heal');
+    // Actualizar campos del formulario
+    const nivelInput = document.getElementById('cf_nivel');
+    if (nivelInput) nivelInput.value = newLevel;
+    // Recalcular vitales y atributos
+    if (typeof cfUpdateCalcs === 'function') cfUpdateCalcs();
+  } else {
+    showToast(`+${amount} XP`, 'Recompensa', `${char.xp_c}/${char.xp_m} XP`, 'normal');
+  }
+  // Guardar en Firebase
+  await charRef.update({ xp_c: char.xp_c, xp_m: char.xp_m, nivel: char.nivel });
+  // Actualizar formulario
+  const xpCInput = document.getElementById('cf_xp_c');
+  if (xpCInput) xpCInput.value = char.xp_c;
+  const xpMInput = document.getElementById('cf_xp_m');
+  if (xpMInput) xpMInput.value = char.xp_m;
+  // Actualizar barra de XP
+  const pct = Math.min(100, Math.round((char.xp_c / Math.max(1, char.xp_m)) * 100));
+  const bar = document.getElementById('cfBXp');
+  if (bar) bar.style.width = pct + '%';
+  // Actualizar gráficos si existen
+  if (typeof actualizarGraficos === 'function') actualizarGraficos();
+  // Mostrar notificación
+  addLog('spawn', `🎁 <b>${char.nombre}</b> recibió +${amount} XP (${char.xp_c}/${char.xp_m})`);
+}
+
+async function rewardYHChar(amount) {
+  if (!editingCharId || !currentUser || !db) return;
+  const charRef = db.ref('userChars/' + currentUser.uid + '/' + editingCharId);
+  const snap = await charRef.once('value');
+  let char = snap.val() || recogerDatosPersonaje();
+  char.yh = (char.yh || 0) + amount;
+  await charRef.update({ yh: char.yh });
+  const yhInput = document.getElementById('cf_yh');
+  if (yhInput) yhInput.value = char.yh;
+  showToast(`+${amount} ¥H`, 'Recompensa', `Nuevo total: ${char.yh}`, 'heal');
+  addLog('spawn', `💰 <b>${char.nombre}</b> +${amount} ¥H (Total: ${char.yh})`);
+  if (typeof actualizarGraficos === 'function') actualizarGraficos();
+}
+
+async function rewardCTChar(amount) {
+  if (!editingCharId || !currentUser || !db) return;
+  const charRef = db.ref('userChars/' + currentUser.uid + '/' + editingCharId);
+  const snap = await charRef.once('value');
+  let char = snap.val() || recogerDatosPersonaje();
+  char.ct = (char.ct || 0) + amount;
+  await charRef.update({ ct: char.ct });
+  const ctInput = document.getElementById('cf_ct');
+  if (ctInput) ctInput.value = char.ct;
+  showToast(`+${amount} CT`, 'Recompensa', `Nuevo total: ${char.ct}`, 'heal');
+  addLog('spawn', `🔧 <b>${char.nombre}</b> +${amount} CT (Total: ${char.ct})`);
+  if (typeof actualizarGraficos === 'function') actualizarGraficos();
+}
+
+async function rewardMerChar(amount) {
+  if (!editingCharId || !currentUser || !db) return;
+  const charRef = db.ref('userChars/' + currentUser.uid + '/' + editingCharId);
+  const snap = await charRef.once('value');
+  let char = snap.val() || recogerDatosPersonaje();
+  char.mer = (char.mer || 0) + amount;
+  await charRef.update({ mer: char.mer });
+  const merInput = document.getElementById('cf_mer');
+  if (merInput) merInput.value = char.mer;
+  showToast(`+${amount} Mérito`, 'Recompensa', `Nuevo total: ${char.mer}`, 'heal');
+  addLog('spawn', `🏅 <b>${char.nombre}</b> +${amount} Mérito(s) (Total: ${char.mer})`);
+  if (typeof actualizarGraficos === 'function') actualizarGraficos();
 }
 
 </script>
