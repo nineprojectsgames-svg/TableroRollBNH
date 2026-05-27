@@ -3513,6 +3513,98 @@ select, textarea,
   box-shadow: 0 0 4px var(--gld);
 }
 
+/* Tabla de usuarios DM */
+#adminUsersPanel table {
+  width: 100%;
+  border-collapse: collapse;
+}
+#adminUsersPanel th,
+#adminUsersPanel td {
+  border: 1px solid rgba(255,255,255,1.5);
+  padding: 6px 8px;
+  text-align: left;
+}
+#adminUsersPanel th {
+  background: rgba(200,148,26,.2);
+  font-family: 'Cinzel', serif;
+  font-size: .65rem;
+  letter-spacing: 1px;
+}
+#adminUsersPanel td {
+  font-size: .75rem;
+  color: var(--p);
+}
+.user-actions button {
+  margin: 0 3px;
+  padding: 3px 8px;
+  font-size: .65rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.btn-delete-user { background: #c0392b; color: white; }
+.btn-login-as   { background: var(--gld); color: var(--ink); }
+
+/* Barra de carpetas */
+.folders-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #110a04;
+  border-bottom: 1px solid rgba(200,148,26,.25);
+  flex-shrink: 0;
+}
+.folders-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+.folder-tab {
+  background: rgba(200,148,26,.12);
+  border: 1px solid rgba(200,148,26,.3);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: 'Cinzel', serif;
+  font-size: .7rem;
+  color: var(--p);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.folder-tab:hover {
+  background: rgba(200,148,26,.25);
+  border-color: var(--ps);
+}
+.folder-tab.active {
+  background: var(--gld);
+  border-color: var(--gld);
+  color: var(--ink);
+  font-weight: 700;
+}
+.folder-tab .folder-actions {
+  display: inline-flex;
+  margin-left: 6px;
+  gap: 4px;
+}
+.folder-tab .folder-rename,
+.folder-tab .folder-delete {
+  background: none;
+  border: none;
+  font-size: .65rem;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 2px;
+  color: inherit;
+}
+.folder-tab .folder-rename:hover,
+.folder-tab .folder-delete:hover {
+  opacity: 1;
+}
+
 </style>
 </head>
 <body>
@@ -9486,6 +9578,14 @@ canvas {
     <button class="btn btn-sm" id="btnImportChar" onclick="importarPersonajeLocal()" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--p);display:none;">⬆ Importar JSON</button>
   </div>
 
+<!-- Barra de carpetas -->
+<div class="folders-bar">
+  <div class="folders-tabs" id="foldersTabs">
+    <button class="folder-tab active" data-folder="">📁 Todos</button>
+  </div>
+  <button class="btn btn-sm btn-gld" id="newFolderBtn" style="white-space: nowrap;">+ Carpeta</button>
+</div>
+
   <!-- No logueado -->
   <div id="charsLoginMsg" class="chars-login-required">
     <h2>🔒 Sesión Requerida</h2>
@@ -10033,6 +10133,20 @@ canvas {
 </div>
     <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
   </div>
+
+<!-- Panel de gestión de usuarios (solo DM) -->
+<div id="adminUsersPanel" class="admin-users-panel" style="margin-top: 24px; display: none;">
+  <div class="ptitle" style="margin-top: 0;">👥 Gestión de Usuarios (DM)</div>
+  <div style="overflow-x: auto;">
+    <table id="userListTable" style="width:100%; border-collapse: collapse; font-size: .8rem;">
+      <thead>
+        <tr><th>Usuario</th><th>Nombre</th><th>Fecha creación</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="userListBody"></tbody>
+    </table>
+  </div>
+</div>
+
 </div><!-- /secPerfil -->
 
 <script>
@@ -12526,6 +12640,384 @@ async function adminResetPassword() {
   // Ejecutar una vez al cargar la página
   document.addEventListener('DOMContentLoaded', asegurarGraficos);
 })();
+
+// ── GESTIÓN DE USUARIOS (solo DM) ────────────────────────────────
+async function loadAdminUserList() {
+  if (!isAdmin() || !db) return;
+  const tbody = document.getElementById('userListBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Cargando...</td></tr>';
+  try {
+    const snap = await db.ref('users').once('value');
+    const users = snap.val() || {};
+    tbody.innerHTML = '';
+    for (const [uid, data] of Object.entries(users)) {
+      const row = tbody.insertRow();
+      row.insertCell(0).textContent = uid;
+      row.insertCell(1).textContent = data.displayName || uid;
+      const date = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—';
+      row.insertCell(2).textContent = date;
+      const actions = row.insertCell(3);
+      actions.className = 'user-actions';
+
+      // Botón eliminar
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '🗑 Eliminar';
+      delBtn.className = 'btn-delete-user';
+      delBtn.onclick = () => adminDeleteUser(uid, data.displayName);
+      actions.appendChild(delBtn);
+
+      // Botón login como
+      const loginBtn = document.createElement('button');
+      loginBtn.textContent = '🔑 Login como';
+      loginBtn.className = 'btn-login-as';
+      loginBtn.onclick = () => adminLoginAs(uid, data.displayName || uid);
+      actions.appendChild(loginBtn);
+    }
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--red);">Error al cargar usuarios</td></tr>';
+    console.error(e);
+  }
+}
+
+async function adminDeleteUser(uid, displayName) {
+  if (!isAdmin()) return;
+  if (!confirm(`⚠️ ¿Eliminar permanentemente al usuario "${displayName}" (${uid})?\nEsta acción borrará todos sus personajes y no se puede deshacer.`)) return;
+  try {
+    // Eliminar datos del usuario y sus personajes
+    await db.ref('users/' + uid).remove();
+    await db.ref('userChars/' + uid).remove();
+    // Opcional: si hay otros datos asociados (ej. presencia en salas) no es necesario limpiar
+    showActionNotif(`✓ Usuario "${displayName}" eliminado.`);
+    // Recargar lista si el panel está visible
+    if (document.getElementById('adminUsersPanel').style.display !== 'none') {
+      loadAdminUserList();
+    }
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+async function adminLoginAs(uid, displayName) {
+  if (!isAdmin()) return;
+  if (!confirm(`¿Iniciar sesión como "${displayName}"?\nTu sesión actual se cerrará.`)) return;
+  // Crear nuevo objeto currentUser
+  const newUser = {
+    uid: uid,
+    username: displayName,
+    createdAt: Date.now() // no importa mucho, se usa en perfil
+  };
+  // Guardar en localStorage y actualizar estado global
+  localStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
+  currentUser = newUser;
+  // Limpiar posibles restos
+  unlockedIds.clear();
+  // Re-inicializar toda la interfaz de usuario
+  await onUserLoggedIn();   // actualiza UI de perfil, personajes, presencia
+  // Si estamos en una sala activa, actualizar presencia con el nuevo nombre
+  if (roomRef && userName !== displayName) {
+    userName = displayName;
+    if (myUserRef) myUserRef.update({ name: userName });
+    else registerPresence();
+  }
+  // Asegurar que el modo DM se mantiene solo si el usuario actual es DM (pero este cambio no lo es)
+  // Forzar re-aplicar modo admin (solo si es DM, pero este nuevo user no lo es)
+  applyAdminMode(); // oculta paneles admin
+  // Recargar sección actual si es perfil o personajes
+  if (currentSection === 'perfil') renderProfileCard();
+  if (currentSection === 'personajes') renderCharsList();
+  showActionNotif(`🔄 Sesión cambiada a "${displayName}"`);
+}
+
+// Modificar renderProfileCard para que muestre/oculte el panel de gestión
+const _origRenderProfileCard = renderProfileCard;
+renderProfileCard = function() {
+  _origRenderProfileCard();
+  const adminPanel = document.getElementById('adminUsersPanel');
+  if (adminPanel) {
+    if (isAdmin()) {
+      adminPanel.style.display = 'block';
+      loadAdminUserList();
+    } else {
+      adminPanel.style.display = 'none';
+    }
+  }
+};
+
+// ==================== SISTEMA DE CARPETAS PARA PERSONAJES ====================
+let currentFolder = '';          // carpeta seleccionada ('' = todos)
+let userFolders = [];            // lista de nombres de carpetas
+
+// Cargar carpetas del usuario actual
+async function loadFolders() {
+  if (!currentUser || !db) return;
+  const snap = await db.ref('userFolders/' + currentUser.uid).once('value');
+  userFolders = snap.val() || [];
+  renderFolderTabs();
+}
+
+// Guardar lista de carpetas en Firebase
+async function saveFolders() {
+  if (!currentUser || !db) return;
+  await db.ref('userFolders/' + currentUser.uid).set(userFolders);
+}
+
+// Crear nueva carpeta
+async function createFolder() {
+  let name = prompt('Nombre de la nueva carpeta:');
+  if (!name) return;
+  name = name.trim();
+  if (name === '') return;
+  if (userFolders.includes(name)) {
+    alert('Ya existe una carpeta con ese nombre.');
+    return;
+  }
+  userFolders.push(name);
+  await saveFolders();
+  renderFolderTabs();
+  // Opcional: seleccionar la nueva carpeta
+  selectFolder(name);
+}
+
+// Renombrar carpeta
+async function renameFolder(oldName) {
+  let newName = prompt('Nuevo nombre para la carpeta:', oldName);
+  if (!newName || newName === oldName) return;
+  newName = newName.trim();
+  if (newName === '') return;
+  if (userFolders.includes(newName)) {
+    alert('Ya existe una carpeta con ese nombre.');
+    return;
+  }
+  // Actualizar el nombre en todos los personajes que la tengan
+  const index = userFolders.indexOf(oldName);
+  if (index !== -1) userFolders[index] = newName;
+  await saveFolders();
+  // Actualizar campo folder en todos los personajes que usaban el nombre antiguo
+  const charsSnap = await db.ref('userChars/' + currentUser.uid).once('value');
+  const updates = {};
+  charsSnap.forEach(child => {
+    const char = child.val();
+    if (char.folder === oldName) {
+      updates[child.key + '/folder'] = newName;
+    }
+  });
+  if (Object.keys(updates).length) {
+    await db.ref('userChars/' + currentUser.uid).update(updates);
+  }
+  // Si la carpeta actual era la renombrada, actualizar selección
+  if (currentFolder === oldName) selectFolder(newName);
+  else renderFolderTabs();
+  renderCharsList(); // refrescar lista de personajes
+}
+
+// Eliminar carpeta (solo si está vacía)
+async function deleteFolder(folderName) {
+  if (!confirm(`¿Eliminar la carpeta "${folderName}"?\nSolo se puede eliminar si no contiene personajes.`)) return;
+  // Contar personajes en esa carpeta
+  const charsSnap = await db.ref('userChars/' + currentUser.uid).once('value');
+  let count = 0;
+  charsSnap.forEach(child => {
+    if (child.val().folder === folderName) count++;
+  });
+  if (count > 0) {
+    alert(`No se puede eliminar: la carpeta contiene ${count} personaje(s). Movelos a otra carpeta primero.`);
+    return;
+  }
+  const index = userFolders.indexOf(folderName);
+  if (index !== -1) userFolders.splice(index, 1);
+  await saveFolders();
+  if (currentFolder === folderName) selectFolder('');
+  else renderFolderTabs();
+  renderCharsList();
+}
+
+// Renderizar las pestañas de carpetas en la interfaz
+function renderFolderTabs() {
+  const container = document.getElementById('foldersTabs');
+  if (!container) return;
+  container.innerHTML = '';
+  // Botón "Todos"
+  const allBtn = document.createElement('button');
+  allBtn.className = 'folder-tab' + (currentFolder === '' ? ' active' : '');
+  allBtn.textContent = '📁 Todos';
+  allBtn.onclick = () => selectFolder('');
+  container.appendChild(allBtn);
+  // Carpetas
+  userFolders.forEach(folder => {
+    const tab = document.createElement('div');
+    tab.className = 'folder-tab' + (currentFolder === folder ? ' active' : '');
+    tab.innerHTML = `
+      <span class="folder-name">📂 ${folder}</span>
+      <span class="folder-actions">
+        <button class="folder-rename" title="Renombrar">✏️</button>
+        <button class="folder-delete" title="Eliminar">🗑️</button>
+      </span>
+    `;
+    tab.querySelector('.folder-name').onclick = (e) => {
+      e.stopPropagation();
+      selectFolder(folder);
+    };
+    tab.querySelector('.folder-rename').onclick = (e) => {
+      e.stopPropagation();
+      renameFolder(folder);
+    };
+    tab.querySelector('.folder-delete').onclick = (e) => {
+      e.stopPropagation();
+      deleteFolder(folder);
+    };
+    container.appendChild(tab);
+  });
+}
+
+function selectFolder(folder) {
+  currentFolder = folder;
+  renderFolderTabs();
+  renderCharsList();  // recargar lista de personajes filtrada
+}
+
+// Mover un personaje a otra carpeta
+async function moveCharToFolder(charId, newFolder) {
+  if (!currentUser || !db) return;
+  await db.ref('userChars/' + currentUser.uid + '/' + charId + '/folder').set(newFolder || null);
+  // Si el personaje está siendo editado actualmente, actualizar el campo folder en el formulario
+  if (editingCharId === charId) {
+    const folderSelect = document.getElementById('charFolderSelect');
+    if (folderSelect) folderSelect.value = newFolder;
+  }
+  renderCharsList();
+}
+
+// Modificar renderCharsList para filtrar por carpeta
+const _origRenderCharsList = renderCharsList;
+renderCharsList = async function() {
+  if (!currentUser) {
+    document.getElementById('charsLoginMsg').style.display = '';
+    document.getElementById('charsPanel').style.display = 'none';
+    document.getElementById('btnNuevoChar').style.display = 'none';
+    document.getElementById('btnImportChar').style.display = 'none';
+    return;
+  }
+  document.getElementById('charsLoginMsg').style.display = 'none';
+  document.getElementById('charsPanel').style.display = 'flex';
+  document.getElementById('btnNuevoChar').style.display = '';
+  document.getElementById('btnImportChar').style.display = '';
+
+  if (!db) return;
+  const snap = await db.ref('userChars/' + currentUser.uid).once('value');
+  myChars = snap.val() || {};
+  const list = document.getElementById('charsListPanel');
+  list.innerHTML = '';
+  // Filtrar por carpeta actual
+  const filtered = Object.entries(myChars).filter(([id, ch]) => {
+    if (currentFolder === '') return true;
+    return (ch.folder || '') === currentFolder;
+  });
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="chars-empty-panel" style="padding:20px;flex:1;"><span style="font-size:2rem;">📂</span><p>No hay personajes en esta carpeta.<br>Creá uno nuevo o mové alguno aquí.</p></div>';
+  } else {
+    filtered.forEach(([id, ch]) => {
+      const card = document.createElement('div');
+      card.className = 'char-list-card' + (id === editingCharId ? ' active' : '');
+      // Menú desplegable para cambiar de carpeta
+      const folderOptions = ['', ...userFolders].map(f => `<option value="${f}" ${(ch.folder || '') === f ? 'selected' : ''}>${f === '' ? '📁 Sin carpeta' : '📂 ' + f}</option>`).join('');
+      card.innerHTML = `
+        <div class="char-list-avatar" style="background:${ch.color||'#c8941a'};color:${isLight(ch.color||'#c8941a')?'#1a0f08':'#fff'}">${(ch.nombre||'?')[0].toUpperCase()}</div>
+        <div class="char-list-info">
+          <div class="char-list-name">${ch.nombre||'Sin nombre'}</div>
+          <div class="char-list-meta">${ch.clase||'Sin clase'} Nv.${ch.nivel||1}</div>
+          <select class="char-folder-select" data-charid="${id}" style="margin-top:4px; font-size:.6rem; padding:2px 4px; background:rgba(200,160,100,.2); border:1px solid var(--ps); border-radius:3px;">
+            ${folderOptions}
+          </select>
+        </div>
+        <button class="char-list-del" onclick="eliminarPersonaje('${id}');event.stopPropagation();" title="Eliminar">🗑</button>
+      `;
+      const select = card.querySelector('.char-folder-select');
+      select.addEventListener('change', (e) => {
+        e.stopPropagation();
+        moveCharToFolder(id, select.value);
+      });
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON') {
+          editarPersonaje(id);
+        }
+      });
+      list.appendChild(card);
+    });
+  }
+};
+
+// Modificar recogerDatosPersonaje para incluir folder
+const _origRecogerDatosPersonaje = recogerDatosPersonaje;
+recogerDatosPersonaje = function() {
+  const data = _origRecogerDatosPersonaje();
+  const folderSelect = document.getElementById('charFolderSelect');
+  if (folderSelect) data.folder = folderSelect.value;
+  else data.folder = currentFolder === '' ? null : currentFolder;
+  return data;
+};
+
+// Modificar editarPersonaje para cargar el folder en el formulario
+const _origEditarPersonaje = editarPersonaje;
+editarPersonaje = function(id) {
+  _origEditarPersonaje(id);
+  const ch = myChars[id];
+  if (!ch) return;
+  // Agregar selector de carpeta en la pestaña Extra (si no existe)
+  let folderRow = document.getElementById('charFolderRow');
+  if (!folderRow) {
+    const extraPane = document.querySelector('.cf-pane[data-cfpane="extra"]');
+    if (extraPane) {
+      const div = document.createElement('div');
+      div.id = 'charFolderRow';
+      div.className = 'frow';
+      div.style.marginBottom = '10px';
+      div.innerHTML = `
+        <div class="fgrp">
+          <span class="flbl">📁 Carpeta</span>
+          <select id="charFolderSelect" class="fin">
+            <option value="">Sin carpeta</option>
+            ${userFolders.map(f => `<option value="${f}">${f}</option>`).join('')}
+          </select>
+        </div>
+      `;
+      // Insertar antes del bloque de acciones de guardado
+      const accionesDiv = extraPane.querySelector('.ptitle:last-of-type')?.nextSibling;
+      if (accionesDiv) extraPane.insertBefore(div, accionesDiv);
+      else extraPane.appendChild(div);
+    }
+  }
+  const folderSelect = document.getElementById('charFolderSelect');
+  if (folderSelect) {
+    folderSelect.innerHTML = `<option value="">Sin carpeta</option>${userFolders.map(f => `<option value="${f}">${f}</option>`).join('')}`;
+    folderSelect.value = ch.folder || '';
+  }
+};
+
+// Inicializar carpetas al cargar usuario y cuando se abre la sección
+function initFolders() {
+  if (currentUser) loadFolders();
+}
+// Llamar initFolders después de onUserLoggedIn
+const _origOnUserLoggedIn2 = onUserLoggedIn;
+onUserLoggedIn = function() {
+  if (_origOnUserLoggedIn2) _origOnUserLoggedIn2();
+  initFolders();
+};
+
+// También al abrir la sección Personajes manualmente
+const observerFolders = new MutationObserver(() => {
+  if (document.getElementById('secPersonajes')?.classList.contains('active-section')) {
+    initFolders();
+  }
+});
+observerFolders.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+// Botón de nueva carpeta
+document.addEventListener('DOMContentLoaded', () => {
+  const newBtn = document.getElementById('newFolderBtn');
+  if (newBtn) newBtn.onclick = createFolder;
+});
 
 </script>
 </body>
