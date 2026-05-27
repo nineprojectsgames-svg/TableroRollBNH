@@ -8098,27 +8098,24 @@ function toggleEstado(key) {
   redraw(); // update token icons on map
 }
 
-// ── EXPORTAR / IMPORTAR FICHAS ───────────────────────────────────
+// ── EXPORTAR FICHA DEL MAPA (formato compatible con Personajes) ──
 function exportFicha() {
-  if (!selId || !tokens[selId]) { alert('Seleccioná una ficha primero.'); return; }
+  if (!selId || !tokens[selId]) {
+    alert('Seleccioná una ficha primero.');
+    return;
+  }
   const t = tokens[selId];
-  const data = {
-    _version: 1,
-    name: t.name,
-    sym: t.sym,
-    color: t.color,
-    pwHash: t.pwHash || null,   // ← FIX: preservar contraseña
-    sh: JSON.parse(JSON.stringify(t.sh))
-  };
-  const json = JSON.stringify(data, null, 2);
+  // Convertir token a objeto igual al que genera recogerDatosPersonaje()
+  const charData = tokenToCharData(t);
+  const json = JSON.stringify(charData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = (t.name || 'ficha').replace(/[^a-zA-Z0-9_-]/g,'_') + '.json';
+  a.download = (t.name || 'personaje').replace(/[^a-zA-Z0-9_-]/g, '_') + '.json';
   a.click();
   URL.revokeObjectURL(url);
-  addLog('spawn', `⬇ <b>${t.name}</b> exportada como JSON`);
+  addLog('spawn', `⬇ <b>${t.name}</b> exportada al formato de personajes.`);
 }
 
 // ── EDITAR FICHA ─────────────────────────────────────────────────
@@ -8198,6 +8195,7 @@ function applyEditPassword() {
   refresh(); redraw(); showStats();
 }
 
+// ── IMPORTAR FICHA AL MAPA DESDE JSON (mismo formato que Personajes) ──
 function importFicha(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -8205,36 +8203,247 @@ function importFicha(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.name || !data.sh) throw new Error('Formato inválido');
-      let c=0, r=0;
-      outer: for(let rr=0;rr<ROWS;rr++) for(let cc=0;cc<COLS;cc++) if(!tokAt(cc,rr)){c=cc;r=rr;break outer;}
-      const id = uid();
-      const sh = { ...blank(), ...data.sh };
-      // Contraseña: viene en data.pwHash (nuevo formato) o en sh.pwHash (formato viejo)
-      const importedHash = data.pwHash || sh.pwHash || null;
-      delete sh.pwHash; // sacar del sh por si estaba ahí por error
-      let finalHash = null;
-      if (importedHash) {
-        if (confirm('"' + data.name + '" tiene contraseña. ¿Importar con contraseña incluida?')) {
-          finalHash = importedHash;
+      // Validar que tenga estructura mínima de personaje
+      if (!data.nombre || typeof data !== 'object') {
+        throw new Error('El archivo no parece un personaje válido.');
+      }
+      // Buscar una celda libre en el mapa
+      let c = 0, r = 0;
+      outer: for (let rr = 0; rr < ROWS; rr++) {
+        for (let cc = 0; cc < COLS; cc++) {
+          if (!tokAt(cc, rr)) { c = cc; r = rr; break outer; }
         }
       }
-      const tok = { id, name: data.name, sym: data.sym || data.name[0], color: data.color || '#f1c40f', c, r, sh };
-      if (finalHash) tok.pwHash = finalHash;
-      tokens[id] = tok;
+      // Crear nuevo token con los datos importados
+      const id = uid();
+      const newToken = charDataToToken(data, id, c, r);
+      tokens[id] = newToken;
       selId = id;
       unlockedIds.add(id);
       fbSet(id);
-      addLog('spawn', `⬆ <b>${data.name}</b> importada al mapa`);
-      refresh(); redraw();
-    } catch(err) {
+      addLog('spawn', `⬆ <b>${newToken.name}</b> importada al mapa desde JSON de personaje.`);
+      refresh();
+      redraw();
+    } catch (err) {
       alert('Error al importar: ' + err.message);
     }
   };
   reader.readAsText(file);
-  event.target.value = '';
+  event.target.value = ''; // limpiar input
 }
 
+// ── FUNCIONES AUXILIARES PARA CONVERSIÓN ─────────────────────────
+
+// Convierte un token (ficha del mapa) a objeto tipo personaje (igual que recogerDatosPersonaje)
+function tokenToCharData(tok) {
+  const sh = tok.sh;
+  return {
+    // Identidad
+    nombre: tok.name,
+    heroname: '',  // no se guarda en el mapa, se puede rellenar después
+    clase: sh.clase || '',
+    espec: sh.espec || '',
+    subclase: sh.subclase || '',
+    nivel: sh.nivel || 1,
+    rango: '',
+    agencia: '',
+    instructor: '',
+    // Stats principales
+    pod: sh.pod || 0,
+    agi: sh.agi || 0,
+    res: sh.res || 0,
+    tec: sh.tec || 0,
+    int: sh.int || 0,
+    bPod: sh.bPod || 0,
+    bAgi: sh.bAgi || 0,
+    bRes: sh.bRes || 0,
+    bTec: sh.bTec || 0,
+    bInt: sh.bInt || 0,
+    // Vitales
+    vida_c: sh.vida_c || 0,
+    vida_m: sh.vida_m || 100,
+    est_c: sh.est_c || 0,
+    est_m: sh.est_m || 100,
+    xp_c: sh.xp_c || 0,
+    xp_m: sh.xp_m || 10,
+    hp_temp: sh.hp_temp || 0,
+    bvVel: sh.bvVel || 0,
+    bvDef: sh.bvDef || 0,
+    bvIni: sh.bvIni || 0,
+    bvReg: sh.bvReg || 0,
+    // Acciones de turno
+    mov: sh.mov ?? 1,
+    acc: sh.acc ?? 1,
+    acca: sh.acca ?? 0,
+    rea: sh.rea ?? 1,
+    // Recursos
+    cua: sh.cua || 0,
+    yh: sh.yh || 0,
+    ct: sh.ct || 0,
+    mer: sh.mer || 0,
+    // Plus Ultra y estados
+    plus_ultra: sh.plus_ultra || false,
+    estados: sh.estados || {},
+    // Atributos (bonos y competencias)
+    baFue: sh.baFue || 0,
+    baIntim: sh.baIntim || 0,
+    baEva: sh.baEva || 0,
+    baAcr: sh.baAcr || 0,
+    baSig: sh.baSig || 0,
+    baAgu: sh.baAgu || 0,
+    baVol: sh.baVol || 0,
+    baCtq: sh.baCtq || 0,
+    baIng: sh.baIng || 0,
+    baTac: sh.baTac || 0,
+    baPer: sh.baPer || 0,
+    baEng: sh.baEng || 0,
+    baInv: sh.baInv || 0,
+    baPrc: sh.baPrc || 0,
+    compFue: sh.compFue || false,
+    compIntim: sh.compIntim || false,
+    compEva: sh.compEva || false,
+    compAcr: sh.compAcr || false,
+    compSig: sh.compSig || false,
+    compAgu: sh.compAgu || false,
+    compVol: sh.compVol || false,
+    compCtq: sh.compCtq || false,
+    compIng: sh.compIng || false,
+    compTac: sh.compTac || false,
+    compPer: sh.compPer || false,
+    compEng: sh.compEng || false,
+    compInv: sh.compInv || false,
+    compPrc: sh.compPrc || false,
+    // Habilidades activas
+    habilidades: (sh.habilidades || []).map(h => ({
+      nombre: h.nombre || '',
+      stat: h.stat || 'pod',
+      golpe: h.golpe || 0,
+      dano: h.dano || '',
+      rango: h.rango || '',
+      stam: h.stam || 0,
+      desc: h.desc || ''
+    })),
+    // Pasivas
+    pasivas: (sh.pasivas || []).map(p => ({
+      nombre: p.nombre || '',
+      stat: p.stat || '',
+      bono: p.bono || 0,
+      desc: p.desc || '',
+      activa: p.activa || false,
+      condicion: p.condicion || ''
+    })),
+    // Equipamiento
+    equipo: sh.equipo || {},
+    // Inventario
+    inventario: (sh.inventario || []).map(i => ({
+      nombre: i.nombre || '',
+      desc: i.desc || '',
+      cant: i.cant || 1
+    })),
+    // Notas y extras
+    notas: sh.notas || '',
+    color: tok.color,
+    sym: tok.sym,
+    password: tok.pwHash ? '(hash)' : '',  // no se exporta la contraseña real por seguridad
+    updatedAt: Date.now()
+  };
+}
+
+// Convierte datos de personaje (formato de recogerDatosPersonaje) a un token para el mapa
+function charDataToToken(data, newId, c, r) {
+  return {
+    id: newId,
+    name: data.nombre || 'Personaje',
+    sym: data.sym || (data.nombre ? data.nombre[0] : '?'),
+    color: data.color || '#c8941a',
+    c: c,
+    r: r,
+    pwHash: data.password ? simpleHash(data.password) : null,
+    sh: {
+      nivel: data.nivel,
+      clase: data.clase,
+      espec: data.espec,
+      subclase: data.subclase,
+      pod: data.pod,
+      agi: data.agi,
+      res: data.res,
+      tec: data.tec,
+      int: data.int,
+      bPod: data.bPod || 0,
+      bAgi: data.bAgi || 0,
+      bRes: data.bRes || 0,
+      bTec: data.bTec || 0,
+      bInt: data.bInt || 0,
+      vida_c: data.vida_c,
+      vida_m: data.vida_m,
+      est_c: data.est_c,
+      est_m: data.est_m,
+      xp_c: data.xp_c || 0,
+      xp_m: data.xp_m || 10,
+      hp_temp: data.hp_temp || 0,
+      plus_ultra: data.plus_ultra || false,
+      estados: data.estados || {},
+      bvVel: data.bvVel || 0,
+      bvDef: data.bvDef || 0,
+      bvIni: data.bvIni || 0,
+      bvReg: data.bvReg || 0,
+      mov: data.mov ?? 1,
+      acc: data.acc ?? 1,
+      acca: data.acca ?? 0,
+      rea: data.rea ?? 1,
+      cua: data.cua || 0,
+      yh: data.yh || 0,
+      ct: data.ct || 0,
+      mer: data.mer || 0,
+      baFue: data.baFue || 0,
+      baIntim: data.baIntim || 0,
+      baEva: data.baEva || 0,
+      baAcr: data.baAcr || 0,
+      baSig: data.baSig || 0,
+      baAgu: data.baAgu || 0,
+      baVol: data.baVol || 0,
+      baCtq: data.baCtq || 0,
+      baIng: data.baIng || 0,
+      baTac: data.baTac || 0,
+      baPer: data.baPer || 0,
+      baEng: data.baEng || 0,
+      baInv: data.baInv || 0,
+      baPrc: data.baPrc || 0,
+      compFue: data.compFue || false,
+      compIntim: data.compIntim || false,
+      compEva: data.compEva || false,
+      compAcr: data.compAcr || false,
+      compSig: data.compSig || false,
+      compAgu: data.compAgu || false,
+      compVol: data.compVol || false,
+      compCtq: data.compCtq || false,
+      compIng: data.compIng || false,
+      compTac: data.compTac || false,
+      compPer: data.compPer || false,
+      compEng: data.compEng || false,
+      compInv: data.compInv || false,
+      compPrc: data.compPrc || false,
+      habilidades: (data.habilidades || []).map((h, i) => ({
+        id: 'h' + i,
+        nombre: h.nombre || '',
+        stat: h.stat || 'pod',
+        golpe: h.golpe || 0,
+        dano: h.dano || '',
+        rango: h.rango || '',
+        stam: h.stam || 0,
+        desc: h.desc || '',
+        tipo_uso: 'accion'
+      })),
+      pasivas: data.pasivas || [],
+      equipo: data.equipo || {},
+      inventario: data.inventario || [],
+      notas: data.notas || '',
+      show_vida: true,
+      show_est: true,
+      show_hptemp: true
+    }
+  };
+}
 // ── SISTEMA DE CONTRASEÑAS ───────────────────────────────────────
 const unlockedIds = new Set(); // IDs que este usuario desbloqueó en esta sesión
 
