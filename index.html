@@ -3605,6 +3605,15 @@ select, textarea,
   opacity: 1;
 }
 
+.titem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.token-preview {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+
 </style>
 </head>
 <body>
@@ -4631,6 +4640,18 @@ select, textarea,
       <div class="ptitle" style="margin-top:8px;">📝 Notas</div>
       <textarea id="fNotas" rows="6" placeholder="Notas privadas del personaje..." style="margin-bottom:4px;" oninput="sf('notas',this.value)"></textarea>
 
+<div class="ptitle" style="margin-top: 12px;">🎁 Recompensas Rápidas</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+  <button class="btn btn-grn btn-sm" onclick="rewardXP(1)">+1 XP</button>
+  <button class="btn btn-grn btn-sm" onclick="rewardXP(2)">+2 XP</button>
+  <button class="btn btn-grn btn-sm" onclick="rewardXP(5)">+5 XP</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardYH(10)">+10 ¥H</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardYH(100)">+100 ¥H</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardCT(1)">+1 CT</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardCT(3)">+3 CT</button>
+  <button class="btn btn-gld btn-sm" onclick="rewardMer(1)">+1 Mérito</button>
+</div>
+
             <!-- Reiniciar posicion -->
       <div class="ptitle" style="margin-top:8px;">📍 Posición en el Mapa</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
@@ -5410,7 +5431,10 @@ function refresh() {
     arr.forEach(t=>{
       const el=document.createElement('div');
       el.className='titem'+(t.id===selId?' sel':'');
-      el.innerHTML=`<div class="tcolor" style="background:${t.color}"></div><span class="ttext">${t.name}</span><span style="font-size:.75rem;color:rgba(44,26,14,.4);">${String.fromCharCode(65+t.c)}${t.r+1}</span><button class="tdel" onclick="removeTok('${t.id}',event)">×</button>`;
+      el.innerHTML = `<div class="token-preview" style="background:${t.color}; color:${isLight(t.color)?'#1a0f08':'#fff'}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-family: 'Cinzel', serif; font-size: 1rem; flex-shrink: 0;">${t.sym || t.name[0] || '?'}</div>
+  <span class="ttext">${t.name}</span>
+  <span style="font-size:.75rem;color:rgba(44,26,14,.4);">${String.fromCharCode(65+t.c)}${t.r+1}</span>
+  <button class="tdel" onclick="removeTok('${t.id}',event)">×</button>`;
       el.addEventListener('click',()=>{
         selId=t.id;
         refresh();
@@ -8819,6 +8843,16 @@ canvas {
     display: block;
   }
 }
+
+.titem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.token-preview {
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+
 </style>
 
 <button id="pwaInstallBtn" aria-label="Instalar aplicación">
@@ -10194,6 +10228,7 @@ canvas {
   <button class="btn btn-gld btn-sm" onclick="guardarPersonaje()">💾 Guardar</button>
   <button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" onclick="exportarPersonajeActual()">⬇ Exportar JSON</button>
   <button class="btn btn-sm" style="background:none;border:1px solid var(--ps);color:var(--ink2);" onclick="enviarAlMapa()" title="Crea una ficha en el mapa con este personaje">🗺 Enviar al Mapa</button>
+<button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);" onclick="duplicateCurrentCharacter()">📋 Duplicar Personaje</button>
 </div>
   <div class="saved" id="cfSavedMsg" style="margin-bottom:10px;"></div>
 
@@ -13227,6 +13262,112 @@ document.addEventListener('DOMContentLoaded', () => {
   const newBtn = document.getElementById('newFolderBtn');
   if (newBtn) newBtn.onclick = createFolder;
 });
+
+async function duplicateCurrentCharacter() {
+  if (!editingCharId) {
+    alert('Primero seleccioná o creá un personaje para duplicar.');
+    return;
+  }
+  if (!currentUser || !db) {
+    alert('Necesitás estar logueado.');
+    return;
+  }
+  let charData = myChars[editingCharId];
+  if (!charData) charData = recogerDatosPersonaje();
+  else charData = recogerDatosPersonaje(); // tomar datos frescos del formulario
+  let newName = charData.nombre + ' (copia)';
+  if (newName.match(/\(copia\)$/)) {
+    let base = newName.replace(/\(copia\)$/, '').trim();
+    let counter = 1;
+    while (myChars[Object.keys(myChars).find(id => myChars[id].nombre === base + ' (copia ' + counter + ')')]) counter++;
+    newName = base + ' (copia ' + counter + ')';
+  } else {
+    let counter = 1;
+    while (myChars[Object.keys(myChars).find(id => myChars[id].nombre === newName)]) {
+      newName = charData.nombre + ' (copia ' + counter + ')';
+      counter++;
+    }
+  }
+  charData.nombre = newName;
+  const newId = 'char_' + Date.now().toString(36);
+  delete charData.id;
+  charData.createdAt = Date.now();
+  await db.ref('userChars/' + currentUser.uid + '/' + newId).set(charData);
+  renderCharsList();
+  editarPersonaje(newId);
+  showActionNotif(`📋 Personaje duplicado como "${newName}"`);
+}
+
+function rewardXP(amount) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId) && !isAdmin()) { showActionNotif('❌ Sin permiso.'); return; }
+  const sh = tokens[selId].sh;
+  let currentXP = sh.xp_c || 0;
+  let maxXP = sh.xp_m || 10;
+  let newXP = currentXP + amount;
+  let levelUp = false;
+  let newLevel = sh.nivel || 1;
+  while (newXP >= maxXP && newLevel < 20) {
+    newXP -= maxXP;
+    newLevel++;
+    let nextMax = 10;
+    for (let i = 1; i < newLevel; i++) nextMax = Math.round(nextMax * 1.5);
+    maxXP = nextMax;
+    levelUp = true;
+  }
+  if (newLevel > 20) newLevel = 20;
+  sh.xp_c = newXP;
+  sh.xp_m = maxXP;
+  if (levelUp) {
+    sh.nivel = newLevel;
+    addLog('spawn', `🎉 <b>${tokens[selId].name}</b> subió al nivel ${newLevel}!`);
+    showToast(`¡NIVEL ${newLevel}!`, 'Subida', `+${amount} XP`, 'heal');
+    autoCalcVitales();
+    updateMainStatMods();
+    ub();
+  } else {
+    addLog('spawn', `✨ <b>${tokens[selId].name}</b> +${amount} XP (${sh.xp_c}/${sh.xp_m})`);
+    showToast(`+${amount} XP`, 'Recompensa', `${sh.xp_c}/${sh.xp_m} XP`, 'normal');
+  }
+  fbPatch(selId, { 'sh/xp_c': sh.xp_c, 'sh/xp_m': sh.xp_m, 'sh/nivel': sh.nivel });
+  const xpCEl = document.getElementById('fXpC'); if (xpCEl) xpCEl.value = sh.xp_c;
+  const xpMEl = document.getElementById('fXpM'); if (xpMEl) xpMEl.value = sh.xp_m;
+  const nivelEl = document.getElementById('fNivel'); if (nivelEl) nivelEl.value = sh.nivel;
+  ub(); showStats();
+}
+
+function rewardYH(amount) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId) && !isAdmin()) return;
+  const sh = tokens[selId].sh;
+  sh.yh = (sh.yh || 0) + amount;
+  fbPatch(selId, { 'sh/yh': sh.yh });
+  const el = document.getElementById('fYh'); if (el) el.value = sh.yh;
+  addLog('spawn', `💰 <b>${tokens[selId].name}</b> +${amount} ¥H (Total: ${sh.yh})`);
+  showToast(`+${amount} ¥H`, 'Recompensa', `Nuevo total: ${sh.yh}`, 'heal');
+}
+
+function rewardCT(amount) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId) && !isAdmin()) return;
+  const sh = tokens[selId].sh;
+  sh.ct = (sh.ct || 0) + amount;
+  fbPatch(selId, { 'sh/ct': sh.ct });
+  const el = document.getElementById('fCt'); if (el) el.value = sh.ct;
+  addLog('spawn', `🔧 <b>${tokens[selId].name}</b> +${amount} CT (Total: ${sh.ct})`);
+  showToast(`+${amount} CT`, 'Recompensa', `Nuevo total: ${sh.ct}`, 'heal');
+}
+
+function rewardMer(amount) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId) && !isAdmin()) return;
+  const sh = tokens[selId].sh;
+  sh.mer = (sh.mer || 0) + amount;
+  fbPatch(selId, { 'sh/mer': sh.mer });
+  const el = document.getElementById('fMer'); if (el) el.value = sh.mer;
+  addLog('spawn', `🏅 <b>${tokens[selId].name}</b> +${amount} Mérito(s) (Total: ${sh.mer})`);
+  showToast(`+${amount} Mérito`, 'Recompensa', `Nuevo total: ${sh.mer}`, 'heal');
+}
 
 </script>
 </body>
