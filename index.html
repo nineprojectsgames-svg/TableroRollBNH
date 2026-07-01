@@ -3614,6 +3614,10 @@ select, textarea,
   box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
 }
 
+#cv {
+  touch-action: none;
+}
+
 </style>
 </head>
 <body>
@@ -5189,135 +5193,193 @@ cv.addEventListener('contextmenu', e=>{
 });
 
 // ── TOUCH EVENTS (mobile) ────────────────────────────────────────
-let touchStartTime = 0;
+// ====== TOUCH EVENTS (MEJORADOS) ======
 let touchStartPos = null;
+let touchStartTime = 0;
 let longPressTimer = null;
-let touchIsPainting = false;
 let touchIsDragging = false;
+let touchIsPainting = false;
+const DRAG_THRESHOLD = 10; // px de movimiento para considerar arrastre
 
-function cellFromTouch(touch) {
-  const r = cv.getBoundingClientRect();
-  return {
-    c: Math.floor((touch.clientX - r.left) / CS),
-    r: Math.floor((touch.clientY - r.top) / CS),
-    x: touch.clientX - r.left,
-    y: touch.clientY - r.top
-  };
-}
-
-cv.addEventListener('touchstart', e => {
+cv.addEventListener('touchstart', function(e) {
   const touch = e.touches[0];
   const p = cellFromTouch(touch);
   touchStartPos = p;
   touchStartTime = Date.now();
-  touchIsPainting = false;
   touchIsDragging = false;
+  touchIsPainting = false;
+  clearTimeout(longPressTimer);
 
-  // En modo mover (none): NO interceptar → el browser scrollea normalmente
-  if (zonaMode === 'none' && !placingObs) {
-    // Solo marcar si hay ficha bajo el dedo para arrastrar
+  // En modo pintar/borrar -> siempre interceptar
+  if (zonaMode === 'pintar' || zonaMode === 'borrar') {
+    e.preventDefault();
+    touchIsPainting = true;
+    isPainting = true;
     if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-const t = tokAt(p.c, p.r);
-if (t) {
-  selObsId = null;
-  selId = t.id;   // ✅ Siempre seleccionamos
-  if (canEdit(t.id) || isAdmin()) {
-    touchIsDragging = true;
-    drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
-    dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
-  }
-}
-      // Sin ficha → no preventDefault → el browser scrollea
+      paintCell(p.c, p.r);
     }
     return;
   }
 
-  // En modo pintar/borrar o colocando obstáculo: interceptar
-  e.preventDefault();
-
-  // Long press = deselect
-  longPressTimer = setTimeout(() => {
-    selId = null; selObsId = null; placingObs = null;
-    buildObsGrid(); buildZonaColors(); refreshObsList();
-    refresh(); redraw();
-  }, 600);
-
-  if (p.c < 0 || p.c >= COLS || p.r < 0 || p.r >= ROWS) return;
-
-  if (zonaMode === 'pintar' || zonaMode === 'borrar') {
-    touchIsPainting = true; isPainting = true; paintCell(p.c, p.r); return;
+  if (placingObs) {
+    e.preventDefault();
+    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
+      placeObs(p.c, p.r);
+    }
+    return;
   }
-  if (placingObs) { placeObs(p.c, p.r); return; }
 
-  const ob = obsAt(p.c, p.r);
-  if (ob) {
-    selObsId = selObsId === ob.id ? null : ob.id;
-    selId = null; refreshObsList(); redraw(); return;
-  }
-  const t = tokAt(p.c, p.r);
-  if (t) {
-    selObsId = null;
-    selId = t.id;
-    touchIsDragging = true;
-    drag = { id: t.id, x: t.c*CS+CS/2, y: t.r*CS+CS/2, sc: t.c, sr: t.r };
-    dragOff = { x: p.x-(t.c*CS+CS/2), y: p.y-(t.r*CS+CS/2) };
-    refresh(); redraw();
-  }
-}, { passive: true }); // passive:true por defecto → el browser puede scrollear
+  // Modo mover (none)
+  if (zonaMode === 'none') {
+    // Primero verificar si hay un obstáculo bajo el dedo
+    const ob = obsAt(p.c, p.r);
+    if (ob) {
+      selObsId = (selObsId === ob.id) ? null : ob.id;
+      selId = null;
+      refreshObsList();
+      redraw();
+      e.preventDefault(); // Evitar scroll al tocar obstáculo
+      return;
+    }
 
-cv.addEventListener('touchmove', e => {
+    const t = tokAt(p.c, p.r);
+    if (t) {
+      // Seleccionar la ficha
+      selObsId = null;
+      selId = t.id;
+      // Solo iniciar arrastre si se puede editar
+      if (canEdit(t.id) || isAdmin()) {
+        touchIsDragging = true;
+        // Guardar posición para el umbral de movimiento
+        touchStartDragPos = { x: touch.clientX, y: touch.clientY };
+        drag = {
+          id: t.id,
+          x: t.c * CS + CS/2,
+          y: t.r * CS + CS/2,
+          sc: t.c,
+          sr: t.r
+        };
+        dragOff = {
+          x: p.x - (t.c * CS + CS/2),
+          y: p.y - (t.r * CS + CS/2)
+        };
+        e.preventDefault(); // Bloquear scroll mientras se arrastra
+      } else {
+        // Solo seleccionar, sin arrastrar
+        e.preventDefault(); // También prevenir scroll al seleccionar
+      }
+      refresh();
+      redraw();
+      return;
+    }
+
+    // Si no hay ficha ni obstáculo, permitir scroll (no hacemos preventDefault)
+    // pero guardamos la posición para posible movimiento de la ficha seleccionada
+    if (selId) {
+      // Si hay ficha seleccionada, al tocar una celda vacía la moveremos en touchend
+      // pero no bloqueamos el scroll aquí
+    }
+  }
+}, { passive: false });
+
+cv.addEventListener('touchmove', function(e) {
   const touch = e.touches[0];
   const p = cellFromTouch(touch);
   hov = { c: p.c, r: p.r };
 
   if (touchIsPainting) {
-    e.preventDefault(); // solo bloquear scroll si estamos pintando
+    e.preventDefault();
     clearTimeout(longPressTimer);
-    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) paintCell(p.c, p.r);
-  }
-
-  if (touchIsDragging && drag) {
-    e.preventDefault(); // solo bloquear scroll si arrastramos ficha
-    clearTimeout(longPressTimer);
-    drag.x = p.x - dragOff.x + CS/2;
-    drag.y = p.y - dragOff.y + CS/2;
-    hov.c = Math.max(0, Math.min(COLS-1, Math.floor((drag.x - CS/2)/CS + .5)));
-    hov.r = Math.max(0, Math.min(ROWS-1, Math.floor((drag.y - CS/2)/CS + .5)));
-  }
-
-  if (touchIsPainting || touchIsDragging) redraw();
-}, { passive: false });
-
-cv.addEventListener('touchend', e => {
-  clearTimeout(longPressTimer);
-  isPainting = false;
-  const duration = Date.now() - touchStartTime;
-
-  if (touchIsDragging && drag) {
-    const t = tokens[drag.id];
-    if (t && (hov.c !== drag.sc || hov.r !== drag.sr) && !tokAt(hov.c, hov.r)) {
-      moveTok(drag.id, hov.c, hov.r);
-      fbSet(drag.id);
+    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
+      paintCell(p.c, p.r);
     }
-    drag = null; touchIsDragging = false;
-    refresh(); redraw();
+    redraw();
     return;
   }
 
-  touchIsPainting = false;
-  touchIsDragging = false;
-
-  // Tap rápido en celda vacía con ficha seleccionada → mover (solo en modo mover)
-if (zonaMode === 'none' && duration < 400 && touchStartPos && selId && !tokAt(touchStartPos.c, touchStartPos.r)) {
-  if (canEdit(selId) || isAdmin()) {
-    moveTok(selId, touchStartPos.c, touchStartPos.r);
-    fbSet(selId);
-    refresh(); redraw();
+  if (touchIsDragging && drag) {
+    e.preventDefault();
+    clearTimeout(longPressTimer);
+    // Actualizar posición del arrastre
+    drag.x = p.x - dragOff.x + CS/2;
+    drag.y = p.y - dragOff.y + CS/2;
+    // Calcular celda destino (hover)
+    const nc = Math.max(0, Math.min(COLS-1, Math.floor((drag.x - CS/2) / CS + .5)));
+    const nr = Math.max(0, Math.min(ROWS-1, Math.floor((drag.y - CS/2) / CS + .5)));
+    hov.c = nc;
+    hov.r = nr;
+    redraw();
   }
-}
+}, { passive: false });
+
+cv.addEventListener('touchend', function(e) {
+  clearTimeout(longPressTimer);
+  isPainting = false;
+
+  const duration = Date.now() - touchStartTime;
+
+  // Si estábamos pintando, salir
+  if (touchIsPainting) {
+    touchIsPainting = false;
+    redraw();
+    return;
+  }
+
+  // Si estábamos arrastrando una ficha
+  if (touchIsDragging && drag) {
+    touchIsDragging = false;
+    const t = tokens[drag.id];
+    if (t) {
+      // Verificar si la celda destino es válida y no ocupada
+      const nc = hov.c;
+      const nr = hov.r;
+      if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS) {
+        const destTok = tokAt(nc, nr);
+        if (!destTok || destTok.id === drag.id) {
+          // Solo mover si cambió de posición
+          if (nc !== drag.sc || nr !== drag.sr) {
+            moveTok(drag.id, nc, nr);
+            fbSet(drag.id);
+          }
+        }
+      }
+    }
+    drag = null;
+    refresh();
+    redraw();
+    return;
+  }
+
+  // Tap en celda vacía con ficha seleccionada (movimiento rápido)
+  if (zonaMode === 'none' &&
+      duration < 300 &&
+      touchStartPos &&
+      selId &&
+      touchStartPos.c >= 0 && touchStartPos.c < COLS &&
+      touchStartPos.r >= 0 && touchStartPos.r < ROWS) {
+    // Verificar que no haya ficha en esa celda
+    if (!tokAt(touchStartPos.c, touchStartPos.r)) {
+      // Verificar que el dedo no se haya movido mucho (umbral)
+      const lastTouch = e.changedTouches[0];
+      if (lastTouch) {
+        const dx = lastTouch.clientX - touchStartPos.x;
+        const dy = lastTouch.clientY - touchStartPos.y;
+        if (Math.sqrt(dx*dx + dy*dy) < DRAG_THRESHOLD) {
+          if (canEdit(selId) || isAdmin()) {
+            moveTok(selId, touchStartPos.c, touchStartPos.r);
+            fbSet(selId);
+            refresh();
+            redraw();
+          }
+        }
+      }
+    }
+  }
+
+  // Restablecer hover
   hov = { c: -1, r: -1 };
   redraw();
-}, { passive: true });
+}, { passive: false });
 
 // ── TOKEN OPS ────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
