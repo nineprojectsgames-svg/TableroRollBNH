@@ -3616,6 +3616,10 @@ select, textarea,
 
 #cv {
   touch-action: none;
+  /* Evita que el canvas se estire por max-width */
+  max-width: none;
+  width: auto;
+  height: auto;
 }
 
 </style>
@@ -5106,6 +5110,20 @@ function cell(e) {
 }
 function tokAt(c,r) { return Object.values(tokens).find(t=>t.c===c&&t.r===r); }
 
+// Obtiene coordenadas en píxeles del canvas desde un evento táctil o mouse
+function getCanvasCoords(e) {
+  const rect = cv.getBoundingClientRect();
+  const scaleX = cv.width / rect.width;   // factor de escala horizontal
+  const scaleY = cv.height / rect.height; // factor de escala vertical
+  const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+  const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+  if (clientX === undefined) return { x: 0, y: 0 };
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
 cv.addEventListener('mousedown', e => {
   if (e.button===2) {
     // right click: deselect everything
@@ -5192,66 +5210,73 @@ cv.addEventListener('contextmenu', e=>{
   if (ob) { selObsId=ob.id; deleteSelectedObs(); }
 });
 
-// ── TOUCH EVENTS (mobile) ────────────────────────────────────────
-// ====== TOUCH EVENTS (MEJORADOS) ======
-let touchStartPos = null;
+// ====== TOUCH EVENTS (PRECISIÓN MEJORADA) ======
+let touchStartPos = null;        // { x, y } en píxeles del canvas
 let touchStartTime = 0;
 let longPressTimer = null;
 let touchIsDragging = false;
 let touchIsPainting = false;
-const DRAG_THRESHOLD = 10; // px de movimiento para considerar arrastre
+let touchTapToggleId = null; // ficha candidata a deseleccionar si el toque termina sin arrastre real
+const DRAG_THRESHOLD = 12; // px
 
 cv.addEventListener('touchstart', function(e) {
   const touch = e.touches[0];
-  const p = cellFromTouch(touch);
-  touchStartPos = p;
+  const coords = getCanvasCoords(touch);
+  const p = {
+    c: Math.round((coords.x - CS/2) / CS),
+    r: Math.round((coords.y - CS/2) / CS),
+    x: coords.x,
+    y: coords.y
+  };
+  // Limitar a bordes
+  p.c = Math.max(0, Math.min(COLS-1, p.c));
+  p.r = Math.max(0, Math.min(ROWS-1, p.r));
+
+  touchStartPos = { x: coords.x, y: coords.y };
   touchStartTime = Date.now();
   touchIsDragging = false;
   touchIsPainting = false;
   clearTimeout(longPressTimer);
 
-  // En modo pintar/borrar -> siempre interceptar
+  // Modo pintar/borrar
   if (zonaMode === 'pintar' || zonaMode === 'borrar') {
     e.preventDefault();
     touchIsPainting = true;
     isPainting = true;
-    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-      paintCell(p.c, p.r);
-    }
+    paintCell(p.c, p.r);
     return;
   }
 
   if (placingObs) {
     e.preventDefault();
-    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-      placeObs(p.c, p.r);
-    }
+    placeObs(p.c, p.r);
     return;
   }
 
   // Modo mover (none)
   if (zonaMode === 'none') {
-    // Primero verificar si hay un obstáculo bajo el dedo
+    // Obstáculo
     const ob = obsAt(p.c, p.r);
     if (ob) {
       selObsId = (selObsId === ob.id) ? null : ob.id;
       selId = null;
       refreshObsList();
       redraw();
-      e.preventDefault(); // Evitar scroll al tocar obstáculo
+      e.preventDefault();
       return;
     }
 
+    // Ficha
     const t = tokAt(p.c, p.r);
     if (t) {
-      // Seleccionar la ficha
+      // Si tocás la ficha que ya estaba seleccionada, queda marcada como
+      // candidata a deselección (se confirma en touchend si no hubo arrastre real)
+      touchTapToggleId = (selId === t.id) ? t.id : null;
       selObsId = null;
       selId = t.id;
-      // Solo iniciar arrastre si se puede editar
       if (canEdit(t.id) || isAdmin()) {
         touchIsDragging = true;
-        // Guardar posición para el umbral de movimiento
-        touchStartDragPos = { x: touch.clientX, y: touch.clientY };
+        // Guardar posición inicial de arrastre (en píxeles del canvas)
         drag = {
           id: t.id,
           x: t.c * CS + CS/2,
@@ -5260,39 +5285,46 @@ cv.addEventListener('touchstart', function(e) {
           sr: t.r
         };
         dragOff = {
-          x: p.x - (t.c * CS + CS/2),
-          y: p.y - (t.r * CS + CS/2)
+          x: coords.x - (t.c * CS + CS/2),
+          y: coords.y - (t.r * CS + CS/2)
         };
-        e.preventDefault(); // Bloquear scroll mientras se arrastra
+        e.preventDefault();
       } else {
-        // Solo seleccionar, sin arrastrar
-        e.preventDefault(); // También prevenir scroll al seleccionar
+        // Solo selección
+        e.preventDefault();
       }
       refresh();
       redraw();
       return;
     }
 
-    // Si no hay ficha ni obstáculo, permitir scroll (no hacemos preventDefault)
-    // pero guardamos la posición para posible movimiento de la ficha seleccionada
+    // Si hay ficha seleccionada y tocamos celda vacía, guardamos para posible movimiento en touchend
     if (selId) {
-      // Si hay ficha seleccionada, al tocar una celda vacía la moveremos en touchend
-      // pero no bloqueamos el scroll aquí
+      // Guardamos la celda tocada en touchStartPos.c/r para usarla si no hay arrastre
+      touchStartPos.c = p.c;
+      touchStartPos.r = p.r;
     }
   }
 }, { passive: false });
 
 cv.addEventListener('touchmove', function(e) {
   const touch = e.touches[0];
-  const p = cellFromTouch(touch);
+  const coords = getCanvasCoords(touch);
+  const p = {
+    c: Math.round((coords.x - CS/2) / CS),
+    r: Math.round((coords.y - CS/2) / CS),
+    x: coords.x,
+    y: coords.y
+  };
+  p.c = Math.max(0, Math.min(COLS-1, p.c));
+  p.r = Math.max(0, Math.min(ROWS-1, p.r));
+
   hov = { c: p.c, r: p.r };
 
   if (touchIsPainting) {
     e.preventDefault();
     clearTimeout(longPressTimer);
-    if (p.c >= 0 && p.c < COLS && p.r >= 0 && p.r < ROWS) {
-      paintCell(p.c, p.r);
-    }
+    paintCell(p.c, p.r);
     redraw();
     return;
   }
@@ -5300,14 +5332,14 @@ cv.addEventListener('touchmove', function(e) {
   if (touchIsDragging && drag) {
     e.preventDefault();
     clearTimeout(longPressTimer);
-    // Actualizar posición del arrastre
-    drag.x = p.x - dragOff.x + CS/2;
-    drag.y = p.y - dragOff.y + CS/2;
-    // Calcular celda destino (hover)
-    const nc = Math.max(0, Math.min(COLS-1, Math.floor((drag.x - CS/2) / CS + .5)));
-    const nr = Math.max(0, Math.min(ROWS-1, Math.floor((drag.y - CS/2) / CS + .5)));
-    hov.c = nc;
-    hov.r = nr;
+    // Actualizar posición visual de la ficha
+    drag.x = coords.x - dragOff.x;
+    drag.y = coords.y - dragOff.y;
+    // Calcular celda destino a partir de la posición del dedo
+    const nc = Math.round((drag.x - CS/2) / CS);
+    const nr = Math.round((drag.y - CS/2) / CS);
+    hov.c = Math.max(0, Math.min(COLS-1, nc));
+    hov.r = Math.max(0, Math.min(ROWS-1, nr));
     redraw();
   }
 }, { passive: false });
@@ -5316,8 +5348,6 @@ cv.addEventListener('touchend', function(e) {
   clearTimeout(longPressTimer);
   isPainting = false;
 
-  const duration = Date.now() - touchStartTime;
-
   // Si estábamos pintando, salir
   if (touchIsPainting) {
     touchIsPainting = false;
@@ -5325,48 +5355,52 @@ cv.addEventListener('touchend', function(e) {
     return;
   }
 
-  // Si estábamos arrastrando una ficha
+  // Si estábamos arrastrando
   if (touchIsDragging && drag) {
     touchIsDragging = false;
     const t = tokens[drag.id];
+    let moved = false;
     if (t) {
-      // Verificar si la celda destino es válida y no ocupada
       const nc = hov.c;
       const nr = hov.r;
       if (nc >= 0 && nc < COLS && nr >= 0 && nr < ROWS) {
+        // Verificar que la celda no esté ocupada (excepto por sí mismo)
         const destTok = tokAt(nc, nr);
         if (!destTok || destTok.id === drag.id) {
-          // Solo mover si cambió de posición
           if (nc !== drag.sc || nr !== drag.sr) {
             moveTok(drag.id, nc, nr);
             fbSet(drag.id);
+            moved = true;
           }
         }
       }
     }
+    // Tocaste la ficha ya seleccionada sin arrastrarla -> deseleccionar
+    if (!moved && touchTapToggleId === drag.id) {
+      selId = null;
+    }
+    touchTapToggleId = null;
     drag = null;
     refresh();
     redraw();
     return;
   }
 
-  // Tap en celda vacía con ficha seleccionada (movimiento rápido)
-  if (zonaMode === 'none' &&
-      duration < 300 &&
-      touchStartPos &&
-      selId &&
-      touchStartPos.c >= 0 && touchStartPos.c < COLS &&
-      touchStartPos.r >= 0 && touchStartPos.r < ROWS) {
-    // Verificar que no haya ficha en esa celda
-    if (!tokAt(touchStartPos.c, touchStartPos.r)) {
-      // Verificar que el dedo no se haya movido mucho (umbral)
+  // Tap rápido en celda vacía con ficha seleccionada
+  const duration = Date.now() - touchStartTime;
+  if (duration < 300 && selId && touchStartPos && touchStartPos.c !== undefined && touchStartPos.r !== undefined) {
+    const tc = touchStartPos.c;
+    const tr = touchStartPos.r;
+    if (tc >= 0 && tc < COLS && tr >= 0 && tr < ROWS && !tokAt(tc, tr)) {
+      // Verificar que el dedo no se haya movido mucho
       const lastTouch = e.changedTouches[0];
       if (lastTouch) {
-        const dx = lastTouch.clientX - touchStartPos.x;
-        const dy = lastTouch.clientY - touchStartPos.y;
+        const coordsEnd = getCanvasCoords(lastTouch);
+        const dx = coordsEnd.x - touchStartPos.x;
+        const dy = coordsEnd.y - touchStartPos.y;
         if (Math.sqrt(dx*dx + dy*dy) < DRAG_THRESHOLD) {
           if (canEdit(selId) || isAdmin()) {
-            moveTok(selId, touchStartPos.c, touchStartPos.r);
+            moveTok(selId, tc, tr);
             fbSet(selId);
             refresh();
             redraw();
@@ -12453,17 +12487,13 @@ function toggleTokenNames() {
 // Parchear drawTok para mostrar nombres
 // Se inyecta después del texto del símbolo
 const _origDrawTok = window.drawTok;
-window.drawTok = function(t, isDragging) {
-  _origDrawTok && _origDrawTok(t, isDragging);
+window.drawTok = function(t, ox, oy) {
+  _origDrawTok && _origDrawTok(t, ox, oy);
   if (!_showTokenNames || !t) return;
   // Calcular posición del token
   const CS = window.CS || 38;
-  const x = isDragging
-    ? (window.drag && window.drag.x ? window.drag.x : t.c * CS + CS/2)
-    : t.c * CS + CS/2;
-  const y = isDragging
-    ? (window.drag && window.drag.y ? window.drag.y : t.r * CS + CS/2)
-    : t.r * CS + CS/2;
+  const x = ox !== undefined ? ox : t.c * CS + CS/2;
+  const y = oy !== undefined ? oy : t.r * CS + CS/2;
   // Nombre debajo del token
   const ctx = document.getElementById('cv')?.getContext('2d');
   if (!ctx) return;
