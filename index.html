@@ -3600,6 +3600,147 @@ select, textarea,
   height: auto;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ✨ MEJORAS DE INTERFAZ — pulido visual, animaciones y confort
+   táctil/PC. Todo aditivo: no borra ni reemplaza reglas previas,
+   solo las refina (misma especificidad = gana por orden = esto).
+   ══════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* ── Fondo con más profundidad, sutil viñeta radial ── */
+  body {
+    background:
+      radial-gradient(ellipse 120% 80% at 50% -10%, rgba(200,148,26,.08), transparent 60%),
+      radial-gradient(ellipse 100% 60% at 100% 100%, rgba(139,26,26,.06), transparent 55%),
+      #1a0f08;
+  }
+
+  /* ── Transiciones suaves solo en elementos interactivos (no *) ── */
+  .btn, .btn-sm, .btn-xs, .tab-btn, .nav-tab, .titem, .turn-card,
+  .panel, .cdot, input[type=text], input[type=number], input[type=password],
+  select, .pu, .pasiva-toggle, .pasiva-input, .folder-tab, .dcell,
+  #pwaInstallBtn, .stat-total {
+    transition: transform .14s cubic-bezier(.34,1.4,.64,1),
+                box-shadow .18s ease,
+                background-color .16s ease,
+                border-color .16s ease,
+                filter .16s ease;
+  }
+
+  /* ── Botones: profundidad + feedback de toque ── */
+  .btn, .btn-sm, .btn-xs {
+    box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 2px 5px rgba(0,0,0,.25);
+  }
+  .btn:active, .btn-sm:active, .btn-xs:active,
+  .btn-red:active, .btn-grn:active, .btn-gld:active {
+    transform: scale(.96);
+    filter: brightness(.92);
+    box-shadow: 0 1px 2px rgba(0,0,0,.3) inset;
+  }
+  @media (hover: hover) {
+    .btn:hover, .btn-sm:hover, .btn-xs:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  }
+
+  /* ── Paneles: sombra suave + leve realce en hover de escritorio ── */
+  .panel {
+    box-shadow: 0 2px 10px rgba(0,0,0,.18), 0 0 0 1px rgba(200,148,26,.05) inset;
+  }
+  @media (hover: hover) {
+    .panel:hover { box-shadow: 0 4px 16px rgba(0,0,0,.24), 0 0 0 1px rgba(200,148,26,.08) inset; }
+  }
+
+  /* ── Tarjetas de lista (tokens, turnos, pasivas): hover-lift ── */
+  @media (hover: hover) {
+    .titem:hover, .turn-card:hover, .folder-tab:hover { transform: translateX(2px); }
+  }
+
+  /* ── Tabs: indicador activo con transición suave ── */
+  .tab-btn, .nav-tab { position: relative; }
+  .tab-btn.active::after, .nav-tab.active::after {
+    content: '';
+    position: absolute;
+    left: 18%; right: 18%; bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gld2), transparent);
+    border-radius: 2px;
+    animation: tabGlow .5s ease;
+  }
+  @keyframes tabGlow {
+    from { opacity: 0; transform: scaleX(.3); }
+    to   { opacity: 1; transform: scaleX(1); }
+  }
+
+  /* ── Inputs: anillo de foco dorado, más agradable que solo el borde ── */
+  input[type=text]:focus, input[type=number]:focus, input[type=password]:focus,
+  select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(200,148,26,.22);
+  }
+
+  /* ── Toast de tirada: pequeño rebote de entrada ── */
+  #rollToast.show { animation: rollPop .35s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes rollPop {
+    0%   { transform: translate(-50%,-50%) scale(.75); opacity: 0; }
+    60%  { transform: translate(-50%,-50%) scale(1.05); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1); }
+  }
+  #rollToast.rt-crit .rt-total { animation: critPulse 1.1s ease-in-out infinite; }
+  @keyframes critPulse {
+    0%,100% { text-shadow: 0 0 8px rgba(241,196,15,.5); }
+    50%     { text-shadow: 0 0 22px rgba(241,196,15,.95); }
+  }
+
+  /* ── Loading screen: pulso suave en el título ── */
+  .loading-title { animation: loadPulse 1.8s ease-in-out infinite; }
+  @keyframes loadPulse {
+    0%,100% { opacity: .85; }
+    50%     { opacity: 1; text-shadow: 0 0 16px rgba(200,148,26,.4); }
+  }
+
+  /* ── Transición suave al cambiar de pestaña o sección ── */
+  .tab-pane.active, .app-section.active {
+    animation: paneFade .22s ease;
+  }
+  @keyframes paneFade {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Barras de vida/estamina/xp: brillo al cambiar ── */
+  #bVida, #bEst, #bXp, #bHpTemp { transition: width .35s cubic-bezier(.4,0,.2,1), background-color .25s ease; }
+}
+
+/* ── Scrollbars finos y dorados en TODA la app (no solo listas puntuales) ── */
+* { scrollbar-width: thin; scrollbar-color: var(--ps) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--ps); border-radius: 6px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--gld2); }
+
+/* ── Foco visible accesible por teclado, sin ensuciar el look táctil ── */
+:focus-visible { outline: 2px solid var(--gld2); outline-offset: 2px; }
+button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
+
+/* ── Selección de texto con el color de la casa ── */
+::selection { background: rgba(200,148,26,.35); color: var(--ink); }
+
+/* ── Confort táctil: objetivos de toque más grandes en móvil ── */
+@media (max-width: 900px) {
+  .tab-btn { min-height: 46px; }
+  .btn, .btn-sm { min-height: 34px; }
+  input[type=text], input[type=number], input[type=password], select {
+    min-height: 34px;
+  }
+  /* Respeta el "notch"/home-indicator de iPhone en la barra inferior */
+  #tabBar { padding-bottom: max(4px, env(safe-area-inset-bottom)); }
+}
+
+/* ── Estado vacío: un poco más de aire y jerarquía ── */
+.empty-msg { line-height: 1.6; }
+
+/* ── Números de tiradas/mods: peso visual consistente ── */
+.stat-total, .mFinal, [id^="mFinal"] { font-variant-numeric: tabular-nums; }
+
 </style>
 </head>
 <body>
