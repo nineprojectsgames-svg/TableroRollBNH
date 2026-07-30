@@ -5736,6 +5736,8 @@ function updateMainStatMods() {
     });
   });
 
+  const pu = sh.plus_ultra ? 2 : 0;
+
   const MAINS = [
     ['pod','Pod'], ['agi','Agi'], ['res','Res'], ['tec','Tec'], ['int','Int']
   ];
@@ -11436,14 +11438,45 @@ function cfUpdateCalcs() {
   const bInt   = parseInt(document.getElementById('cf_bInt')?.value) || 0;
   const clase  = (document.getElementById('cf_clase')?.value || '').toLowerCase();
 
+  // Leer pasivas y equipo actuales del formulario para sumar sus bonos (igual que en el token de juego)
+  const pasivasForm = [];
+  document.querySelectorAll('#cfPasivaList .pasiva-row').forEach(row => {
+    const activa = row.querySelector('.pasiva-toggle')?.classList.contains('on') || false;
+    const bonos = [];
+    row.querySelectorAll('.cfp-bono-fila').forEach(fila => {
+      const tipo = fila.querySelector('.cfp-bono-tipo')?.value || 'stat';
+      const stat = fila.querySelector('.cfp-bono-stat')?.value || '';
+      const valor = parseFloat(fila.querySelector('.cfp-bono-valor')?.value) || 0;
+      bonos.push({ tipo, stat, valor });
+    });
+    pasivasForm.push({ activa, bonos });
+  });
+  const equipoForm = {};
+  (typeof CF_EQUIP_SLOTS !== 'undefined' ? CF_EQUIP_SLOTS : []).forEach(slot => {
+    equipoForm[slot.id] = {
+      stat: document.querySelector(`.cfeq-stat[data-slot="${slot.id}"]`)?.value || '',
+      bono: parseFloat(document.querySelector(`.cfeq-bono[data-slot="${slot.id}"]`)?.value) || 0,
+    };
+  });
+  const extBonos = {};
+  Object.values(equipoForm).forEach(slot => {
+    if (slot && slot.stat && slot.bono) extBonos[slot.stat] = (extBonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
+  });
+  pasivasForm.forEach(p => {
+    if (!p.activa) return;
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) extBonos[b.stat] = (extBonos[b.stat]||0) + (parseFloat(b.valor)||0);
+    });
+  });
+
   // Construir un sh temporal para usar calcularVitales
   const shTemp = {
     clase: clase,
     nivel: nivel,
     pod: pod, agi: agi, res: res, tec: tec, int: int_,
     bPod: bPod, bAgi: bAgi, bRes: bRes, bTec: bTec, bInt: bInt,
-    equipo: {}, // no tenemos equipo en el gestor, pero lo dejamos vacío
-    pasivas: [],
+    equipo: equipoForm,
+    pasivas: pasivasForm,
     plus_ultra: cfPUActive
   };
 
@@ -11467,7 +11500,7 @@ function cfUpdateCalcs() {
   const pu = cfPUActive ? 2 : 0;
   MAINS.forEach(([key, Key, base, bono]) => {
     const mb = Math.trunc((base + bono) / 2 - 5);
-    const mf = mb + pu; // en el gestor no hay equipo/pasivas
+    const mf = mb + pu + (extBonos[key] || 0); // ahora sí incluye equipo/pasivas
     const elBase  = document.getElementById('cfMBase'+Key);
     const elFinal = document.getElementById('cfMFinal'+Key);
     if (elBase)  elBase.textContent  = mb >= 0 ? '+'+mb : ''+mb;
@@ -14456,7 +14489,11 @@ function calcularModFinal(stat, sh) {
     if (slot && slot.stat === stat && slot.bono) ext += parseFloat(slot.bono) || 0;
   });
   (sh.pasivas || []).forEach(p => {
-    if (p.activa && p.stat === stat && p.bono) ext += parseFloat(p.bono) || 0;
+    if (!p.activa) return;
+    if (p.stat === stat && p.bono) ext += parseFloat(p.bono) || 0;
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat === stat && b.valor) ext += parseFloat(b.valor) || 0;
+    });
   });
   if (sh.plus_ultra) ext += 2;
 
