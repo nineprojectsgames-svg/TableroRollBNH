@@ -5467,14 +5467,11 @@ function moveTok(id,c,r) {
 function getVelTotal(id) {
   if (!tokens[id] || !tokens[id].sh) return 0;
   const sh = tokens[id].sh;
-  // vel base + bono manual + bonos equipo + bonos pasivas + plus ultra
+  // Base + bono manual + bonos de equipo/pasivas
   let total = (sh.vel || 0) + (sh.bvVel || 0);
-  Object.values(sh.equipo || {}).forEach(slot => {
-    if (slot && slot.stat === 'vel' && slot.bono) total += parseFloat(slot.bono) || 0;
-  });
-  (sh.pasivas || []).forEach(p => {
-    if (p.activa && p.stat === 'vel' && p.bono) total += parseFloat(p.bono) || 0;
-  });
+  // Bonos de equipo y pasivas (usar la función auxiliar)
+  const bonusMap = getBonosFromPasivasYEquipo(sh);
+  total += (bonusMap.vel || 0);
   if (sh.plus_ultra) total += 2;
   return Math.max(0, Math.round(total));
 }
@@ -6152,10 +6149,19 @@ let turnRound = 1;
 let turnOrderOverride = []; // IDs en orden manual (para desempate)
 
 function getTurnOrder() {
-  // Ordenar por iniciativa descendente
   const sorted = Object.values(tokens).sort((a, b) => {
-    const ia = a.sh ? ((a.sh.ini||0)+(a.sh.bvIni||0)) : 0;
-    const ib = b.sh ? ((b.sh.ini||0)+(b.sh.bvIni||0)) : 0;
+    // Iniciativa total = base + bv + bonos de equipo/pasivas
+    const getIniTotal = (t) => {
+      if (!t.sh) return 0;
+      const sh = t.sh;
+      let total = (sh.ini || 0) + (sh.bvIni || 0);
+      const bonusMap = getBonosFromPasivasYEquipo(sh);
+      total += (bonusMap.ini || 0);
+      if (sh.plus_ultra) total += 2;
+      return total;
+    };
+    const ia = getIniTotal(a);
+    const ib = getIniTotal(b);
     if (ib !== ia) return ib - ia;
     // Empate: usar orden manual si existe
     const oa = turnOrderOverride.indexOf(a.id);
@@ -6174,8 +6180,8 @@ function moveTurnCard(idx, dir) {
   const newIdx = idx + dir;
   if (newIdx < 0 || newIdx >= order.length) return;
   // Solo permitir si hay empate de iniciativa entre los dos
-  const ia = order[idx].sh ? ((order[idx].sh.ini||0)+(order[idx].sh.bvIni||0)) : 0;
-  const ib = order[newIdx].sh ? ((order[newIdx].sh.ini||0)+(order[newIdx].sh.bvIni||0)) : 0;
+  const ia = order[idx].sh ? (order[idx].sh.ini_total !== undefined ? order[idx].sh.ini_total : ((order[idx].sh.ini||0)+(order[idx].sh.bvIni||0))) : 0;
+  const ib = order[newIdx].sh ? (order[newIdx].sh.ini_total !== undefined ? order[newIdx].sh.ini_total : ((order[newIdx].sh.ini||0)+(order[newIdx].sh.bvIni||0))) : 0;
   if (ia !== ib) return; // no swapear si no hay empate
 
   // Reconstruir el override con el swap
@@ -6191,6 +6197,17 @@ function moveTurnCard(idx, dir) {
 }
 
 function refreshTurns() {
+
+function getIniTotal(tok) {
+  if (!tok || !tok.sh) return 0;
+  const sh = tok.sh;
+  let total = (sh.ini || 0) + (sh.bvIni || 0);
+  const bonusMap = getBonosFromPasivasYEquipo(sh);
+  total += (bonusMap.ini || 0);
+  if (sh.plus_ultra) total += 2;
+  return total;
+}
+
   const list = document.getElementById('turnList');
   const order = getTurnOrder();
 
@@ -6209,11 +6226,11 @@ function refreshTurns() {
 
   list.innerHTML = '';
   order.forEach((t, i) => {
-    const ini = t.sh ? ((t.sh.ini||0)+(t.sh.bvIni||0)) : 0;
+    const ini = t.sh ? (t.sh.ini_total !== undefined ? t.sh.ini_total : ((t.sh.ini||0)+(t.sh.bvIni||0))) : 0;
     const isActive = i === turnIndex;
     // ¿tiene empate con vecino de arriba o abajo?
-    const prevIni = i > 0 && order[i-1].sh ? ((order[i-1].sh.ini||0)+(order[i-1].sh.bvIni||0)) : null;
-    const nextIni = i < order.length-1 && order[i+1].sh ? ((order[i+1].sh.ini||0)+(order[i+1].sh.bvIni||0)) : null;
+    const prevIni = i > 0 && order[i-1].sh ? (order[i-1].sh.ini_total !== undefined ? order[i-1].sh.ini_total : ((order[i-1].sh.ini||0)+(order[i-1].sh.bvIni||0))) : null;
+    const nextIni = i < order.length-1 && order[i+1].sh ? (order[i+1].sh.ini_total !== undefined ? order[i+1].sh.ini_total : ((order[i+1].sh.ini||0)+(order[i+1].sh.bvIni||0))) : null;
     const canUp   = i > 0 && prevIni === ini;
     const canDown = i < order.length-1 && nextIni === ini;
 
@@ -6229,63 +6246,64 @@ function refreshTurns() {
     const upBtn   = canUp   ? `<button class="tie-btn" onclick="moveTurnCard(${i},-1);event.stopPropagation();" title="Subir">▲</button>` : '';
     const downBtn = canDown ? `<button class="tie-btn" onclick="moveTurnCard(${i},1);event.stopPropagation();"  title="Bajar">▼</button>` : '';
 
-    const sh       = t.sh || {};
-    const velTotal = getVelTotal(t.id);
-    const movUsado = t.movUsado || 0;
-    const movRest  = Math.max(0, velTotal - movUsado);
-    const acc      = sh.acc  ?? 1;
-    const acca     = sh.acca ?? 0;
-    const rea      = sh.rea  ?? 1;
+    const sh = t.sh || {};
+const velTotal = getVelTotal(t.id);
+const movUsado = t.movUsado || 0;
+const movRest  = Math.max(0, velTotal - movUsado);
 
-    // Color del contador de mov
-    const mClr = movRest === 0
-      ? '#c0392b'
-      : movRest < velTotal
-        ? '#e67e22'
-        : '#2980b9';
+// Obtener totales de acciones desde sh (calculados en updateStatTotals)
+const totalMov = sh.total_mov ?? sh.mov ?? 1;
+const totalAcc = sh.total_acc ?? sh.acc ?? 1;
+const totalAcca = sh.total_acca ?? sh.acca ?? 0;
+const totalRea = sh.total_rea ?? sh.rea ?? 1;
 
-    // Bloque de movimiento (separado, más prominente)
-  const libreDisabled = (!canEdit(t.id) && !isAdmin()) ? 'disabled' : '';   // 👈 AGREGAR ESTA LÍNEA
+// Color del contador de mov
+const mClr = movRest === 0
+  ? '#c0392b'
+  : movRest < velTotal
+    ? '#e67e22'
+    : '#2980b9';
 
-  const movBlock = `
-    <div class="tc-mov-block" onclick="event.stopPropagation()">
-      <span class="tc-mov-num" style="color:${mClr};">${movRest}</span>
-      <span class="tc-mov-sep">/</span>
-      <span class="tc-mov-tot">${velTotal}</span>
-      <span class="tc-mov-lbl">mov</span>
-      ${movUsado > 0
-        ? `<button class="tc-mov-reset" onclick="resetMovTok('${t.id}');event.stopPropagation();" title="Restaurar movimiento">↺</button>`
-        : ''}
-      <label class="tc-libre-lbl" title="Mover sin gastar movimiento restante">
-        <input type="checkbox" class="tc-libre-chk" id="libre_${t.id}"
-          onchange="setMovLibre('${t.id}',this.checked);event.stopPropagation();"
-          ${t.movLibre ? 'checked' : ''} ${libreDisabled}>
-        <span>Libre</span>
-      </label>
-    </div>`;
+const libreDisabled = (!canEdit(t.id) && !isAdmin()) ? 'disabled' : '';
 
-    // Chips A/Aa/R — M siempre presente con valor base de la ficha
-    const mov  = sh.mov  ?? 1;
-    const chipsHtml = `<span class="turn-chips">` +
-      `<span class="tc tc-m"  title="Movimientos">M:${mov}</span>` +
-      `<span class="tc tc-a"  title="Acciones">A:${acc}</span>` +
-      (acca > 0 ? `<span class="tc tc-aa" title="Acciones Adicionales">Aa:${acca}</span>` : '') +
-      `<span class="tc tc-r"  title="Reacciones">R:${rea}</span>` +
-      `</span>`;
+const movBlock = `
+  <div class="tc-mov-block" onclick="event.stopPropagation()">
+    <span class="tc-mov-num" style="color:${mClr};">${movRest}</span>
+    <span class="tc-mov-sep">/</span>
+    <span class="tc-mov-tot">${velTotal}</span>
+    <span class="tc-mov-lbl">mov</span>
+    ${movUsado > 0
+      ? `<button class="tc-mov-reset" onclick="resetMovTok('${t.id}');event.stopPropagation();" title="Restaurar movimiento">↺</button>`
+      : ''}
+    <label class="tc-libre-lbl" title="Mover sin gastar movimiento restante">
+      <input type="checkbox" class="tc-libre-chk" id="libre_${t.id}"
+        onchange="setMovLibre('${t.id}',this.checked);event.stopPropagation();"
+        ${t.movLibre ? 'checked' : ''} ${libreDisabled}>
+      <span>Libre</span>
+    </label>
+  </div>`;
 
-    card.innerHTML = `
-      <span class="turn-num">${i+1}</span>
-      <div class="turn-avatar" style="background:${t.color};color:${isLight(t.color)?'#1a0f08':'#fff'}">${t.sym||t.name[0]||'?'}</div>
-      <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;">
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${t.name}</span>
-          <span class="turn-ini">ini:${ini}</span>
-          ${upBtn}${downBtn}
-        </div>
-        ${movBlock}
-        ${chipsHtml}
-      </div>
-    `;
+// Chips usando TOTALES (no bases)
+const chipsHtml = `<span class="turn-chips">` +
+  `<span class="tc tc-m"  title="Movimientos">M:${totalMov}</span>` +
+  `<span class="tc tc-a"  title="Acciones">A:${totalAcc}</span>` +
+  (totalAcca > 0 ? `<span class="tc tc-aa" title="Acciones Adicionales">Aa:${totalAcca}</span>` : '') +
+  `<span class="tc tc-r"  title="Reacciones">R:${totalRea}</span>` +
+  `</span>`;
+
+card.innerHTML = `
+  <span class="turn-num">${i+1}</span>
+  <div class="turn-avatar" style="background:${t.color};color:${isLight(t.color)?'#1a0f08':'#fff'}">${t.sym||t.name[0]||'?'}</div>
+  <div style="display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;">
+    <div style="display:flex;align-items:center;gap:5px;">
+      <span style="font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;">${t.name}</span>
+      <span class="turn-ini">ini:${getIniTotal(t)}</span>
+      ${upBtn}${downBtn}
+    </div>
+    ${movBlock}
+    ${chipsHtml}
+  </div>
+`;
     card.addEventListener('click', () => {
       selId = t.id;
       turnIndex = i;
@@ -6321,17 +6339,24 @@ function nextTurn() {
   const t = order[turnIndex];
   selId = t.id;
   t.movUsado = 0;
-  fbPatch(t.id, { movUsado: 0 });   // ✅ Resetear y sincronizar
+  fbPatch(t.id, { movUsado: 0 });
 
   const autoRegenOn = document.getElementById('autoRegen')?.checked || document.getElementById('mAutoRegen')?.checked;
   if (t.sh && autoRegenOn) {
-    const reg  = (t.sh.reg||0) + (t.sh.bvReg||0);
-    const max  = t.sh.est_m || 100;
-    const prevEst = t.sh.est_c || 0;
+    // Regen total = base + bv + bonos
+    const sh = t.sh;
+    let reg = (sh.reg || 0) + (sh.bvReg || 0);
+    const bonusMap = getBonosFromPasivasYEquipo(sh);
+    reg += (bonusMap.reg || 0);
+    if (sh.plus_ultra) reg += 2;
+    reg = Math.max(0, reg);
+
+    const max  = sh.est_m || 100;
+    const prevEst = sh.est_c || 0;
     if (reg > 0) {
-      t.sh.est_c = Math.min(max, prevEst + reg);
-      fbPatch(t.id, { 'sh/est_c': t.sh.est_c });
-      addLog('spawn', `💛 <b>${t.name}</b> recuperó ${t.sh.est_c - prevEst} de estamina (${t.sh.est_c}/${max})`);
+      sh.est_c = Math.min(max, prevEst + reg);
+      fbPatch(t.id, { 'sh/est_c': sh.est_c });
+      addLog('spawn', `💛 <b>${t.name}</b> recuperó ${sh.est_c - prevEst} de estamina (${sh.est_c}/${max})`);
     }
   }
   refresh();
@@ -7846,34 +7871,35 @@ function updateStatTotals() {
     const bv = sh['bv' + key[0].toUpperCase() + key.slice(1)] || 0;
     const extra = bonusMap[key] || 0;
     const total = base + bv + extra;
+    // Guardar total en sh
+    sh[key + '_total'] = total;
+    // UI
     const el = document.getElementById('t' + key[0].toUpperCase() + key.slice(1));
     if (el) {
       el.textContent = total;
       el.style.background = (bv + extra) > 0 ? 'rgba(39,174,96,.18)' : 'rgba(200,160,100,.1)';
       el.style.color = (bv + extra) > 0 ? '#1a4a1a' : 'var(--ink2)';
     }
-    // Actualizar también el campo base (readonly)
+    // Actualizar el campo base (readonly)
     const baseEl = document.getElementById('f' + key[0].toUpperCase() + key.slice(1));
     if (baseEl) baseEl.value = base;
   });
 
   // ═══ ACCIONES DE TURNO (mov, acc, acca, rea) ═══
-  // Base = valor editable, Total = base + bonus
   const actionKeys = ['mov','acc','acca','rea'];
   actionKeys.forEach(key => {
     const base = sh[key] ?? (key === 'mov' ? 1 : key === 'acc' ? 1 : key === 'rea' ? 1 : 0);
     const extra = bonusMap[key] || 0;
     const total = base + extra;
-    // Guardar el total en el sh para usarlo en otros lugares
-    sh['total_' + key] = total;
-    // Actualizar UI si existe
+    // Guardar total en sh
+    sh[key + '_total'] = total;
+    // UI
     const totalEl = document.getElementById('t' + key[0].toUpperCase() + key.slice(1));
     if (totalEl) {
       totalEl.textContent = total;
       totalEl.style.background = extra > 0 ? 'rgba(39,174,96,.2)' : 'rgba(200,160,100,.1)';
       totalEl.style.color = extra > 0 ? '#1a4a1a' : 'var(--ink2)';
     }
-    // Actualizar campo base (editable)
     const baseEl = document.getElementById('f' + key[0].toUpperCase() + key.slice(1));
     if (baseEl) baseEl.value = base;
   });
@@ -7893,7 +7919,7 @@ function updateStatTotals() {
     }
   }
 
-  // ═══ ATRIBUTOS (se actualizan en updateAttrTotals, pero forzamos aquí) ═══
+  // ═══ ATRIBUTOS (se actualizan en updateAttrTotals) ═══
   updateAttrTotals();
 
   // ═══ MAIN STATS (se actualizan en updateMainStatMods) ═══
