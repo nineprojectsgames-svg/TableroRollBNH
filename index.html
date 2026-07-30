@@ -5729,9 +5729,12 @@ function updateMainStatMods() {
     if (slot && slot.stat && slot.bono) extBonos[slot.stat] = (extBonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
   });
   (sh.pasivas || []).forEach(p => {
-    if (p.activa && p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    if (!p.activa) return;
+    if (p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) extBonos[b.stat] = (extBonos[b.stat]||0) + (parseFloat(b.valor)||0);
+    });
   });
-  const pu = sh.plus_ultra ? 2 : 0;
 
   const MAINS = [
     ['pod','Pod'], ['agi','Agi'], ['res','Res'], ['tec','Tec'], ['int','Int']
@@ -5781,7 +5784,11 @@ function updateVitalTotals() {
     if (slot && slot.stat && slot.bono) extBonos[slot.stat] = (extBonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
   });
   (sh.pasivas || []).forEach(p => {
-    if (p.activa && p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    if (!p.activa) return;
+    if (p.stat && p.bono) extBonos[p.stat] = (extBonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) extBonos[b.stat] = (extBonos[b.stat]||0) + (parseFloat(b.valor)||0);
+    });
   });
   if (sh.plus_ultra) ['vel','def','ini','reg'].forEach(s => extBonos[s] = (extBonos[s]||0) + 2);
 
@@ -6796,7 +6803,11 @@ function getStatTotal(stat) {
     if (slot && slot.stat && slot.bono) bonos[slot.stat] = (bonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
   });
   (sh.pasivas || []).forEach(p => {
-    if (p.activa && p.stat && p.bono) bonos[p.stat] = (bonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    if (!p.activa) return;
+    if (p.stat && p.bono) bonos[p.stat] = (bonos[p.stat]||0) + (parseFloat(p.bono)||0);
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) bonos[b.stat] = (bonos[b.stat]||0) + (parseFloat(b.valor)||0);
+    });
   });
   if (sh.plus_ultra) bonos[stat] = (bonos[stat]||0) + 2;
   return base + (bonos[stat]||0);
@@ -7486,7 +7497,7 @@ function addPasivaBono(idx, statSel, valInp) {
   tokens[selId].sh.pasivas = p;
   savePasivas();
   renderPasivas();
-  if (p[idx].activa) { updateStatTotals(); autoCalcVitales(); redraw(); }
+  if (p[idx].activa) { updateStatTotals(); updateMainStatMods(); updateVitalTotals(); autoCalcVitales(); redraw(); }
 }
 
 function removePasivaBono(idx, bonoIdx) {
@@ -7499,7 +7510,7 @@ function removePasivaBono(idx, bonoIdx) {
   tokens[selId].sh.pasivas = p;
   savePasivas();
   renderPasivas();
-  if (wasActiva) { updateStatTotals(); autoCalcVitales(); redraw(); }
+  if (wasActiva) { updateStatTotals(); updateMainStatMods(); updateVitalTotals(); autoCalcVitales(); redraw(); }
 }
 
 function updatePasiva(idx, field, value) {
@@ -7603,6 +7614,8 @@ function togglePasivaMapa(index, btn) {
   aplicarPasivas(pasivas[index], pasivas[index].activa);
   renderPasivas();
   updateStatTotals();
+  updateMainStatMods();
+  updateVitalTotals();
   autoCalcVitales();
   redraw();
 }
