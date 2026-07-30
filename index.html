@@ -3453,48 +3453,26 @@ select, textarea,
   opacity: 1 !important;
 }
 
-/* ── SCROLL HORIZONTAL PARA LISTA DE PASIVAS ── */
+/* ── LISTA DE PASIVAS (una fila por pasiva, ancho completo, sin huecos) ── */
 #pasivaList {
-  overflow-x: auto !important;
-  white-space: nowrap;
-  display: block;
+  overflow-x: visible;
+  white-space: normal;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  padding-bottom: 4px; /* espacio para la barra */
+  padding-bottom: 0;
 }
 
-/* Cada pasiva se comporta como bloque en línea para que el scroll funcione */
 .pasiva-row {
-  display: inline-grid !important;
-  grid-template-columns: 180px 180px 160px 160px 90px 30px !important;
-  gap: 8px;
-  width: auto;
-  min-width: 100%;
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin-bottom: 8px;
   background: rgba(200,160,100,.1);
   border: 1px solid rgba(200,148,26,.25);
   border-radius: 4px;
   padding: 6px 8px;
-}
-
-/* Ajuste para móvil: ancho mínimo mayor */
-@media (max-width: 900px) {
-  .pasiva-row {
-    grid-template-columns: 140px 140px 130px 130px 70px 30px !important;
-    font-size: 0.75rem;
-  }
-}
-
-/* Estilo de la barra (opcional) */
-#pasivaList::-webkit-scrollbar {
-  height: 6px;
-}
-#pasivaList::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
-  border-radius: 3px;
-}
-#pasivaList::-webkit-scrollbar-thumb {
-  background: var(--ps);
-  border-radius: 3px;
 }
 
 .hab-rango-btn {
@@ -7485,10 +7463,43 @@ function addPasiva() {
   if (!selId || !tokens[selId]) return;
   if (!canEdit(selId)) { promptPassword(); return; }
   const p = getPasivas();
-  p.push({ nombre:'', desc:'', condicion:'', stat:'', bono:0, activa:false });
+  p.push({ nombre:'', desc:'', condicion:'', bonos:[], activa:false });
   tokens[selId].sh.pasivas = p;
   savePasivas();
   renderPasivas();
+}
+
+// Opciones de stat disponibles para los bonos de pasivas
+const PASIVA_STAT_OPTS = ['pod','agi','res','tec','int','vel','def','ini','reg',
+  'fue','intim','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc'];
+
+function addPasivaBono(idx, statSel, valInp) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const stat = statSel.value;
+  const valor = parseFloat(valInp.value) || 0;
+  if (!valor) return;
+  const p = getPasivas();
+  if (!p[idx]) return;
+  if (!Array.isArray(p[idx].bonos)) p[idx].bonos = [];
+  p[idx].bonos.push({ tipo:'stat', stat, valor });
+  tokens[selId].sh.pasivas = p;
+  savePasivas();
+  renderPasivas();
+  if (p[idx].activa) { updateStatTotals(); autoCalcVitales(); redraw(); }
+}
+
+function removePasivaBono(idx, bonoIdx) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const p = getPasivas();
+  if (!p[idx] || !Array.isArray(p[idx].bonos)) return;
+  const wasActiva = p[idx].activa;
+  p[idx].bonos.splice(bonoIdx, 1);
+  tokens[selId].sh.pasivas = p;
+  savePasivas();
+  renderPasivas();
+  if (wasActiva) { updateStatTotals(); autoCalcVitales(); redraw(); }
 }
 
 function updatePasiva(idx, field, value) {
@@ -7532,47 +7543,106 @@ function renderPasivas() {
     return;
   }
 
-  const statOpts = STATS_LIST.map(s=>`<option value="${s.v}">${s.l}</option>`).join('');
-
   pasivas.forEach((p, i) => {
     const div = document.createElement('div');
     div.className = 'pasiva-row' + (p.activa ? ' activa' : '');
-    div.innerHTML = `
-      <div>
-        <div class="pasiva-lbl">Nombre</div>
-        <input class="pasiva-input" type="text" value="${p.nombre||''}" placeholder="Ej: Piel de Acero" ${locked?'disabled':''} onchange="updatePasiva(${i},'nombre',this.value)">
-      </div>
-      <div>
-        <div class="pasiva-lbl">Descripción</div>
-        <input class="pasiva-input" type="text" value="${p.desc||''}" placeholder="Qué hace..." ${locked?'disabled':''} onchange="updatePasiva(${i},'desc',this.value)">
-      </div>
-      <div>
-        <div class="pasiva-lbl">Condición</div>
-        <input class="pasiva-input" type="text" value="${p.condicion||''}" placeholder="Ej: vida < 50%" ${locked?'disabled':''} onchange="updatePasiva(${i},'condicion',this.value)">
-      </div>
-      <div>
-        <div class="pasiva-lbl">Resultado (+Stat / Bono)</div>
-        <div class="pasiva-stat-row">
-          <select class="pasiva-stat-sel" ${locked?'disabled':''} onchange="updatePasiva(${i},'stat',this.value)">${statOpts}</select>
-          <input class="pasiva-bono-inp" type="number" value="${p.bono||0}" ${locked?'disabled':''} onchange="updatePasiva(${i},'bono',this.value)">
-        </div>
-      </div>
-      <button class="pasiva-toggle${p.activa?' on':''}" onclick="updatePasiva(${i},'activa',${!p.activa})">
-        ${p.activa ? '✓ ACTIVA' : '○ Inactiva'}
-      </button>
-      <button class="pasiva-del" ${locked?'disabled':''} onclick="removePasiva(${i})">×</button>
-    `;
-    if (p.condicion) {
-      const nota = document.createElement('div');
-      nota.className = 'pasiva-nota';
-      nota.textContent = '📋 Condición: ' + p.condicion;
-      div.appendChild(nota);
+    
+    // Mostrar bonos en forma de lista, con opción de quitarlos
+    let bonosHTML = '';
+    if (p.bonos && p.bonos.length) {
+      bonosHTML = '<div style="font-size:.7rem;color:var(--ink2);margin:2px 0;display:flex;flex-wrap:wrap;gap:4px;">';
+      p.bonos.forEach((b, bi) => {
+        let label = '';
+        if (b.tipo === 'stat') label = `${b.stat} +${b.valor}`;
+        else if (b.tipo === 'movimiento') label = `Movimiento +${b.valor}`;
+        else if (b.tipo === 'acciones') label = `Acciones +${b.valor}`;
+        else if (b.tipo === 'acciones_adicionales') label = `Acc. Adic. +${b.valor}`;
+        else if (b.tipo === 'reacciones') label = `Reacciones +${b.valor}`;
+        else if (b.tipo === 'hp_temp') label = `HP Temp +${b.valor}`;
+        else if (b.tipo === 'custom') label = `✨ ${b.texto}`;
+        if (label) bonosHTML += `<span style="background:rgba(200,148,26,.15);padding:1px 6px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;">${label}${locked?'':` <button onclick="removePasivaBono(${i},${bi})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:.7rem;padding:0;line-height:1;">×</button>`}</span>`;
+      });
+      bonosHTML += '</div>';
     }
-    // set select value
-    const sel = div.querySelector('.pasiva-stat-sel');
-    if (sel) sel.value = p.stat || '';
+
+    const statOptsHTML = PASIVA_STAT_OPTS.map(s => `<option value="${s}">${s}</option>`).join('');
+
+    div.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <input type="text" class="pasiva-input" placeholder="Nombre" value="${p.nombre||''}" style="flex:1;min-width:100px;width:auto;" ${locked?'disabled':''} onchange="updatePasiva(${i},'nombre',this.value)">
+          <input type="text" class="pasiva-input" placeholder="Condición (opcional)" value="${p.condicion||''}" style="flex:1;min-width:100px;width:auto;" ${locked?'disabled':''} onchange="updatePasiva(${i},'condicion',this.value)">
+          <button class="pasiva-toggle${p.activa?' on':''}" onclick="togglePasivaMapa(${i}, this)" ${locked?'disabled':''}>${p.activa?'✓ Activa':'○ Inactiva'}</button>
+          <button class="pasiva-del" onclick="removePasiva(${i})" ${locked?'disabled':''}>×</button>
+        </div>
+        <input type="text" class="pasiva-input" placeholder="Descripción" value="${p.desc||''}" ${locked?'disabled':''} onchange="updatePasiva(${i},'desc',this.value)">
+        ${bonosHTML}
+        ${locked ? '' : `
+        <div style="display:flex;gap:4px;align-items:center;">
+          <select class="pasiva-stat-sel" style="flex:0 0 auto;width:auto;">${statOptsHTML}</select>
+          <input type="number" class="pasiva-bono-inp" placeholder="0" style="width:50px;">
+          <button class="btn btn-sm" style="width:auto;padding:2px 8px;font-size:.6rem;background:rgba(200,148,26,.2);border:1px solid var(--ps);border-radius:3px;"
+            onclick="addPasivaBono(${i}, this.previousElementSibling.previousElementSibling, this.previousElementSibling)">+ Bono</button>
+        </div>`}
+      </div>
+    `;
     list.appendChild(div);
   });
+}
+
+// Función para toggle en el mapa
+function togglePasivaMapa(index, btn) {
+  if (!selId || !tokens[selId]) return;
+  if (!canEdit(selId)) { promptPassword(); return; }
+  const pasivas = getPasivas();
+  if (!pasivas[index]) return;
+  pasivas[index].activa = !pasivas[index].activa;
+  tokens[selId].sh.pasivas = pasivas;
+  savePasivas();
+  // Aplicar bonos/desbonos inmediatamente
+  aplicarPasivas(pasivas[index], pasivas[index].activa);
+  renderPasivas();
+  updateStatTotals();
+  autoCalcVitales();
+  redraw();
+}
+
+function aplicarPasivas(pasiva, activar) {
+  // Esta función aplica los bonos de una pasiva al sh del token seleccionado
+  if (!selId || !tokens[selId]) return;
+  const sh = tokens[selId].sh;
+  const factor = activar ? 1 : -1;
+  
+  (pasiva.bonos || []).forEach(b => {
+    if (b.tipo === 'stat' && b.stat) {
+      // Para stat, se aplica en updateStatTotals mediante el bono de pasiva en el bucle
+      // Ya se maneja en updateStatTotals, solo necesitamos que se recalcule
+    } else if (b.tipo === 'movimiento') {
+      // La velocidad se recalcula en autoCalcVitales usando los bonos de pasivas, lo haremos allí
+    } else if (b.tipo === 'acciones') {
+      sh.acc = (sh.acc || 1) + (b.valor * factor);
+    } else if (b.tipo === 'acciones_adicionales') {
+      sh.acca = (sh.acca || 0) + (b.valor * factor);
+    } else if (b.tipo === 'reacciones') {
+      sh.rea = (sh.rea || 1) + (b.valor * factor);
+    } else if (b.tipo === 'hp_temp') {
+      if (activar) {
+        sh.hp_temp = (sh.hp_temp || 0) + b.valor;
+      } else {
+        sh.hp_temp = Math.max(0, (sh.hp_temp || 0) - b.valor);
+      }
+    }
+    // Para 'custom' no hay acción mecánica
+  });
+  
+  // Guardar cambios
+  fbPatch(selId, { 'sh/acc': sh.acc, 'sh/acca': sh.acca, 'sh/rea': sh.rea, 'sh/hp_temp': sh.hp_temp });
+  // Recalcular todo
+  autoCalcVitales();
+  updateStatTotals();
+  ub();
+  showStats();
+  refreshTurns();
 }
 
 // ── ATRIBUTOS ────────────────────────────────────────────────────
@@ -7705,11 +7775,17 @@ function updateStatTotals() {
   });
   // Sumar bonos de pasivas ACTIVAS
   const pasivas = sh.pasivas || [];
-  pasivas.forEach(p => {
-    if (p.activa && p.stat && p.bono) {
-      bonos[p.stat] = (bonos[p.stat]||0) + (parseFloat(p.bono)||0);
-    }
-  });
+  // Dentro de updateStatTotals, reemplazar el bucle de pasivas:
+(sh.pasivas || []).forEach(p => {
+  if (p.activa && p.bonos) {
+    p.bonos.forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) {
+        bonos[b.stat] = (bonos[b.stat]||0) + (parseFloat(b.valor)||0);
+      }
+      // Para otros tipos (movimiento, acciones, etc.) se manejan en aplicarPasivas y autoCalcVitales
+    });
+  }
+});
   // Plus Ultra: +2 a todas las estadísticas
   if (sh.plus_ultra) {
     ['vel','def','ini','reg','pod','agi','res','tec','int',
@@ -8448,11 +8524,10 @@ function tokenToCharData(tok) {
     // Pasivas
     pasivas: (sh.pasivas || []).map(p => ({
       nombre: p.nombre || '',
-      stat: p.stat || '',
-      bono: p.bono || 0,
       desc: p.desc || '',
       activa: p.activa || false,
-      condicion: p.condicion || ''
+      condicion: p.condicion || '',
+      bonos: p.bonos || []
     })),
     // Equipamiento
     equipo: sh.equipo || {},
@@ -9961,6 +10036,7 @@ canvas {
   <button class="cf-tab" onclick="cfSwitchTab('lore',this)">📖 Lore</button>
   <button class="cf-tab" onclick="cfSwitchTab('extra',this)">⚙ Extra</button>
     <button class="cf-tab" onclick="cfSwitchTab('graficos',this)">📈 Gráficos</button>
+    <button class="cf-tab" onclick="cfSwitchTab('creator',this)">⚙ Creador</button>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -10383,6 +10459,165 @@ canvas {
     <div><strong>Subclase:</strong> <span id="cfGraficoSub">—</span></div>
     <div><strong>Bono Competencia:</strong> <span id="cfGraficoBC">+2</span></div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PANE CREADOR DE HABILIDADES
+═══════════════════════════════════════ -->
+<div class="cf-pane" data-cfpane="creator">
+  <div class="ptitle" style="margin-top:4px;">⚙ Creador de Habilidades</div>
+  <div style="font-size:.78rem;color:var(--ink2);margin-bottom:10px;">
+    Diseñá una habilidad para tu Quirk siguiendo las reglas del Capítulo 8.
+    El costo en Stamina se calcula automáticamente.
+  </div>
+
+  <!-- Nombre y Estadística -->
+  <div class="frow">
+    <div class="fgrp">
+      <span class="flbl">Nombre de la habilidad</span>
+      <input type="text" id="ch_nombre" class="fin" placeholder="Ej: Puño de Fuego">
+    </div>
+    <div class="fgrp" style="max-width:140px;">
+      <span class="flbl">Estadística de escalado</span>
+      <select id="ch_stat" class="fin">
+        <option value="pod">Poder</option>
+        <option value="agi">Agilidad</option>
+        <option value="res">Resistencia</option>
+        <option value="tec">Técnica</option>
+        <option value="int">Inteligencia</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Daño -->
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp" style="max-width:70px;">
+      <span class="flbl">Cant. dados</span>
+      <input type="number" id="ch_dados" class="fin num" value="1" min="0" max="8">
+    </div>
+    <div class="fgrp" style="max-width:80px;">
+      <span class="flbl">Dado</span>
+      <select id="ch_dado" class="fin">
+        <option value="4">d4</option>
+        <option value="6" selected>d6</option>
+        <option value="8">d8</option>
+        <option value="10">d10</option>
+        <option value="12">d12</option>
+        <option value="20">d20</option>
+      </select>
+    </div>
+    <div class="fgrp" style="max-width:70px;">
+      <span class="flbl">Rango (casillas)</span>
+      <input type="number" id="ch_rango" class="fin num" value="0" min="0" max="10">
+    </div>
+    <div class="fgrp" style="max-width:70px;">
+      <span class="flbl">Área (casillas)</span>
+      <select id="ch_area" class="fin">
+        <option value="0">0</option>
+        <option value="1">+1</option>
+        <option value="2">+2</option>
+        <option value="3">+3</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Efectos -->
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp">
+      <span class="flbl">Efecto 1</span>
+      <select id="ch_efecto1" class="fin">
+        <option value="">Sin efecto</option>
+        <option value="aturdido">Aturdir</option>
+        <option value="derribado">Derribar</option>
+        <option value="cegado">Cegar</option>
+        <option value="paralizado">Paralizar</option>
+        <option value="asustado">Asustar</option>
+        <option value="quemado">Quemar</option>
+        <option value="envenenado">Envenenar</option>
+        <option value="silenciado">Silenciar</option>
+        <option value="confundido">Confundir</option>
+        <option value="enredado">Enredar</option>
+        <option value="buff_ataque">+Ataque (buff)</option>
+        <option value="buff_defensa">+Defensa (buff)</option>
+        <option value="buff_velocidad">+Velocidad (buff)</option>
+        <option value="curación">Curación (aliado)</option>
+        <option value="escudo">Escudo (Defensa)</option>
+      </select>
+    </div>
+    <div class="fgrp">
+      <span class="flbl">Efecto 2 (opcional)</span>
+      <select id="ch_efecto2" class="fin">
+        <option value="">Sin efecto</option>
+        <option value="aturdido">Aturdir</option>
+        <option value="derribado">Derribar</option>
+        <option value="cegado">Cegar</option>
+        <option value="paralizado">Paralizar</option>
+        <option value="asustado">Asustar</option>
+        <option value="quemado">Quemar</option>
+        <option value="envenenado">Envenenar</option>
+        <option value="silenciado">Silenciar</option>
+        <option value="confundido">Confundir</option>
+        <option value="enredado">Enredar</option>
+        <option value="buff_ataque">+Ataque (buff)</option>
+        <option value="buff_defensa">+Defensa (buff)</option>
+        <option value="buff_velocidad">+Velocidad (buff)</option>
+        <option value="curación">Curación (aliado)</option>
+        <option value="escudo">Escudo (Defensa)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Duración (si aplica) -->
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp">
+      <span class="flbl">Duración</span>
+      <select id="ch_duracion" class="fin">
+        <option value="instant">Instantáneo</option>
+        <option value="1ronda">1 ronda</option>
+        <option value="hasta_golpe">Hasta ser golpeado</option>
+        <option value="mantenida">Mantenida (tirada por turno)</option>
+      </select>
+    </div>
+    <div class="fgrp" style="max-width:100px;">
+      <span class="flbl">DC (si mantenida)</span>
+      <input type="number" id="ch_dc" class="fin num" value="15" min="9" max="25">
+    </div>
+    <div class="fgrp" style="max-width:100px;">
+      <span class="flbl">Preparación (turnos)</span>
+      <select id="ch_prep" class="fin">
+        <option value="0">0</option>
+        <option value="1">1 turno</option>
+        <option value="2">2 turnos</option>
+        <option value="3">3 turnos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Descripción -->
+  <div class="frow" style="margin-bottom:6px;">
+    <div class="fgrp">
+      <span class="flbl">Descripción breve</span>
+      <input type="text" id="ch_desc" class="fin" placeholder="Ej: Lanza una bola de fuego que quema.">
+    </div>
+  </div>
+
+  <!-- Resultado del cálculo -->
+  <div style="background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:4px;padding:8px 12px;margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+      <span style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--ink2);">Costo estimado:</span>
+      <span id="ch_costo_mostrar" style="font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:var(--red);">—</span>
+      <span id="ch_limites" style="font-size:.7rem;color:var(--ink3);"></span>
+    </div>
+    <div id="ch_detalle_costo" style="font-size:.72rem;color:var(--ink2);margin-top:4px;"></div>
+  </div>
+
+  <!-- Botones -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-gld" onclick="calcularCostoHabilidad()" style="width:auto;padding:4px 14px;font-size:.7rem;margin-bottom:0;">🔢 Calcular Costo</button>
+    <button class="btn btn-grn" onclick="guardarHabilidadDesdeCreador()" style="width:auto;padding:4px 14px;font-size:.7rem;margin-bottom:0;">💾 Guardar Habilidad</button>
+    <button class="btn btn-sm" onclick="limpiarCreador()" style="background:rgba(200,148,26,.1);border:1px solid var(--ps);color:var(--ink2);padding:4px 12px;font-size:.7rem;margin-bottom:0;">🗑 Limpiar</button>
+  </div>
+  <div id="ch_mensaje" style="font-size:.72rem;min-height:18px;margin-top:6px;font-style:italic;"></div>
 </div>
 
 </div><!-- /charForm -->
@@ -10937,7 +11172,7 @@ const inp = document.createElement('input');
               <div><div class="pasiva-lbl">Nombre</div><input type="text" class="pasiva-input cfp-nombre" placeholder="Nombre" value="${p.nombre || ''}"></div>
               <div><div class="pasiva-lbl">Stat + Bono</div><div class="pasiva-stat-row"><select class="pasiva-stat-sel cfp-stat">${statOpts}</select><input type="number" class="pasiva-bono-inp cfp-bono" placeholder="0" value="${p.bono || 0}"></div></div>
               <div><div class="pasiva-lbl">Descripción</div><input type="text" class="pasiva-input cfp-desc" placeholder="Efecto..." value="${p.desc || ''}"></div>
-              <div><div class="pasiva-lbl">Estado</div><button class="pasiva-toggle${p.activa ? ' on' : ''}" onclick="this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa')">${p.activa ? 'Activa' : 'Inactiva'}</button></div>
+              <div><div class="pasiva-lbl">Estado</div><button class="pasiva-toggle${p.activa ? ' on' : ''}" onclick="const nowOn=this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa');this.textContent=nowOn?'Activa':'Inactiva';">${p.activa ? 'Activa' : 'Inactiva'}</button></div>
               <button class="pasiva-del" onclick="this.closest('.pasiva-row').remove()" title="Eliminar">✕</button>
             `;
             pasivaList.appendChild(div);
@@ -11248,6 +11483,288 @@ function cfUpdateCalcs() {
   cfRefreshHeader();
 }
 
+// ================================================================
+//  CREADOR DE HABILIDADES (Capítulo 8)
+// ================================================================
+
+// Mapeo de efectos a costos adicionales (el primero +4, el segundo +15)
+const EFECTOS_COSTO = {
+  aturdido: { extra: 4, desc: 'Aturdir' },
+  derribado: { extra: 4, desc: 'Derribar' },
+  cegado: { extra: 4, desc: 'Cegar' },
+  paralizado: { extra: 4, desc: 'Paralizar' },
+  asustado: { extra: 4, desc: 'Asustar' },
+  quemado: { extra: 4, desc: 'Quemar' },
+  envenenado: { extra: 4, desc: 'Envenenar' },
+  silenciado: { extra: 4, desc: 'Silenciar' },
+  confundido: { extra: 4, desc: 'Confundir' },
+  enredado: { extra: 4, desc: 'Enredar' },
+  buff_ataque: { extra: 4, desc: '+Ataque' },
+  buff_defensa: { extra: 4, desc: '+Defensa' },
+  buff_velocidad: { extra: 4, desc: '+Velocidad' },
+  curación: { extra: 4, desc: 'Curación' },
+  escudo: { extra: 4, desc: 'Escudo' }
+};
+
+// Multiplicadores por tipo de dado (según manual)
+const DADO_MULT = { 4: 1, 6: 1.5, 8: 2, 10: 2.5, 12: 3, 20: 5 };
+
+// Límites por nivel (manual)
+function getLimitesNivel(nivel) {
+  if (nivel <= 4) return { maxDados: 2, dadosPermitidos: [4,6,8], maxRango: 4, maxEfectos: 1 };
+  if (nivel <= 9) return { maxDados: 4, dadosPermitidos: [4,6,8,10,12], maxRango: 6, maxEfectos: 1 };
+  if (nivel <= 14) return { maxDados: 6, dadosPermitidos: [4,6,8,10,12,20], maxRango: 8, maxEfectos: 1 };
+  return { maxDados: 8, dadosPermitidos: [4,6,8,10,12,20], maxRango: 10, maxEfectos: 2 };
+}
+
+function calcularCostoHabilidad() {
+  // Leer datos del formulario
+  const nombre = document.getElementById('ch_nombre').value.trim() || 'Sin nombre';
+  const stat = document.getElementById('ch_stat').value;
+  const cantDados = parseInt(document.getElementById('ch_dados').value) || 0;
+  const dado = parseInt(document.getElementById('ch_dado').value);
+  const rango = parseInt(document.getElementById('ch_rango').value) || 0;
+  const area = parseInt(document.getElementById('ch_area').value) || 0;
+  const efecto1 = document.getElementById('ch_efecto1').value;
+  const efecto2 = document.getElementById('ch_efecto2').value;
+  const duracion = document.getElementById('ch_duracion').value;
+  const dc = parseInt(document.getElementById('ch_dc').value) || 15;
+  const prep = parseInt(document.getElementById('ch_prep').value) || 0;
+
+  // Obtener nivel del personaje actual (desde el campo nivel del formulario)
+  const nivel = parseInt(document.getElementById('cf_nivel')?.value) || 1;
+  const limites = getLimitesNivel(nivel);
+
+  // Validar límites
+  let errores = [];
+  if (cantDados > limites.maxDados) errores.push(`Máx. ${limites.maxDados} dados (nivel ${nivel})`);
+  if (!limites.dadosPermitidos.includes(dado)) errores.push(`Dado ${dado} no permitido hasta nivel ${nivel<=4?5:nivel<=9?10:15}`);
+  if (rango > limites.maxRango) errores.push(`Rango máx. ${limites.maxRango} (nivel ${nivel})`);
+  let efectosCount = 0;
+  if (efecto1) efectosCount++;
+  if (efecto2) efectosCount++;
+  if (efectosCount > limites.maxEfectos) errores.push(`Máx. ${limites.maxEfectos} efectos (nivel ${nivel})`);
+
+  // Calcular costo base
+  let costo = 0;
+  let detalle = [];
+
+  // Si no hay daño (cantDados = 0), es habilidad sin daño: costo base 1
+  if (cantDados === 0) {
+    costo = 1;
+    detalle.push('Sin daño → costo base 1');
+  } else {
+    // Daño: (cantidad × 2) × multiplicador del dado
+    const mult = DADO_MULT[dado] || 1;
+    const base = (cantDados * 2) * mult;
+    costo = base;
+    detalle.push(`${cantDados}d${dado} → (${cantDados}×2)×${mult} = ${base}`);
+  }
+
+  // Rango: +1 por casilla extra (antes de multiplicar? según manual: "Por cada casilla adicional de distancia se suma 1 punto de Stamina al costo antes de la multiplicación por el dado.")
+  // Pero si no hay daño, el rango se suma directamente.
+  if (rango > 0) {
+    if (cantDados > 0) {
+      // Se suma antes de multiplicar, pero ya tenemos costo multiplicado, así que lo sumamos después
+      // Interpretación: el costo base con rango es ((cantDados×2)+rango)×mult
+      // Recalculamos el costo de daño con rango
+      const mult = DADO_MULT[dado] || 1;
+      const baseConRango = (cantDados * 2 + rango) * mult;
+      const extraRango = baseConRango - costo;
+      costo = baseConRango;
+      detalle.push(`Rango +${rango} → +${extraRango}`);
+    } else {
+      costo += rango;
+      detalle.push(`Rango +${rango} → +${rango}`);
+    }
+  }
+
+  // Área
+  const areaCost = { 0:0, 1:1, 2:3, 3:6 };
+  const areaExtra = areaCost[area] || 0;
+  if (areaExtra > 0) {
+    costo += areaExtra;
+    detalle.push(`Área +${area} casillas → +${areaExtra}`);
+  }
+
+  // Efectos (el primero +4, el segundo +15)
+  let efectosAplicados = [];
+  if (efecto1 && EFECTOS_COSTO[efecto1]) {
+    const e1 = EFECTOS_COSTO[efecto1];
+    costo += e1.extra;
+    efectosAplicados.push(e1.desc);
+    detalle.push(`Efecto 1 (${e1.desc}) → +${e1.extra}`);
+  }
+  if (efecto2 && EFECTOS_COSTO[efecto2]) {
+    const e2 = EFECTOS_COSTO[efecto2];
+    costo += e2.extra + 11; // el segundo cuesta +15 en total, pero ya sumamos +4 del primero, así que sumamos 11 adicionales para llegar a 15
+    efectosAplicados.push(e2.desc);
+    detalle.push(`Efecto 2 (${e2.desc}) → +15 (${e2.extra}+11)`);
+  }
+
+  // Duración
+  if (duracion === 'hasta_golpe') {
+    costo += 5;
+    detalle.push('Duración: hasta ser golpeado → +5');
+  } else if (duracion === 'mantenida') {
+    // DC: cada punto por debajo de 15 cuesta +4, mínimo 9
+    const dcCosto = Math.max(0, (15 - dc) * 4);
+    costo += dcCosto;
+    detalle.push(`Mantenida (DC ${dc}) → +${dcCosto}`);
+  } else if (duracion === '1ronda') {
+    // sin costo adicional
+    detalle.push('Duración 1 ronda → sin costo extra');
+  } else {
+    detalle.push('Instantáneo → sin costo extra');
+  }
+
+  // Preparación: reduce costo en % (aplicar descuento al final)
+  let descuento = 0;
+  if (prep === 1) descuento = 0.25;
+  else if (prep === 2) descuento = 0.5;
+  else if (prep === 3) descuento = 0.75;
+  if (descuento > 0) {
+    const reduccion = Math.round(costo * descuento);
+    costo -= reduccion;
+    detalle.push(`Preparación ${prep} turno(s) → -${reduccion} (${Math.round(descuento*100)}%)`);
+  }
+
+  // Redondear y asegurar mínimo 0
+  costo = Math.max(0, Math.round(costo));
+
+  // Mostrar resultado
+  document.getElementById('ch_costo_mostrar').textContent = costo;
+  document.getElementById('ch_detalle_costo').innerHTML = detalle.join(' · ');
+
+  // Mostrar límites
+  let limitesMsg = '';
+  if (errores.length > 0) {
+    limitesMsg = '⚠️ ' + errores.join('; ');
+    document.getElementById('ch_limites').style.color = 'var(--red)';
+  } else {
+    limitesMsg = '✅ Dentro de los límites';
+    document.getElementById('ch_limites').style.color = 'var(--grn)';
+  }
+  document.getElementById('ch_limites').textContent = limitesMsg;
+
+  // Guardar el costo en un atributo para usarlo al guardar
+  document.getElementById('ch_costo_mostrar').dataset.costo = costo;
+}
+
+function guardarHabilidadDesdeCreador() {
+  // Leer datos
+  const nombre = document.getElementById('ch_nombre').value.trim();
+  if (!nombre) {
+    document.getElementById('ch_mensaje').textContent = '❌ Escribí un nombre para la habilidad.';
+    document.getElementById('ch_mensaje').style.color = 'var(--red)';
+    return;
+  }
+  const stat = document.getElementById('ch_stat').value;
+  const cantDados = parseInt(document.getElementById('ch_dados').value) || 0;
+  const dado = parseInt(document.getElementById('ch_dado').value);
+  const rango = parseInt(document.getElementById('ch_rango').value) || 0;
+  const area = parseInt(document.getElementById('ch_area').value) || 0;
+  const efecto1 = document.getElementById('ch_efecto1').value;
+  const efecto2 = document.getElementById('ch_efecto2').value;
+  const desc = document.getElementById('ch_desc').value.trim() || '';
+  const costoEst = document.getElementById('ch_costo_mostrar').dataset.costo || 0;
+
+  // Verificar que el costo haya sido calculado
+  if (!document.getElementById('ch_costo_mostrar').textContent || document.getElementById('ch_costo_mostrar').textContent === '—') {
+    document.getElementById('ch_mensaje').textContent = '❌ Primero calculá el costo.';
+    document.getElementById('ch_mensaje').style.color = 'var(--red)';
+    return;
+  }
+
+  // Construir objeto habilidad (similar al formato de la tabla)
+  const habilidad = {
+    nombre: nombre,
+    stat: stat,
+    golpe: 0, // no se usa en creador, pero lo dejamos
+    dano: cantDados > 0 ? `${cantDados}d${dado}` : '',
+    rango: rango,
+    est: parseInt(costoEst) || 0,
+    desc: desc || '',
+    // Guardamos también los efectos seleccionados para mostrarlos después
+    efectos: [efecto1, efecto2].filter(e => e),
+    area: area,
+    duracion: document.getElementById('ch_duracion').value,
+    dc: document.getElementById('ch_dc').value,
+    preparacion: parseInt(document.getElementById('ch_prep').value) || 0
+  };
+
+  // Agregar a la lista de habilidades del personaje actual
+  if (typeof addHabilidad === 'function') {
+    // Usar la función existente que agrega una habilidad en blanco, luego la modificamos
+    addHabilidad();
+    // Obtener la última habilidad agregada (la última fila)
+    const habBody = document.getElementById('habBody');
+    const rows = habBody.querySelectorAll('tr');
+    const lastRow = rows[rows.length - 1];
+    if (lastRow) {
+      // Rellenar los campos de la última fila
+      const inputs = lastRow.querySelectorAll('input, select');
+      // Orden esperado: nombre, stat (select), golpe, dano, rango, est, desc
+      // Pero la tabla de habilidades tiene más columnas, debemos mapear correctamente.
+      // Vamos a buscar por clase o posición.
+      const nombreInput = lastRow.querySelector('.cfh-nombre') || lastRow.querySelector('input:first-child');
+      const statSelect = lastRow.querySelector('.cfh-stat') || lastRow.querySelector('select');
+      const danoInput = lastRow.querySelector('.cfh-dano') || lastRow.querySelector('input[placeholder="2d6"]');
+      const rangoInput = lastRow.querySelector('.cfh-rango') || lastRow.querySelector('input[placeholder="3"]');
+      const stamInput = lastRow.querySelector('.cfh-stam') || lastRow.querySelector('input[type="number"]');
+      const descInput = lastRow.querySelector('.cfh-desc') || lastRow.querySelector('input[placeholder="Descripción..."]');
+      const golpeInput = lastRow.querySelector('.cfh-golpe') || lastRow.querySelector('input[type="number"][placeholder="0"]');
+
+      if (nombreInput) nombreInput.value = habilidad.nombre;
+      if (statSelect) statSelect.value = habilidad.stat;
+      if (danoInput) danoInput.value = habilidad.dano;
+      if (rangoInput) rangoInput.value = habilidad.rango;
+      if (stamInput) stamInput.value = habilidad.est;
+      if (descInput) descInput.value = habilidad.desc;
+      if (golpeInput) golpeInput.value = 0;
+
+      // Disparar eventos change para que se guarden
+      if (nombreInput) nombreInput.dispatchEvent(new Event('change'));
+      if (statSelect) statSelect.dispatchEvent(new Event('change'));
+      if (danoInput) danoInput.dispatchEvent(new Event('change'));
+      if (rangoInput) rangoInput.dispatchEvent(new Event('change'));
+      if (stamInput) stamInput.dispatchEvent(new Event('change'));
+      if (descInput) descInput.dispatchEvent(new Event('change'));
+    }
+    document.getElementById('ch_mensaje').textContent = '✅ Habilidad guardada en la lista.';
+    document.getElementById('ch_mensaje').style.color = 'var(--grn)';
+    // Limpiar el creador (opcional)
+    // limpiarCreador();
+    // Refrescar la tabla de habilidades (renderHabilidades)
+    if (typeof renderHabilidades === 'function') renderHabilidades();
+    // Cambiar a la pestaña Arsenal para ver la habilidad
+    cfSwitchTab('arsenal', document.querySelector('.cf-tab[data-cfpane="arsenal"]'));
+  } else {
+    document.getElementById('ch_mensaje').textContent = '❌ No se pudo guardar: función addHabilidad no disponible.';
+    document.getElementById('ch_mensaje').style.color = 'var(--red)';
+  }
+}
+
+function limpiarCreador() {
+  document.getElementById('ch_nombre').value = '';
+  document.getElementById('ch_stat').value = 'pod';
+  document.getElementById('ch_dados').value = 1;
+  document.getElementById('ch_dado').value = 6;
+  document.getElementById('ch_rango').value = 0;
+  document.getElementById('ch_area').value = 0;
+  document.getElementById('ch_efecto1').value = '';
+  document.getElementById('ch_efecto2').value = '';
+  document.getElementById('ch_duracion').value = 'instant';
+  document.getElementById('ch_dc').value = 15;
+  document.getElementById('ch_prep').value = 0;
+  document.getElementById('ch_desc').value = '';
+  document.getElementById('ch_costo_mostrar').textContent = '—';
+  document.getElementById('ch_costo_mostrar').dataset.costo = 0;
+  document.getElementById('ch_detalle_costo').innerHTML = '';
+  document.getElementById('ch_limites').textContent = '';
+  document.getElementById('ch_mensaje').textContent = '';
+}
+
 // Vitales totales (incluye bonos manuales)
 function cfUpdateVitalTotals() {
   const vitals = [
@@ -11346,29 +11863,174 @@ function cfAddHab(h) {
 function cfAddPasiva(p) {
   const list = document.getElementById('cfPasivaList');
   if (!list) return;
+  
+  // Si no se pasa una pasiva, crear una vacía
+  const pasiva = p || { nombre: '', bonos: [], condicion: '', desc: '', activa: false };
+  
   const div = document.createElement('div');
-  div.className = 'pasiva-row' + (p?.activa ? ' activa' : '');
-  const statOpts = ['pod','agi','res','tec','int','vel','def','ini','reg','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc']
-    .map(s => `<option value="${s}" ${p?.stat===s?'selected':''}>${s}</option>`).join('');
+  div.className = 'pasiva-row' + (pasiva.activa ? ' activa' : '');
+  
+  // Contenedor principal
   div.innerHTML = `
-    <div><div class="pasiva-lbl">Nombre</div><input type="text" class="pasiva-input cfp-nombre" placeholder="Nombre de la pasiva" value="${p?.nombre||''}"></div>
-    <div>
-      <div class="pasiva-lbl">Stat + Bono</div>
-      <div class="pasiva-stat-row">
-        <select class="pasiva-stat-sel cfp-stat">${statOpts}</select>
-        <input type="number" class="pasiva-bono-inp cfp-bono" placeholder="0" value="${p?.bono||0}">
+    <div style="display:flex;flex-direction:column;gap:4px;width:100%;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <input type="text" class="cfp-nombre" placeholder="Nombre" value="${pasiva.nombre||''}" style="flex:2;min-width:120px;padding:4px 6px;background:rgba(200,160,100,.15);border:1px solid var(--ps);border-radius:3px;font-size:.78rem;">
+        <input type="text" class="cfp-condicion" placeholder="Condición (opcional)" value="${pasiva.condicion||''}" style="flex:2;min-width:120px;padding:4px 6px;background:rgba(200,160,100,.15);border:1px solid var(--ps);border-radius:3px;font-size:.78rem;">
+        <input type="text" class="cfp-desc" placeholder="Descripción" value="${pasiva.desc||''}" style="flex:3;min-width:150px;padding:4px 6px;background:rgba(200,160,100,.15);border:1px solid var(--ps);border-radius:3px;font-size:.78rem;">
+        <button class="pasiva-toggle${pasiva.activa?' on':''}" onclick="const nowOn=this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa');this.textContent=nowOn?'Activa':'Inactiva';cfSyncPasiva(this.closest('.pasiva-row'))">${pasiva.activa?'Activa':'Inactiva'}</button>
+        <button class="pasiva-del" onclick="this.closest('.pasiva-row').remove();cfSyncPasivas()" title="Eliminar">✕</button>
       </div>
+      <div class="cfp-bonos-container" style="display:flex;flex-direction:column;gap:4px;padding:4px 0;">
+        <!-- Aquí se renderizarán los bonos -->
+      </div>
+      <button class="btn btn-sm" onclick="cfAgregarBonoPasiva(this)" style="width:auto;padding:2px 8px;font-size:.6rem;background:rgba(200,148,26,.2);border:1px solid var(--ps);border-radius:3px;">+ Agregar Bono</button>
     </div>
-    <div><div class="pasiva-lbl">Descripción</div><input type="text" class="pasiva-input cfp-desc" placeholder="Efecto..." value="${p?.desc||''}"></div>
-    <div><div class="pasiva-lbl">Estado</div>
-      <button class="pasiva-toggle${p?.activa?' on':''}" onclick="this.classList.toggle('on');this.closest('.pasiva-row').classList.toggle('activa')">${p?.activa?'Activa':'Inactiva'}</button>
-    </div>
-    <button class="pasiva-del" onclick="this.closest('.pasiva-row').remove()" title="Eliminar">✕</button>
   `;
-  div.querySelector('.pasiva-toggle').addEventListener('click', function() {
-    this.textContent = this.classList.contains('on') ? 'Activa' : 'Inactiva';
-  });
+  
   list.appendChild(div);
+  
+  // Si la pasiva ya tenía bonos, agregarlos
+  if (pasiva.bonos && pasiva.bonos.length) {
+    const container = div.querySelector('.cfp-bonos-container');
+    pasiva.bonos.forEach(bono => {
+      cfAgregarFilaBonoPasiva(container, bono);
+    });
+  } else {
+    // Agregar un bono por defecto (vacío)
+    cfAgregarFilaBonoPasiva(div.querySelector('.cfp-bonos-container'));
+  }
+}
+
+function cfAgregarFilaBonoPasiva(container, bonoData) {
+  const bono = bonoData || { tipo: 'stat', stat: 'pod', valor: 0, texto: '' };
+  const fila = document.createElement('div');
+  fila.className = 'cfp-bono-fila';
+  fila.style.cssText = 'display:flex;gap:4px;align-items:center;flex-wrap:wrap;';
+  
+  // Selector de tipo
+  const tipoSel = document.createElement('select');
+  tipoSel.className = 'cfp-bono-tipo';
+  tipoSel.style.cssText = 'padding:2px 4px;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:3px;font-size:.7rem;';
+  const tipos = [
+    { val: 'stat', lbl: 'Stat' },
+    { val: 'movimiento', lbl: 'Movimiento' },
+    { val: 'acciones', lbl: 'Acciones' },
+    { val: 'acciones_adicionales', lbl: 'Acciones Adicionales' },
+    { val: 'reacciones', lbl: 'Reacciones' },
+    { val: 'hp_temp', lbl: 'HP Temporal' },
+    { val: 'custom', lbl: 'Custom' }
+  ];
+  tipos.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.val;
+    opt.textContent = t.lbl;
+    if (t.val === bono.tipo) opt.selected = true;
+    tipoSel.appendChild(opt);
+  });
+  
+  // Campo Stat (solo para tipo stat)
+  const statSel = document.createElement('select');
+  statSel.className = 'cfp-bono-stat';
+  statSel.style.cssText = 'padding:2px 4px;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:3px;font-size:.7rem;display:' + (bono.tipo === 'stat' ? 'inline-block' : 'none') + ';';
+  const stats = ['pod','agi','res','tec','int','vel','def','ini','reg','fue','eva','acr','sig','agu','vol','ctq','ing','tac','per','eng','inv','prc'];
+  stats.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    if (s === bono.stat) opt.selected = true;
+    statSel.appendChild(opt);
+  });
+  
+  // Campo Valor (número)
+  const valInput = document.createElement('input');
+  valInput.type = 'number';
+  valInput.className = 'cfp-bono-valor';
+  valInput.placeholder = 'Valor';
+  valInput.value = bono.valor || 0;
+  valInput.style.cssText = 'width:50px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:3px;font-size:.7rem;';
+  
+  // Campo Texto (solo para custom)
+  const textInput = document.createElement('input');
+  textInput.type = 'text';
+  textInput.className = 'cfp-bono-texto';
+  textInput.placeholder = 'Texto del efecto';
+  textInput.value = bono.texto || '';
+  textInput.style.cssText = 'flex:1;min-width:100px;padding:2px 4px;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:3px;font-size:.7rem;display:' + (bono.tipo === 'custom' ? 'inline-block' : 'none') + ';';
+  
+  // Botón eliminar bono
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '✕';
+  delBtn.style.cssText = 'background:none;border:none;color:var(--red);cursor:pointer;font-size:.7rem;padding:0 2px;';
+  delBtn.onclick = function() {
+    if (container.children.length <= 1) {
+      alert('Debe quedar al menos un bono.');
+      return;
+    }
+    fila.remove();
+    cfSyncPasivas();
+  };
+  
+  fila.appendChild(tipoSel);
+  fila.appendChild(statSel);
+  fila.appendChild(valInput);
+  fila.appendChild(textInput);
+  fila.appendChild(delBtn);
+  
+  // Evento para mostrar/ocultar campos según tipo
+  tipoSel.addEventListener('change', function() {
+    const tipo = this.value;
+    statSel.style.display = (tipo === 'stat') ? 'inline-block' : 'none';
+    textInput.style.display = (tipo === 'custom') ? 'inline-block' : 'none';
+    if (tipo !== 'stat') statSel.value = '';
+    if (tipo !== 'custom') textInput.value = '';
+  });
+  
+  container.appendChild(fila);
+}
+
+function cfAgregarBonoPasiva(btn) {
+  const container = btn.closest('.cfp-bonos-container') || btn.parentElement.querySelector('.cfp-bonos-container');
+  if (container) cfAgregarFilaBonoPasiva(container);
+}
+
+function cfSyncPasiva(row) {
+  // Al cambiar el toggle, sincronizar los datos (se llama desde el onclick)
+  // Solo necesitamos guardar después, usamos cfSyncPasivas() al final
+  cfSyncPasivas();
+}
+
+function cfSyncPasivas() {
+  // Recorrer todas las filas de pasivas y recolectar datos en un array
+  const rows = document.querySelectorAll('#cfPasivaList .pasiva-row');
+  const pasivas = [];
+  rows.forEach(row => {
+    const nombre = row.querySelector('.cfp-nombre')?.value || '';
+    const condicion = row.querySelector('.cfp-condicion')?.value || '';
+    const desc = row.querySelector('.cfp-desc')?.value || '';
+    const activa = row.querySelector('.pasiva-toggle')?.classList.contains('on') || false;
+    
+    const bonos = [];
+    const bonoFilas = row.querySelectorAll('.cfp-bono-fila');
+    bonoFilas.forEach(fila => {
+      const tipo = fila.querySelector('.cfp-bono-tipo')?.value || 'stat';
+      const stat = fila.querySelector('.cfp-bono-stat')?.value || '';
+      const valor = parseFloat(fila.querySelector('.cfp-bono-valor')?.value) || 0;
+      const texto = fila.querySelector('.cfp-bono-texto')?.value || '';
+      bonos.push({ tipo, stat, valor, texto });
+    });
+    
+    pasivas.push({ nombre, condicion, desc, activa, bonos });
+  });
+  
+  // Guardar en el sh del personaje actual (si existe)
+  if (editingCharId && currentUser && db) {
+    db.ref('userChars/' + currentUser.uid + '/' + editingCharId + '/pasivas').set(pasivas);
+  }
+  // También actualizar la variable local si existe
+  if (window.myChars && editingCharId) {
+    myChars[editingCharId].pasivas = pasivas;
+  }
+  // Si la ficha está abierta en el mapa, actualizar también (se hará al guardar el personaje)
 }
 
 // ── EQUIPAMIENTO ──
@@ -11438,16 +12100,24 @@ document.querySelectorAll('#cfHabBody tr').forEach(tr => {
 });
 
   // Pasivas
-  const pasivas = [];
-  document.querySelectorAll('#cfPasivaList .pasiva-row').forEach(row => {
-    pasivas.push({
-      nombre: row.querySelector('.cfp-nombre')?.value||'',
-      stat:   row.querySelector('.cfp-stat')?.value||'',
-      bono:   parseFloat(row.querySelector('.cfp-bono')?.value)||0,
-      desc:   row.querySelector('.cfp-desc')?.value||'',
-      activa: row.querySelector('.pasiva-toggle')?.classList.contains('on')||false,
-    });
+  // Pasivas
+const pasivas = [];
+document.querySelectorAll('#cfPasivaList .pasiva-row').forEach(row => {
+  const nombre = row.querySelector('.cfp-nombre')?.value||'';
+  const condicion = row.querySelector('.cfp-condicion')?.value||'';
+  const desc = row.querySelector('.cfp-desc')?.value||'';
+  const activa = row.querySelector('.pasiva-toggle')?.classList.contains('on')||false;
+  const bonos = [];
+  row.querySelectorAll('.cfp-bono-fila').forEach(fila => {
+    const tipo = fila.querySelector('.cfp-bono-tipo')?.value||'stat';
+    const stat = fila.querySelector('.cfp-bono-stat')?.value||'';
+    const valor = parseFloat(fila.querySelector('.cfp-bono-valor')?.value)||0;
+    const texto = fila.querySelector('.cfp-bono-texto')?.value||'';
+    bonos.push({ tipo, stat, valor, texto });
   });
+  pasivas.push({ nombre, condicion, desc, activa, bonos });
+});
+// ... luego asignar a la data
 
   // Equipamiento
   const equipo = {};
@@ -11611,8 +12281,12 @@ function editarPersonaje(id) {
   const habBody = document.getElementById('cfHabBody');
   if (habBody) { habBody.innerHTML = ''; (ch.habilidades||[]).forEach(h => cfAddHab(h)); }
   // Pasivas
-  const pasivaList = document.getElementById('cfPasivaList');
-  if (pasivaList) { pasivaList.innerHTML = ''; (ch.pasivas||[]).forEach(p => cfAddPasiva(p)); }
+  // Pasivas
+const pasivaList = document.getElementById('cfPasivaList');
+if (pasivaList) { 
+  pasivaList.innerHTML = ''; 
+  (ch.pasivas||[]).forEach(p => cfAddPasiva(p)); 
+}
   // Equipo
   cfBuildEquipTable(ch.equipo);
   // Inventario
