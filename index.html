@@ -5678,7 +5678,9 @@ function updateBC() {
   const el = document.getElementById('fBC');
   if (!el) return;
   const nivel = selId && tokens[selId] ? (tokens[selId].sh.nivel || 1) : 1;
-  el.textContent = Math.ceil(nivel / 3) + 1;
+  const cfg = getFormulasConfig();
+  const bc = cfg.competencia.base + Math.ceil(nivel / cfg.competencia.division);
+  el.textContent = bc;
   updateXpMax();
 }
 
@@ -10474,31 +10476,88 @@ canvas {
     </div>
 
     <button class="btn btn-gld" style="margin-bottom:10px;" onclick="switchSection('personajes')">Ver Mis Personajes</button>
-<div style="margin-top: 16px; border-top: 1px solid var(--ps); padding-top: 12px;">
-  <div style="font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:2px; color:var(--gld);">🔐 Restablecer contraseña de otro usuario</div>
-  <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-    <input type="text" id="adminResetUser" placeholder="Nombre de usuario" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
-    <input type="password" id="adminResetPass" placeholder="Nueva contraseña" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
-    <button class="btn btn-red" onclick="adminResetPassword()" style="width: auto; padding: 5px 12px; margin-bottom: 0;">Restablecer</button>
-  </div>
-  <div id="adminResetMsg" style="font-size:.7rem; margin-top: 4px; min-height: 20px; color: var(--ink2);"></div>
-</div>
+    
+    <div style="margin-top: 16px; border-top: 1px solid var(--ps); padding-top: 12px;">
+      <div style="font-family:'Cinzel',serif; font-size:.62rem; letter-spacing:2px; color:var(--gld);">🔐 Restablecer contraseña de otro usuario</div>
+      <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+        <input type="text" id="adminResetUser" placeholder="Nombre de usuario" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
+        <input type="password" id="adminResetPass" placeholder="Nueva contraseña" style="flex:1; min-width: 120px; padding: 5px 8px; background: rgba(200,160,100,.2); border: 1px solid var(--ps); border-radius: 3px; color: var(--ink);">
+        <button class="btn btn-red" onclick="adminResetPassword()" style="width: auto; padding: 5px 12px; margin-bottom: 0;">Restablecer</button>
+      </div>
+      <div id="adminResetMsg" style="font-size:.7rem; margin-top: 4px; min-height: 20px; color: var(--ink2);"></div>
+    </div>
+
     <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
   </div>
 
-<!-- Panel de gestión de usuarios (solo DM) -->
-<div id="adminUsersPanel" class="admin-users-panel" style="margin-top: 24px; display: none;">
-  <div class="ptitle" style="margin-top: 0;">👥 Gestión de Usuarios (DM)</div>
-  <div style="overflow-x: auto;">
-    <table id="userListTable" style="width:100%; border-collapse: collapse; font-size: .8rem;">
-      <thead>
-        <tr><th>Usuario</th><th>Nombre</th><th>Fecha creación</th><th>Acciones</th></tr>
-      </thead>
-      <tbody id="userListBody"></tbody>
-    </table>
+  <!-- Panel de gestión de usuarios (solo DM) -->
+  <div id="adminUsersPanel" class="admin-users-panel" style="margin-top: 24px; display: none;">
+    <div class="ptitle" style="margin-top: 0;">👥 Gestión de Usuarios (DM)</div>
+    <div style="overflow-x: auto;">
+      <table id="userListTable" style="width:100%; border-collapse: collapse; font-size: .8rem;">
+        <thead>
+          <tr><th>Usuario</th><th>Nombre</th><th>Fecha creación</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="userListBody"></tbody>
+      </table>
+    </div>
   </div>
-</div>
 
+  <!-- ════════════════════════════════════════════════════
+       PANEL DE PARÁMETROS DEL SISTEMA (solo DM)
+  ════════════════════════════════════════════════════ -->
+  <div id="configPanel" class="profile-card" style="margin-top: 24px; display: none; width: 100%; max-width: 820px;">
+    <div class="ptitle" style="display:flex;justify-content:space-between;align-items:center;margin-top:0;">
+      ⚙ Parámetros del Sistema
+      <span style="font-size:.65rem;color:var(--ink3);font-style:italic;">Guardado automático</span>
+    </div>
+    <div style="font-size:.78rem;color:var(--ink2);margin-bottom:12px;">
+      Ajustá las fórmulas de cálculo de estadísticas. Los cambios afectan a todas las fichas.
+    </div>
+
+    <!-- Bono de Competencia -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <span style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);">Bono Competencia:</span>
+      <span style="font-size:.72rem;">ceil(nivel /</span>
+      <input type="number" id="cfg_comp_div" value="3" min="1" max="10" style="width:48px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-size:.8rem;">
+      <span style="font-size:.72rem;">) +</span>
+      <input type="number" id="cfg_comp_base" value="1" min="0" max="10" style="width:48px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-size:.8rem;">
+    </div>
+
+    <!-- Velocidad mínima -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--ink2);">Velocidad mínima:</span>
+      <input type="number" id="cfg_vel_min" value="2" min="0" max="10" style="width:56px;padding:2px 4px;text-align:center;background:rgba(200,160,100,.2);border:1px solid var(--ps);border-radius:3px;font-size:.8rem;">
+    </div>
+
+    <!-- Tabla de fórmulas por clase -->
+    <div style="overflow-x:auto;margin-bottom:12px;">
+      <table style="width:100%;border-collapse:collapse;font-size:.7rem;">
+        <thead>
+          <tr style="background:rgba(200,148,26,.15);">
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">Clase</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">HP Base</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">HP × RES</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">STAM Base</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">STAM × TEC</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">DEF Base</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">DEF Stat</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">DEF Mult</th>
+            <th style="padding:4px 2px;border:1px solid rgba(0,0,0,.1);">Reg Base</th>
+          </tr>
+        </thead>
+        <tbody id="cfgTableBody">
+          <!-- se genera con JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-gld" onclick="saveFormulasConfig()" style="width:auto;padding:4px 12px;font-size:.7rem;margin-bottom:0;">💾 Guardar</button>
+      <button class="btn btn-sm" onclick="resetFormulasConfig()" style="background:rgba(200,148,26,.1);border:1px solid var(--ps);color:var(--ink2);padding:4px 12px;font-size:.7rem;margin-bottom:0;">↺ Restaurar predeterminado</button>
+      <span id="cfgStatus" style="font-size:.7rem;color:var(--grn);align-self:center;margin-left:4px;"></span>
+    </div>
+  </div>
 </div><!-- /secPerfil -->
 
 <script>
@@ -10646,7 +10705,7 @@ function renderProfileCard() {
   document.getElementById('profileAvatar').textContent = currentUser.username[0].toUpperCase();
   document.getElementById('profileName').textContent = currentUser.username;
   document.getElementById('profileMeta').textContent = 'Miembro desde ' + new Date(currentUser.createdAt).getFullYear();
-  // stats
+
   if (db) {
     db.ref('userChars/' + currentUser.uid).once('value').then(snap => {
       const chars = snap.val() || {};
@@ -10660,6 +10719,31 @@ function renderProfileCard() {
       const maxLv = arr.reduce((m, c) => Math.max(m, c.nivel||1), 1);
       document.getElementById('profileTopLevel').textContent = maxLv;
     });
+  }
+
+  // Panel de gestión de usuarios (solo DM)
+  const adminPanel = document.getElementById('adminUsersPanel');
+  if (adminPanel) {
+    if (isAdmin()) {
+      adminPanel.style.display = 'block';
+      loadAdminUserList();
+    } else {
+      adminPanel.style.display = 'none';
+    }
+  }
+
+  // ═══ PANEL DE PARÁMETROS DEL SISTEMA (solo DM) ═══
+  const configPanel = document.getElementById('configPanel');
+  if (configPanel) {
+    if (isAdmin()) {
+      configPanel.style.display = 'block';
+      // Inicializar la UI con los valores actuales (si no está ya poblada)
+      if (!document.getElementById('cfgTableBody').children.length) {
+        populateFormulasUI();
+      }
+    } else {
+      configPanel.style.display = 'none';
+    }
   }
 }
 
@@ -11085,6 +11169,11 @@ function cfGetMF(stat) {
   return 0;
 }
 
+// ================================================================
+//  GESTOR DE PERSONAJES — CÁLCULOS UNIFICADOS
+//  Usa las mismas fórmulas que el mapa + configuración del sistema
+// ================================================================
+
 function cfUpdateCalcs() {
   const nivel  = parseInt(document.getElementById('cf_nivel')?.value) || 1;
   const pod    = parseInt(document.getElementById('cf_pod')?.value) || 10;
@@ -11099,64 +11188,58 @@ function cfUpdateCalcs() {
   const bInt   = parseInt(document.getElementById('cf_bInt')?.value) || 0;
   const clase  = (document.getElementById('cf_clase')?.value || '').toLowerCase();
 
+  // Construir un sh temporal para usar calcularVitales
+  const shTemp = {
+    clase: clase,
+    nivel: nivel,
+    pod: pod, agi: agi, res: res, tec: tec, int: int_,
+    bPod: bPod, bAgi: bAgi, bRes: bRes, bTec: bTec, bInt: bInt,
+    equipo: {}, // no tenemos equipo en el gestor, pero lo dejamos vacío
+    pasivas: [],
+    plus_ultra: cfPUActive
+  };
+
+  // Usar la función central
+  const vitales = calcularVitales(shTemp);
+  const { vel, def, ini, vida_m, est_m, reg } = vitales;
+
+  // Actualizar campos UI
+  document.getElementById('cf_vel').value = vel;
+  document.getElementById('cf_def').value = def;
+  document.getElementById('cf_ini').value = ini;
+  document.getElementById('cf_reg').value = reg;
+  document.getElementById('cf_vida_m').value = vida_m;
+  document.getElementById('cf_est_m').value = est_m;
+
+  // Actualizar modificadores de stats principales (sin equipo/pasivas)
   const MAINS = [
-    ['pod','Pod',pod,bPod],['agi','Agi',agi,bAgi],
-    ['res','Res',res,bRes],['tec','Tec',tec,bTec],['int','Int',int_,bInt]
+    ['pod','Pod',pod,bPod], ['agi','Agi',agi,bAgi],
+    ['res','Res',res,bRes], ['tec','Tec',tec,bTec], ['int','Int',int_,bInt]
   ];
   const pu = cfPUActive ? 2 : 0;
-
   MAINS.forEach(([key, Key, base, bono]) => {
-    const mb = cfMod(base, bono);
-    const mf = mb + pu;
+    const mb = Math.trunc((base + bono) / 2 - 5);
+    const mf = mb + pu; // en el gestor no hay equipo/pasivas
     const elBase  = document.getElementById('cfMBase'+Key);
     const elFinal = document.getElementById('cfMFinal'+Key);
     if (elBase)  elBase.textContent  = mb >= 0 ? '+'+mb : ''+mb;
     if (elFinal) elFinal.textContent = mf >= 0 ? '+'+mf : ''+mf;
   });
 
-  // BC
-  const bc = Math.ceil(nivel/3)+1;
-  const bcEl = document.getElementById('cfBC');
-  if (bcEl) bcEl.textContent = '+'+bc;
+  // Bono de competencia
+  const cfg = getFormulasConfig();
+  const bc = cfg.competencia.base + Math.ceil(nivel / cfg.competencia.division);
+  document.getElementById('cfBC').textContent = '+'+bc;
 
   // XP max
   let xpMax = 10;
   for (let i = 1; i < nivel; i++) xpMax = Math.round(xpMax*1.5);
-  const xmEl = document.getElementById('cf_xp_m');
-  if (xmEl) xmEl.value = xpMax;
+  document.getElementById('cf_xp_m').value = xpMax;
 
-  // Vitales auto
-  const mAgi = cfMod(agi,bAgi)+pu;
-  const mRes = cfMod(res,bRes)+pu;
-  const mTec = cfMod(tec,bTec)+pu;
-  const mInt = cfMod(int_,bInt)+pu;
-
-  const vel = Math.max(2, mAgi);
-  let def, hp, stam, reg;
-
-  if      (clase==='ofensivo')  { hp=(8*(nivel+1))+(mRes*2); stam=(6*nivel)+(mTec*2); def=10+mRes; }
-  else if (clase==='defensivo') { hp=(12*(nivel+1))+(mRes*3); stam=(5*nivel)+(mTec*1); def=10+mRes; }
-  else if (clase==='agil')      { hp=(7*(nivel+1))+(mRes*2); stam=(6*nivel)+(mTec*2); def=10+vel; }
-  else if (clase==='tecnico')   { hp=(6*(nivel+1))+(mRes*2); stam=(8*nivel)+(mTec*3); def=10+vel; }
-  else if (clase==='mental')    { hp=(6*(nivel+1))+(mRes*1); stam=(7*nivel)+(mTec*2); def=10+vel; }
-  else if (clase==='apoyo')     { hp=(9*(nivel+1))+(mRes*2); stam=(7*nivel)+(mTec*2); def=9+mRes; }
-  else { hp=50; stam=30; def=10; }
-  reg = 1+mInt;
-  hp = Math.max(1,hp); stam = Math.max(1,stam);
-
-  ['cf_vel','cf_def','cf_ini','cf_reg'].forEach((id,i) => {
-    const el = document.getElementById(id);
-    if (el) el.value = [vel,def,mAgi,reg][i];
-  });
-  ['cf_vida_m','cf_est_m'].forEach((id,i) => {
-    const el = document.getElementById(id);
-    if (el) el.value = [hp,stam][i];
-  });
-
-  // Preview box
+  // Preview
   const prev = document.getElementById('cfCalcPreview');
   if (prev && clase) {
-    prev.innerHTML = `<b>HP:</b> ${hp} &nbsp;|&nbsp; <b>STAM:</b> ${stam} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Ini:</b> ${mAgi>=0?'+'+mAgi:mAgi} &nbsp;|&nbsp; <b>Regen:</b> ${reg} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
+    prev.innerHTML = `<b>HP:</b> ${vida_m} &nbsp;|&nbsp; <b>STAM:</b> ${est_m} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Ini:</b> ${ini>=0?'+'+ini:ini} &nbsp;|&nbsp; <b>Regen:</b> ${reg} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
   }
 
   cfUpdateAttrTotals();
@@ -11165,6 +11248,7 @@ function cfUpdateCalcs() {
   cfRefreshHeader();
 }
 
+// Vitales totales (incluye bonos manuales)
 function cfUpdateVitalTotals() {
   const vitals = [
     {id:'cfTVel', base:'cf_vel', bv:'cf_bvVel'},
@@ -11184,6 +11268,7 @@ function cfUpdateVitalTotals() {
   });
 }
 
+// Atributos (usando los mods finales de stats principales)
 function cfUpdateAttrTotals() {
   const bc = parseInt(document.getElementById('cfBC')?.textContent?.replace('+',''))||2;
   const attrMap = [
@@ -11194,20 +11279,24 @@ function cfUpdateAttrTotals() {
     {lbl:'Per', srcStat:'Int'}, {lbl:'Eng',  srcStat:'Int'}, {lbl:'Inv', srcStat:'Int'}, {lbl:'Prc', srcStat:'Int'},
   ];
   attrMap.forEach(({lbl, srcStat}) => {
-    const base = parseInt(document.getElementById('cfA'+lbl)?.value)||0;
+    // Obtener mod final de la stat principal desde el span
+    const mfEl = document.getElementById('cfMFinal'+srcStat);
+    let base = 0;
+    if (mfEl) {
+      const txt = mfEl.textContent;
+      base = parseInt(txt.replace('+','')) || 0;
+    }
     const bono = parseInt(document.getElementById('cfBa'+lbl)?.value)||0;
     const comp = document.getElementById('cfComp'+lbl)?.checked ? bc : 0;
-    // sync base from mFinal
-    const mfEl = document.getElementById('cfMFinal'+srcStat);
-    if (mfEl) {
-      const mf = parseInt(mfEl.textContent)||0;
-      const baseEl = document.getElementById('cfA'+lbl);
-      if (baseEl) baseEl.value = mf;
-    }
-    const newBase = parseInt(document.getElementById('cfA'+lbl)?.value)||0;
-    const total = newBase + bono + comp;
+    const total = base + bono + comp;
+    const baseInput = document.getElementById('cfA'+lbl);
+    if (baseInput) baseInput.value = base;
     const totEl = document.getElementById('cfTA'+lbl);
-    if (totEl) totEl.textContent = total >= 0 ? '+'+total : ''+total;
+    if (totEl) {
+      totEl.textContent = total >= 0 ? '+'+total : ''+total;
+      totEl.style.background = total > base ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
+      totEl.style.color = total >= 0 ? '#1a4a1a' : 'var(--red)';
+    }
   });
 }
 
@@ -11624,53 +11713,86 @@ function nuevoPersonaje() {
 // ══════════════════════════════════════════════════════════
 function enviarAlMapa() {
   const ch = recogerDatosPersonaje();
+  // Ahora ch ya contiene vida_m, est_m, etc. calculados con la misma lógica
+
   const tok = {
     id: 't_' + Date.now().toString(36),
     name: ch.nombre || 'Personaje',
-    sym: ch.sym || (ch.nombre||'?')[0].toUpperCase(),
+    sym: ch.sym || (ch.nombre || '?')[0].toUpperCase(),
     color: ch.color || '#c8941a',
     c: 0, r: 0,
     sh: {
-      nivel: ch.nivel, clase: ch.clase, espec: ch.espec, subclase: ch.subclase,
+      // Copiar todo tal cual del personaje, incluyendo vida_m, est_m, etc.
+      // Esto evita que el mapa recalcule con valores distintos.
+      nivel: ch.nivel,
+      clase: ch.clase,
+      espec: ch.espec,
+      subclase: ch.subclase,
       pod: ch.pod, agi: ch.agi, res: ch.res, tec: ch.tec, int: ch.int,
-      bPod: ch.bPod||0, bAgi: ch.bAgi||0, bRes: ch.bRes||0, bTec: ch.bTec||0, bInt: ch.bInt||0,
+      bPod: ch.bPod || 0, bAgi: ch.bAgi || 0, bRes: ch.bRes || 0, bTec: ch.bTec || 0, bInt: ch.bInt || 0,
       vida_c: ch.vida_c, vida_m: ch.vida_m,
       est_c: ch.est_c, est_m: ch.est_m,
-      xp_c: ch.xp_c, xp_m: ch.xp_m,
-      hp_temp: ch.hp_temp||0,
-      plus_ultra: ch.plus_ultra||false,
-      estados: ch.estados||{},
-      bvVel: ch.bvVel||0, bvDef: ch.bvDef||0, bvIni: ch.bvIni||0, bvReg: ch.bvReg||0,
-      mov: ch.mov||1, acc: ch.acc||1, acca: ch.acca||0, rea: ch.rea||1,
-      cua: ch.cua||0, yh: ch.yh||0, ct: ch.ct||0, mer: ch.mer||0,
-      // atributos
-      fue:0,intim:0,eva:0,acr:0,sig:0,agu:0,vol:0,ctq:0,ing:0,tac:0,per:0,eng:0,inv:0,prc:0,
-      baFue:ch.baFue||0,baIntim:ch.baIntim||0,baEva:ch.baEva||0,baAcr:ch.baAcr||0,baSig:ch.baSig||0,
-      baAgu:ch.baAgu||0,baVol:ch.baVol||0,baCtq:ch.baCtq||0,baIng:ch.baIng||0,baTac:ch.baTac||0,
-      baPer:ch.baPer||0,baEng:ch.baEng||0,baInv:ch.baInv||0,baPrc:ch.baPrc||0,
-      compFue:ch.compFue||false,compIntim:ch.compIntim||false,compEva:ch.compEva||false,
-      compAcr:ch.compAcr||false,compSig:ch.compSig||false,compAgu:ch.compAgu||false,
-      compVol:ch.compVol||false,compCtq:ch.compCtq||false,compIng:ch.compIng||false,
-      compTac:ch.compTac||false,compPer:ch.compPer||false,compEng:ch.compEng||false,
-      compInv:ch.compInv||false,compPrc:ch.compPrc||false,
-      habilidades: (ch.habilidades||[]).map((h,i) => ({
-        id:'h'+i, nombre:h.nombre, stat:h.stat||'pod', golpe:h.golpe||0,
-        dano:h.dano||'', rango:h.rango||'', stam:h.stam||0,
-        desc:h.desc||'', tipo_uso:'accion'
+      xp_c: ch.xp_c || 0, xp_m: ch.xp_m || 10,
+      hp_temp: ch.hp_temp || 0,
+      plus_ultra: ch.plus_ultra || false,
+      estados: ch.estados || {},
+      bvVel: ch.bvVel || 0, bvDef: ch.bvDef || 0, bvIni: ch.bvIni || 0, bvReg: ch.bvReg || 0,
+      mov: ch.mov || 1, acc: ch.acc || 1, acca: ch.acca || 0, rea: ch.rea || 1,
+      cua: ch.cua || 0, yh: ch.yh || 0, ct: ch.ct || 0, mer: ch.mer || 0,
+      // Atributos
+      fue:0, intim:0, eva:0, acr:0, sig:0, agu:0, vol:0, ctq:0, ing:0, tac:0, per:0, eng:0, inv:0, prc:0,
+      baFue: ch.baFue || 0, baIntim: ch.baIntim || 0, baEva: ch.baEva || 0, baAcr: ch.baAcr || 0,
+      baSig: ch.baSig || 0, baAgu: ch.baAgu || 0, baVol: ch.baVol || 0, baCtq: ch.baCtq || 0,
+      baIng: ch.baIng || 0, baTac: ch.baTac || 0, baPer: ch.baPer || 0, baEng: ch.baEng || 0,
+      baInv: ch.baInv || 0, baPrc: ch.baPrc || 0,
+      compFue: ch.compFue || false, compIntim: ch.compIntim || false,
+      compEva: ch.compEva || false, compAcr: ch.compAcr || false,
+      compSig: ch.compSig || false, compAgu: ch.compAgu || false,
+      compVol: ch.compVol || false, compCtq: ch.compCtq || false,
+      compIng: ch.compIng || false, compTac: ch.compTac || false,
+      compPer: ch.compPer || false, compEng: ch.compEng || false,
+      compInv: ch.compInv || false, compPrc: ch.compPrc || false,
+      habilidades: (ch.habilidades || []).map((h, i) => ({
+        id: 'h' + i,
+        nombre: h.nombre || '',
+        stat: h.stat || 'pod',
+        golpe: h.golpe || 0,
+        dano: h.dano || '',
+        rango: h.rango || '',
+        stam: h.stam || 0,
+        est: h.stam || 0,
+        desc: h.desc || '',
+        tipo_uso: 'accion'
       })),
-      pasivas: ch.pasivas||[],
-      equipo: ch.equipo||{},
-      inventario: ch.inventario||[],
-      notas: ch.notas||'',
+      pasivas: ch.pasivas || [],
+      equipo: ch.equipo || {},
+      inventario: ch.inventario || [],
+      notas: ch.notas || '',
+      show_vida: true, show_est: true, show_hptemp: true
     }
   };
+
+  // Aplicar contraseña
+  const pwField = document.getElementById('cf_password');
+  const pw = pwField ? pwField.value.trim() : '';
+  const savedPw = (editingCharId && myChars[editingCharId]) ? myChars[editingCharId].password : '';
+  const finalPw = pw || savedPw || '';
+  if (finalPw) {
+    tok.pwHash = typeof simpleHash === 'function' ? simpleHash(finalPw) : finalPw;
+  }
+
   if (typeof tokens !== 'undefined') {
     tokens[tok.id] = tok;
-    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/'+tok.id).set(tok);
+    if (typeof unlockedIds !== 'undefined') unlockedIds.add(tok.id);
+    if (typeof roomRef !== 'undefined' && roomRef) roomRef.child('tokens/' + tok.id).set(tok);
     if (typeof refresh === 'function') refresh();
     if (typeof redraw === 'function') redraw();
     switchSection('jugar');
-    setTimeout(() => { if(typeof addLog==='function') addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes.`); }, 300);
+    const pwNote = finalPw ? ' 🔒' : '';
+    setTimeout(() => {
+      if (typeof addLog === 'function')
+        addLog('spawn', `🦸 <b>${tok.name}</b> llegó desde el gestor de personajes${pwNote}.`);
+    }, 300);
   } else {
     alert('El mapa no está disponible. Abrí la sección Jugar primero.');
   }
@@ -11923,6 +12045,8 @@ function onUserLoggedIn() {
   if (currentSection === 'personajes') renderCharsList();
   // Auto-sync name and DM mode from account
   syncAccountToPresence();
+  // Dentro de onUserLoggedIn, después de syncAccountToPresence()
+  initConfigPanel();
   restoreDMMode();
 }
 
@@ -13571,6 +13695,403 @@ async function rewardMerChar(amount) {
   addLog('spawn', `🏅 <b>${char.nombre}</b> +${amount} Mérito(s) (Total: ${char.mer})`);
   if (typeof actualizarGraficos === 'function') actualizarGraficos();
 }
+
+// ================================================================
+//  CONFIGURACIÓN DEL SISTEMA — FÓRMULAS EDITABLES (DM)
+// ================================================================
+
+// Valores por defecto (hardcodeados originales)
+const DEFAULT_FORMULAS = {
+  competencia: { base: 1, division: 3 },
+  velMin: 2,
+  clases: {
+    ofensivo: {
+      hpBase: 8, hpResMult: 2,
+      stamBase: 6, stamTecMult: 2,
+      defBase: 10, defStat: 'res', defMult: 1,
+      regBase: 1
+    },
+    defensivo: {
+      hpBase: 12, hpResMult: 3,
+      stamBase: 5, stamTecMult: 1,
+      defBase: 10, defStat: 'res', defMult: 1,
+      regBase: 1
+    },
+    agil: {
+      hpBase: 7, hpResMult: 2,
+      stamBase: 6, stamTecMult: 2,
+      defBase: 10, defStat: 'agi', defMult: 1,
+      regBase: 1
+    },
+    tecnico: {
+      hpBase: 6, hpResMult: 2,
+      stamBase: 8, stamTecMult: 3,
+      defBase: 10, defStat: 'agi', defMult: 1,
+      regBase: 1
+    },
+    mental: {
+      hpBase: 6, hpResMult: 1,
+      stamBase: 7, stamTecMult: 2,
+      defBase: 10, defStat: 'agi', defMult: 1,
+      regBase: 2
+    },
+    apoyo: {
+      hpBase: 9, hpResMult: 2,
+      stamBase: 7, stamTecMult: 2,
+      defBase: 9, defStat: 'res', defMult: 1,
+      regBase: 1
+    },
+    default: {
+      hpBase: 8, hpResMult: 2,
+      stamBase: 6, stamTecMult: 2,
+      defBase: 10, defStat: 'res', defMult: 1,
+      regBase: 1
+    }
+  }
+};
+
+// ================================================================
+//  CÁLCULO CENTRALIZADO DE VITALES (usado por mapa y personajes)
+// ================================================================
+
+function getFormulasConfig() {
+  return formulasConfig || DEFAULT_FORMULAS;
+}
+
+function calcularModFinal(stat, sh) {
+  const base = sh[stat] || 0;
+  const bKey = 'b' + stat.charAt(0).toUpperCase() + stat.slice(1);
+  const bono = sh[bKey] || 0;
+  const modBase = Math.trunc((base + bono) / 2 - 5);
+  let ext = 0;
+
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat === stat && slot.bono) ext += parseFloat(slot.bono) || 0;
+  });
+  (sh.pasivas || []).forEach(p => {
+    if (p.activa && p.stat === stat && p.bono) ext += parseFloat(p.bono) || 0;
+  });
+  if (sh.plus_ultra) ext += 2;
+
+  return modBase + ext;
+}
+
+function calcularVitales(sh) {
+  const cfg = getFormulasConfig();
+  const clase = (sh.clase || '').toLowerCase().trim();
+  const nivel = sh.nivel || 1;
+  const claseKey = clases.includes(clase) ? clase : 'default';
+  const f = cfg.clases[claseKey] || cfg.clases.default;
+
+  const mRes = calcularModFinal('res', sh);
+  const mAgi = calcularModFinal('agi', sh);
+  const mTec = calcularModFinal('tec', sh);
+  const mInt = calcularModFinal('int', sh);
+
+  const vel = Math.max(cfg.velMin, mAgi);
+  const defStat = f.defStat === 'agi' ? mAgi : mRes;
+  const def = f.defBase + (defStat * f.defMult);
+  const ini = mAgi;
+  const vidaM = Math.max(1, (f.hpBase * (nivel + 1)) + (mRes * f.hpResMult));
+  const stamM = Math.max(1, (f.stamBase * nivel) + (mTec * f.stamTecMult));
+  const reg = Math.max(0, f.regBase + mInt);
+
+  return { vel, def, ini, vida_m: vidaM, est_m: stamM, reg };
+}
+
+let formulasConfig = null;
+
+// Cargar configuración desde Firebase
+function loadFormulasConfig() {
+  if (!roomRef) {
+    // Si no hay sala, usar defaults
+    formulasConfig = JSON.parse(JSON.stringify(DEFAULT_FORMULAS));
+    populateFormulasUI();
+    return;
+  }
+  roomRef.child('config/formulas').on('value', snap => {
+    const data = snap.val();
+    if (data) {
+      // Fusionar con defaults para tener todas las propiedades
+      formulasConfig = mergeDeep(JSON.parse(JSON.stringify(DEFAULT_FORMULAS)), data);
+    } else {
+      formulasConfig = JSON.parse(JSON.stringify(DEFAULT_FORMULAS));
+    }
+    populateFormulasUI();
+    // Aplicar a todas las fichas
+    recalcAllTokens();
+  });
+}
+
+// Guardar configuración en Firebase
+function saveFormulasConfig() {
+  if (!roomRef) {
+    alert('Sin conexión a la sala. No se puede guardar.');
+    return;
+  }
+  // Leer valores de la UI
+  const compDiv = parseInt(document.getElementById('cfg_comp_div').value) || 3;
+  const compBase = parseInt(document.getElementById('cfg_comp_base').value) || 1;
+  const velMin = parseInt(document.getElementById('cfg_vel_min').value) || 2;
+
+  const config = {
+    competencia: { base: compBase, division: compDiv },
+    velMin: velMin,
+    clases: {}
+  };
+
+  const clases = ['ofensivo','defensivo','agil','tecnico','mental','apoyo','default'];
+  clases.forEach(ck => {
+    const row = document.querySelector(`#cfgRow_${ck}`);
+    if (!row) return;
+    const hpBase = parseFloat(row.querySelector('.cfg-hpBase').value) || 0;
+    const hpResMult = parseFloat(row.querySelector('.cfg-hpResMult').value) || 0;
+    const stamBase = parseFloat(row.querySelector('.cfg-stamBase').value) || 0;
+    const stamTecMult = parseFloat(row.querySelector('.cfg-stamTecMult').value) || 0;
+    const defBase = parseFloat(row.querySelector('.cfg-defBase').value) || 0;
+    const defStat = row.querySelector('.cfg-defStat').value;
+    const defMult = parseFloat(row.querySelector('.cfg-defMult').value) || 1;
+    const regBase = parseFloat(row.querySelector('.cfg-regBase').value) || 0;
+    config.clases[ck] = { hpBase, hpResMult, stamBase, stamTecMult, defBase, defStat, defMult, regBase };
+  });
+
+  // Guardar en Firebase
+  roomRef.child('config/formulas').set(config, error => {
+    if (error) {
+      document.getElementById('cfgStatus').textContent = '❌ Error al guardar';
+      document.getElementById('cfgStatus').style.color = 'var(--red)';
+    } else {
+      document.getElementById('cfgStatus').textContent = '✓ Configuración guardada';
+      document.getElementById('cfgStatus').style.color = 'var(--grn)';
+      setTimeout(() => { document.getElementById('cfgStatus').textContent = ''; }, 3000);
+    }
+  });
+}
+
+// Restaurar valores predeterminados
+function resetFormulasConfig() {
+  if (!confirm('¿Restaurar las fórmulas a los valores originales?')) return;
+  formulasConfig = JSON.parse(JSON.stringify(DEFAULT_FORMULAS));
+  populateFormulasUI();
+  if (roomRef) {
+    roomRef.child('config/formulas').set(formulasConfig);
+    document.getElementById('cfgStatus').textContent = '✓ Restaurado';
+    document.getElementById('cfgStatus').style.color = 'var(--grn)';
+    setTimeout(() => { document.getElementById('cfgStatus').textContent = ''; }, 3000);
+  }
+  recalcAllTokens();
+}
+
+// Llenar la UI con los valores actuales
+function populateFormulasUI() {
+  if (!formulasConfig) return;
+  const c = formulasConfig;
+  document.getElementById('cfg_comp_div').value = c.competencia.division;
+  document.getElementById('cfg_comp_base').value = c.competencia.base;
+  document.getElementById('cfg_vel_min').value = c.velMin;
+
+  const clases = ['ofensivo','defensivo','agil','tecnico','mental','apoyo','default'];
+  const tbody = document.getElementById('cfgTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  clases.forEach(ck => {
+    const f = c.clases[ck] || c.clases.default;
+    const tr = document.createElement('tr');
+    tr.id = `cfgRow_${ck}`;
+    tr.innerHTML = `
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);font-weight:600;text-transform:capitalize;">${ck}</td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-hpBase" value="${f.hpBase}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-hpResMult" value="${f.hpResMult}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-stamBase" value="${f.stamBase}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-stamTecMult" value="${f.stamTecMult}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-defBase" value="${f.defBase}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);">
+        <select class="cfg-defStat" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;">
+          <option value="res" ${f.defStat==='res'?'selected':''}>RES</option>
+          <option value="agi" ${f.defStat==='agi'?'selected':''}>AGI</option>
+        </select>
+      </td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-defMult" value="${f.defMult}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+      <td style="padding:2px 4px;border:1px solid rgba(0,0,0,.1);"><input type="number" class="cfg-regBase" value="${f.regBase}" step="0.5" style="width:100%;background:rgba(200,160,100,.1);border:1px solid var(--ps);border-radius:2px;padding:1px 2px;font-size:.7rem;text-align:center;"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Helper: merge profundo
+function mergeDeep(target, source) {
+  const output = { ...target };
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) Object.assign(output, { [key]: source[key] });
+        else output[key] = mergeDeep(target[key], source[key]);
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+  return output;
+}
+function isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
+
+// Recalcular todas las fichas con las nuevas fórmulas
+function recalcAllTokens() {
+  if (!tokens) return;
+  Object.keys(tokens).forEach(id => {
+    if (tokens[id] && tokens[id].sh) {
+      // Forzar recálculo sin guardar aún (se guardará en autoCalcVitales si se modifica)
+      autoCalcVitalesForToken(id, true); // true = no guardar en Firebase automáticamente
+    }
+  });
+  // Actualizar UI de la ficha seleccionada
+  if (selId && tokens[selId]) {
+    showStats();
+    refreshTurns();
+    redraw();
+  }
+}
+
+// Nueva versión de autoCalcVitales que usa la configuración
+// Reemplaza la función original
+function autoCalcVitales() {
+  if (!selId || !tokens[selId]) return;
+  autoCalcVitalesForToken(selId, false);
+}
+
+function autoCalcVitalesForToken(id, noSave) {
+  const t = tokens[id];
+  if (!t || !t.sh) return;
+  const sh = t.sh;
+
+  // Usar la función central
+  const vitales = calcularVitales(sh);
+  const { vel, def, ini, vida_m, est_m, reg } = vitales;
+
+  // Aplicar al sh y a la UI
+  const updates = { vel, def, ini, vida_m, est_m, reg };
+  Object.entries(updates).forEach(([k, v]) => {
+    const safe = (typeof v === 'number' && isFinite(v)) ? v : 0;
+    sh[k] = safe;
+    const idMap = { vel:'fVel', def:'fDef', ini:'fIni', vida_m:'fVidaM', est_m:'fEstM', reg:'fReg' };
+    const el = document.getElementById(idMap[k]);
+    if (el) el.value = safe;
+    const tMap = { vel:'tVel', def:'tDef', ini:'tIni', reg:'tReg' };
+    if (tMap[k]) {
+      const tel = document.getElementById(tMap[k]);
+      if (tel) tel.textContent = safe;
+    }
+  });
+
+  // Clampear vida_c y est_c
+  if ((sh.vida_c || 0) > vida_m) {
+    sh.vida_c = vida_m;
+    const el = document.getElementById('fVidaC');
+    if (el) el.value = vida_m;
+  }
+  if ((sh.est_c || 0) > est_m) {
+    sh.est_c = est_m;
+    const el = document.getElementById('fEstC');
+    if (el) el.value = est_m;
+  }
+
+  updateVitalTotals();
+  ub();
+  redraw();
+
+  // Guardar en Firebase
+  if (!noSave && roomRef) {
+    const patch = {};
+    Object.keys(updates).forEach(k => { patch['sh/'+k] = updates[k]; });
+    if (sh.vida_c !== undefined) patch['sh/vida_c'] = sh.vida_c;
+    if (sh.est_c !== undefined) patch['sh/est_c'] = sh.est_c;
+    roomRef.child('tokens/' + id).update(patch);
+  }
+}
+
+// Redefinir updateBC para usar configuración
+const _origUpdateBC = window.updateBC;
+window.updateBC = function() {
+  const el = document.getElementById('fBC');
+  if (!el) return;
+  const nivel = selId && tokens[selId] ? (tokens[selId].sh.nivel || 1) : 1;
+  const cfg = formulasConfig || DEFAULT_FORMULAS;
+  const bc = cfg.competencia.base + Math.ceil(nivel / cfg.competencia.division);
+  el.textContent = bc;
+  updateXpMax();
+};
+
+// Inicializar la UI de configuración al cargar
+function initConfigPanel() {
+  // Si no hay config, usar defaults
+  if (!formulasConfig) {
+    formulasConfig = JSON.parse(JSON.stringify(DEFAULT_FORMULAS));
+  }
+  populateFormulasUI();
+  // Mostrar el panel solo si es DM
+  const panel = document.getElementById('configPanel');
+  if (panel) {
+    panel.style.display = isAdmin() ? '' : 'none';
+  }
+}
+
+// Llamar a initConfigPanel después de que se cargue la página y se determine el DM
+// y también al cambiar el estado de DM
+const origApplyAdminMode = window.applyAdminMode;
+window.applyAdminMode = function() {
+  if (origApplyAdminMode) origApplyAdminMode();
+  const panel = document.getElementById('configPanel');
+  if (panel) {
+    panel.style.display = isAdmin() ? '' : 'none';
+  }
+};
+
+// Extender connectRoom para cargar la configuración
+const origConnectRoom = window.connectRoom;
+window.connectRoom = function(code) {
+  if (origConnectRoom) origConnectRoom(code);
+  // Esperar a que roomRef esté disponible
+  const waitRoom = setInterval(() => {
+    if (roomRef) {
+      clearInterval(waitRoom);
+      loadFormulasConfig();
+    }
+  }, 300);
+};
+
+// También al iniciar, si ya hay roomRef, cargar
+setTimeout(() => {
+  if (roomRef) {
+    loadFormulasConfig();
+  }
+  initConfigPanel();
+}, 500);
+
+// Asegurar que las clases existan (lista global)
+const clases = ['ofensivo','defensivo','agil','tecnico','mental','apoyo'];
+
+// Sobrescribir autoCalcVitales si ya existía
+window.autoCalcVitales = autoCalcVitales;
+
+// Sincronizar el gestor de personajes cuando cambie la configuración
+function syncCharManagerWithConfig() {
+  if (document.getElementById('secPersonajes')?.classList.contains('active-section') ||
+      document.getElementById('secPersonajes')?.classList.contains('active')) {
+    // Si estamos en la sección de personajes, refrescar los cálculos
+    if (editingCharId && document.getElementById('charForm').style.display !== 'none') {
+      cfUpdateCalcs();
+    }
+  }
+}
+
+// Agregar un listener al guardar configuración
+const origSaveFormulasConfig = window.saveFormulasConfig;
+window.saveFormulasConfig = function() {
+  origSaveFormulasConfig();
+  setTimeout(syncCharManagerWithConfig, 300);
+};
 
 </script>
 </body>
