@@ -4251,33 +4251,53 @@ select, textarea,
       </div>
 
       <!-- Movimientos y Acciones -->
-      <div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
-        <div>
-          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🏃 Movimientos</span>
-          <input class="fin num" type="number" min="0" max="9" id="fMov" value="1"
-            onchange="sf('mov',this.value);refreshTurns();"
-            style="margin-bottom:0;text-align:center;font-size:.95rem;">
-        </div>
-        <div>
-          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">⚔️ Acciones</span>
-          <input class="fin num" type="number" min="0" max="9" id="fAcc" value="1"
-            onchange="sf('acc',this.value);refreshTurns();"
-            style="margin-bottom:0;text-align:center;font-size:.95rem;">
-        </div>
-        <div>
-          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">✨ Acciones Adicionales</span>
-          <input class="fin num" type="number" min="0" max="9" id="fAcca" value="0"
-            onchange="sf('acca',this.value);refreshTurns();"
-            style="margin-bottom:0;text-align:center;font-size:.95rem;">
-        </div>
-        <div>
-          <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🛡️ Reacciones</span>
-          <input class="fin num" type="number" min="0" max="9" id="fRea" value="1"
-            onchange="sf('rea',this.value);refreshTurns();"
-            style="margin-bottom:0;text-align:center;font-size:.95rem;">
-        </div>
-      </div>
+<div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🏃 Movimientos</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="fMov" value="1"
+        onchange="sf('mov',this.value);refreshTurns();"
+        style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="tMov" style="width:40px;padding:3px;text-align:center;font-size:.82rem;">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">⚔️ Acciones</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="fAcc" value="1"
+        onchange="sf('acc',this.value);refreshTurns();"
+        style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="tAcc" style="width:40px;padding:3px;text-align:center;font-size:.82rem;">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">✨ Acc. Adicionales</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="fAcca" value="0"
+        onchange="sf('acca',this.value);refreshTurns();"
+        style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="tAcca" style="width:40px;padding:3px;text-align:center;font-size:.82rem;">0</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🛡️ Reacciones</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="fRea" value="1"
+        onchange="sf('rea',this.value);refreshTurns();"
+        style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="tRea" style="width:40px;padding:3px;text-align:center;font-size:.82rem;">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+</div>
 
       </div><!-- /sub-pane vital -->
 
@@ -5820,6 +5840,35 @@ function getModFinal(stat) {
     return isNaN(v) ? 0 : v;
   }
   return getStatTotal(stat);
+}
+
+function getBonosFromPasivasYEquipo(sh) {
+  const bonus = {};
+
+  // Bonos de equipo
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat && slot.bono) {
+      const stat = slot.stat;
+      bonus[stat] = (bonus[stat] || 0) + (parseFloat(slot.bono) || 0);
+    }
+  });
+
+  // Bonos de pasivas ACTIVAS
+  (sh.pasivas || []).forEach(p => {
+    if (!p.activa) return;
+    // Bono simple (campo stat + bono)
+    if (p.stat && p.bono) {
+      bonus[p.stat] = (bonus[p.stat] || 0) + (parseFloat(p.bono) || 0);
+    }
+    // Bonos múltiples
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) {
+        bonus[b.stat] = (bonus[b.stat] || 0) + (parseFloat(b.valor) || 0);
+      }
+    });
+  });
+
+  return bonus;
 }
 
 function autoCalcVitales() {
@@ -7623,41 +7672,32 @@ function togglePasivaMapa(index, btn) {
 }
 
 function aplicarPasivas(pasiva, activar) {
-  // Esta función aplica los bonos de una pasiva al sh del token seleccionado
+  // Esta función SOLO cambia el estado activa y dispara recálculo
+  // Los bonos se aplican en updateStatTotals / updateAttrTotals / updateVitalTotals
+  // No muta valores base directamente
   if (!selId || !tokens[selId]) return;
   const sh = tokens[selId].sh;
-  const factor = activar ? 1 : -1;
-  
-  (pasiva.bonos || []).forEach(b => {
-    if (b.tipo === 'stat' && b.stat) {
-      // Para stat, se aplica en updateStatTotals mediante el bono de pasiva en el bucle
-      // Ya se maneja en updateStatTotals, solo necesitamos que se recalcule
-    } else if (b.tipo === 'movimiento') {
-      // La velocidad se recalcula en autoCalcVitales usando los bonos de pasivas, lo haremos allí
-    } else if (b.tipo === 'acciones') {
-      sh.acc = (sh.acc || 1) + (b.valor * factor);
-    } else if (b.tipo === 'acciones_adicionales') {
-      sh.acca = (sh.acca || 0) + (b.valor * factor);
-    } else if (b.tipo === 'reacciones') {
-      sh.rea = (sh.rea || 1) + (b.valor * factor);
-    } else if (b.tipo === 'hp_temp') {
-      if (activar) {
-        sh.hp_temp = (sh.hp_temp || 0) + b.valor;
-      } else {
-        sh.hp_temp = Math.max(0, (sh.hp_temp || 0) - b.valor);
-      }
-    }
-    // Para 'custom' no hay acción mecánica
-  });
-  
-  // Guardar cambios
-  fbPatch(selId, { 'sh/acc': sh.acc, 'sh/acca': sh.acca, 'sh/rea': sh.rea, 'sh/hp_temp': sh.hp_temp });
-  // Recalcular todo
-  autoCalcVitales();
+
+  // Si hay bonos de tipo acciones, reacciones, movimientos, hp_temp,
+  // se aplican mediante el bonusMap en las funciones de actualización
+  // Solo marcamos que la pasiva cambió y forzamos recalculo
+
+  // Guardar estado de activación
+  const wasActive = pasiva.activa;
+  pasiva.activa = activar;
+
+  // Forzar recálculo completo
   updateStatTotals();
-  ub();
+  updateMainStatMods();
+  updateVitalTotals();
+  updateAttrTotals();
+  autoCalcVitales();
+  // Re-renderizar pasivas para mostrar estado visual
+  renderPasivas();
+  // Re-renderizar interfaz
   showStats();
   refreshTurns();
+  redraw();
 }
 
 // ── ATRIBUTOS ────────────────────────────────────────────────────
@@ -7696,27 +7736,33 @@ function updateAttrTotals() {
   const sh = tokens[selId].sh;
   const bc = Math.ceil((sh.nivel || 1) / 3) + 1;
 
+  // Obtener bonos de pasivas/equipo para atributos
+  const bonusMap = getBonosFromPasivasYEquipo(sh);
+
   Object.entries(ATTR_PARENT).forEach(([key, parent]) => {
     const Key = key[0].toUpperCase() + key.slice(1);
-    // Base = Mod Final de la stat padre
+    // Base = Mod Final de la stat padre (ya incluye bonos a la stat padre)
     const base = getModFinal(parent);
     const bono = sh['ba'+Key] || 0;
     const comp = sh['comp'+Key] ? bc : 0;
-    const total = base + bono + comp;
+    // Bonos directos a este atributo desde pasivas/equipo
+    const extra = bonusMap[key] || 0;
+    const total = base + bono + comp + extra;
 
-    // actualizar input base (readonly, muestra el mod final del padre)
+    // actualizar input base (readonly)
     const elBase = document.getElementById('fA'+Key);
     if (elBase) elBase.value = base;
 
     // actualizar total
     const elTotal = document.getElementById('tA'+Key);
     if (elTotal) {
-      elTotal.textContent = total >= 0 ? '+' + total : total;
-      elTotal.style.background = total > base ? 'rgba(39,174,96,.2)' : total < 0 ? 'rgba(192,57,43,.12)' : 'rgba(39,174,96,.1)';
+      elTotal.textContent = total >= 0 ? '+' + total : '' + total;
+      const isBoosted = (extra > 0 || (bono > 0) || (comp > 0));
+      elTotal.style.background = isBoosted ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
       elTotal.style.color = total >= 0 ? '#1a4a1a' : 'var(--red)';
     }
 
-    // actualizar checkbox
+    // checkbox
     const elComp = document.getElementById('comp'+Key);
     if (elComp) elComp.checked = sh['comp'+Key] || false;
   });
@@ -7781,61 +7827,85 @@ function updateStatTotals() {
   const sh = tokens[selId].sh;
   const eq = sh.equipo || {};
 
-  // Sumar bonos de equipo por stat
-  const bonos = {};
-  Object.values(eq).forEach(slot => {
-    if (slot && slot.stat && slot.bono) {
-      bonos[slot.stat] = (bonos[slot.stat]||0) + (parseFloat(slot.bono)||0);
-    }
+  // Obtener todos los bonos desde pasivas/equipo
+  const bonusMap = getBonosFromPasivasYEquipo(sh);
+  const pu = sh.plus_ultra ? 2 : 0;
+
+  // Aplicar Plus Ultra a todos los stats relevantes
+  const puStats = ['vel','def','ini','reg','pod','agi','res','tec','int',
+    'fue','intim','eva','acr','sig','agu','vol','ctq','ing',
+    'tac','per','eng','inv','prc'];
+  puStats.forEach(s => {
+    bonusMap[s] = (bonusMap[s] || 0) + pu;
   });
-  // Sumar bonos de pasivas ACTIVAS
-  const pasivas = sh.pasivas || [];
-  // Dentro de updateStatTotals, reemplazar el bucle de pasivas:
-(sh.pasivas || []).forEach(p => {
-  if (p.activa && p.bonos) {
-    p.bonos.forEach(b => {
-      if (b.tipo === 'stat' && b.stat && b.valor) {
-        bonos[b.stat] = (bonos[b.stat]||0) + (parseFloat(b.valor)||0);
-      }
-      // Para otros tipos (movimiento, acciones, etc.) se manejan en aplicarPasivas y autoCalcVitales
-    });
+
+  // ═══ VITALES (vel, def, ini, reg) ═══
+  const vitalKeys = ['vel','def','ini','reg'];
+  vitalKeys.forEach(key => {
+    const base = sh[key] || 0;
+    const bv = sh['bv' + key[0].toUpperCase() + key.slice(1)] || 0;
+    const extra = bonusMap[key] || 0;
+    const total = base + bv + extra;
+    const el = document.getElementById('t' + key[0].toUpperCase() + key.slice(1));
+    if (el) {
+      el.textContent = total;
+      el.style.background = (bv + extra) > 0 ? 'rgba(39,174,96,.18)' : 'rgba(200,160,100,.1)';
+      el.style.color = (bv + extra) > 0 ? '#1a4a1a' : 'var(--ink2)';
+    }
+    // Actualizar también el campo base (readonly)
+    const baseEl = document.getElementById('f' + key[0].toUpperCase() + key.slice(1));
+    if (baseEl) baseEl.value = base;
+  });
+
+  // ═══ ACCIONES DE TURNO (mov, acc, acca, rea) ═══
+  // Base = valor editable, Total = base + bonus
+  const actionKeys = ['mov','acc','acca','rea'];
+  actionKeys.forEach(key => {
+    const base = sh[key] ?? (key === 'mov' ? 1 : key === 'acc' ? 1 : key === 'rea' ? 1 : 0);
+    const extra = bonusMap[key] || 0;
+    const total = base + extra;
+    // Guardar el total en el sh para usarlo en otros lugares
+    sh['total_' + key] = total;
+    // Actualizar UI si existe
+    const totalEl = document.getElementById('t' + key[0].toUpperCase() + key.slice(1));
+    if (totalEl) {
+      totalEl.textContent = total;
+      totalEl.style.background = extra > 0 ? 'rgba(39,174,96,.2)' : 'rgba(200,160,100,.1)';
+      totalEl.style.color = extra > 0 ? '#1a4a1a' : 'var(--ink2)';
+    }
+    // Actualizar campo base (editable)
+    const baseEl = document.getElementById('f' + key[0].toUpperCase() + key.slice(1));
+    if (baseEl) baseEl.value = base;
+  });
+
+  // ═══ HP TEMPORAL ═══
+  if (bonusMap.hp_temp) {
+    sh.hp_temp = (sh.hp_temp || 0) + bonusMap.hp_temp;
+    const el = document.getElementById('fHpTemp');
+    if (el) el.value = sh.hp_temp;
+    // Actualizar barra
+    const hptRow = document.getElementById('bHpTempRow');
+    if (hptRow) hptRow.style.display = sh.hp_temp > 0 ? 'block' : 'none';
+    const bEl = document.getElementById('bHpTemp');
+    if (bEl) {
+      const pct = Math.min(100, Math.round(sh.hp_temp / Math.max(1, sh.vida_m) * 100));
+      bEl.style.width = pct + '%';
+    }
   }
-});
-  // Plus Ultra: +2 a todas las estadísticas
-  if (sh.plus_ultra) {
-    ['vel','def','ini','reg','pod','agi','res','tec','int',
-     'fue','intim','eva','acr','sig','agu','vol','ctq','ing',
-     'tac','per','eng','inv','prc'].forEach(s => {
-      bonos[s] = (bonos[s]||0) + 2;
-    });
-  }
-  // Actualizar también los Mod de stats principales
+
+  // ═══ ATRIBUTOS (se actualizan en updateAttrTotals, pero forzamos aquí) ═══
+  updateAttrTotals();
+
+  // ═══ MAIN STATS (se actualizan en updateMainStatMods) ═══
   updateMainStatMods();
 
-  // Actualizar cada total
-  { const b=bonos['vel']||0; const base=sh['vel']||0; const el=document.getElementById('tVel'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['def']||0; const base=sh['def']||0; const el=document.getElementById('tDef'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['ini']||0; const base=sh['ini']||0; const el=document.getElementById('tIni'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['reg']||0; const base=sh['reg']||0; const el=document.getElementById('tReg'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['pod']||0; const base=sh['pod']||0; const el=document.getElementById('tPod'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['agi']||0; const base=sh['agi']||0; const el=document.getElementById('tAgi'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['res']||0; const base=sh['res']||0; const el=document.getElementById('tRes'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['tec']||0; const base=sh['tec']||0; const el=document.getElementById('tTec'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['int']||0; const base=sh['int']||0; const el=document.getElementById('tInt'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['fue']||0; const base=sh['fue']||0; const el=document.getElementById('tFue'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['intim']||0; const base=sh['intim']||0; const el=document.getElementById('tIntim'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['eva']||0; const base=sh['eva']||0; const el=document.getElementById('tEva'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['acr']||0; const base=sh['acr']||0; const el=document.getElementById('tAcr'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['sig']||0; const base=sh['sig']||0; const el=document.getElementById('tSig'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['agu']||0; const base=sh['agu']||0; const el=document.getElementById('tAgu'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['vol']||0; const base=sh['vol']||0; const el=document.getElementById('tVol'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['ctq']||0; const base=sh['ctq']||0; const el=document.getElementById('tCtq'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['ing']||0; const base=sh['ing']||0; const el=document.getElementById('tIng'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['tac']||0; const base=sh['tac']||0; const el=document.getElementById('tTac'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['per']||0; const base=sh['per']||0; const el=document.getElementById('tPer'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['eng']||0; const base=sh['eng']||0; const el=document.getElementById('tEng'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['inv']||0; const base=sh['inv']||0; const el=document.getElementById('tInv'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
-  { const b=bonos['prc']||0; const base=sh['prc']||0; const el=document.getElementById('tPrc'); if(el){ el.textContent=base+b; el.style.background=b>0?'rgba(39,174,96,.18)':b<0?'rgba(192,57,43,.13)':'rgba(200,160,100,.1)'; el.style.color=b>0?'#1a4a1a':b<0?'var(--red)':'var(--ink2)'; } }
+  // Actualizar UI de la ficha seleccionada
+  const el = document.getElementById('saved');
+  if (el) { el.textContent = '✓ Actualizado'; el.style.opacity = '1';
+    clearTimeout(updateStatTotals._t);
+    updateStatTotals._t = setTimeout(() => el.style.opacity = '0', 1800);
+  }
+  ub();
 }
 
 // ── ZONAS / ÁREAS ────────────────────────────────────────────────
@@ -10050,8 +10120,15 @@ canvas {
   <button class="cf-tab" onclick="cfSwitchTab('arsenal',this)">⚔ Arsenal</button>
   <button class="cf-tab" onclick="cfSwitchTab('lore',this)">📖 Lore</button>
   <button class="cf-tab" onclick="cfSwitchTab('extra',this)">⚙ Extra</button>
-    <button class="cf-tab" onclick="cfSwitchTab('graficos',this)">📈 Gráficos</button>
-    <button class="cf-tab" onclick="cfSwitchTab('creator',this)">⚙ Creador</button>
+  <button class="cf-tab" onclick="cfSwitchTab('graficos',this)">📈 Gráficos</button>
+  <button class="cf-tab" onclick="cfSwitchTab('creator',this)">⚙ Creador</button>
+</div>
+<!-- BARRA DE ACCIONES FIJA (Guardar siempre visible) -->
+<div style="display:flex;align-items:center;gap:8px;padding:6px 4px 10px 4px;border-bottom:2px solid var(--ps);margin-bottom:10px;flex-wrap:wrap;background:var(--p);position:sticky;top:0;z-index:20;">
+  <button class="btn btn-gld" onclick="guardarPersonaje()" style="width:auto;padding:6px 16px;margin-bottom:0;font-size:.75rem;">💾 Guardar Personaje</button>
+  <button class="btn btn-sm" style="background:rgba(200,148,26,.15);border:1px solid var(--ps);color:var(--ink);padding:6px 12px;font-size:.7rem;margin-bottom:0;" onclick="exportarPersonajeActual()">⬇ Exportar</button>
+  <button class="btn btn-sm" style="background:none;border:1px solid var(--ps);color:var(--ink2);padding:6px 12px;font-size:.7rem;margin-bottom:0;" onclick="enviarAlMapa()" title="Crea una ficha en el mapa con este personaje">🗺 Enviar al Mapa</button>
+  <span id="cfSavedMsgBar" style="font-size:.7rem;color:var(--grn);margin-left:auto;font-style:italic;"></span>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -10186,13 +10263,45 @@ canvas {
   </div>
 
   <!-- Acciones de turno -->
-  <div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
-    <div><span class="flbl" style="font-size:.72rem;">🏃 Movimientos</span><input class="fin num" type="number" min="0" max="9" id="cf_mov" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
-    <div><span class="flbl" style="font-size:.72rem;">⚔️ Acciones</span><input class="fin num" type="number" min="0" max="9" id="cf_acc" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
-    <div><span class="flbl" style="font-size:.72rem;">✨ Acc. Adicionales</span><input class="fin num" type="number" min="0" max="9" id="cf_acca" value="0" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
-    <div><span class="flbl" style="font-size:.72rem;">🛡️ Reacciones</span><input class="fin num" type="number" min="0" max="9" id="cf_rea" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;"></div>
+<div class="ptitle" style="margin-top:10px;">🎯 Acciones de Turno</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🏃 Movimientos</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="cf_mov" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;" onchange="cfUpdateCalcs()">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="cfTMov" style="width:40px;padding:3px;text-align:center;font-size:.82rem;background:rgba(39,174,96,.1);">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
   </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">⚔️ Acciones</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="cf_acc" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;" onchange="cfUpdateCalcs()">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="cfTAcc" style="width:40px;padding:3px;text-align:center;font-size:.82rem;background:rgba(39,174,96,.1);">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">✨ Acc. Adicionales</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="cf_acca" value="0" style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;" onchange="cfUpdateCalcs()">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="cfTAcca" style="width:40px;padding:3px;text-align:center;font-size:.82rem;background:rgba(39,174,96,.1);">0</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+  <div>
+    <span class="flbl" style="font-size:.72rem;color:var(--ink2);display:block;margin-bottom:2px;">🛡️ Reacciones</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input class="fin num" type="number" min="0" max="9" id="cf_rea" value="1" style="margin-bottom:0;text-align:center;font-size:.95rem;width:50px;" onchange="cfUpdateCalcs()">
+      <span style="font-size:.7rem;color:var(--ink2);">→</span>
+      <span class="stat-total" id="cfTRea" style="width:40px;padding:3px;text-align:center;font-size:.82rem;background:rgba(39,174,96,.1);">1</span>
+      <span style="font-size:.6rem;color:var(--ink3);">Total</span>
+    </div>
+  </div>
+</div>
 
 </div><!-- /vital -->
 
@@ -11052,8 +11161,13 @@ async function guardarPersonaje() {
   await db.ref('userChars/' + currentUser.uid + '/' + id).set(ch);
   editingCharId = id;
   document.getElementById('charFormTitle').textContent = 'Editando: ' + ch.nombre;
-  document.getElementById('cfSavedMsg').textContent = '✓ Guardado';
-  setTimeout(() => { const el = document.getElementById('cfSavedMsg'); if(el) el.textContent = ''; }, 2000);
+  // Actualizar ambos mensajes
+  const msg1 = document.getElementById('cfSavedMsg');
+  const msg2 = document.getElementById('cfSavedMsgBar');
+  const text = '✓ Guardado';
+  if (msg1) { msg1.textContent = text; msg1.style.opacity = '1'; setTimeout(() => msg1.style.opacity = '0', 2000); }
+  if (msg2) { msg2.textContent = text; }
+  setTimeout(() => { if (msg2) msg2.textContent = ''; }, 2000);
   renderCharsList();
   renderProfileCard();
 }
@@ -11437,6 +11551,7 @@ function cfUpdateCalcs() {
   const bTec   = parseInt(document.getElementById('cf_bTec')?.value) || 0;
   const bInt   = parseInt(document.getElementById('cf_bInt')?.value) || 0;
   const clase  = (document.getElementById('cf_clase')?.value || '').toLowerCase();
+  
 
   // Leer pasivas y equipo actuales del formulario para sumar sus bonos (igual que en el token de juego)
   const pasivasForm = [];
@@ -11480,6 +11595,8 @@ function cfUpdateCalcs() {
     plus_ultra: cfPUActive
   };
 
+
+  
   // Usar la función central
   const vitales = calcularVitales(shTemp);
   const { vel, def, ini, vida_m, est_m, reg } = vitales;
@@ -11523,10 +11640,70 @@ function cfUpdateCalcs() {
     prev.innerHTML = `<b>HP:</b> ${vida_m} &nbsp;|&nbsp; <b>STAM:</b> ${est_m} &nbsp;|&nbsp; <b>DEF:</b> ${def} &nbsp;|&nbsp; <b>Vel:</b> ${vel} &nbsp;|&nbsp; <b>Ini:</b> ${ini>=0?'+'+ini:ini} &nbsp;|&nbsp; <b>Regen:</b> ${reg} &nbsp;|&nbsp; <b>Bon.Comp:</b> +${bc}`;
   }
 
+    // ═══ ACCIONES DE TURNO — Base + Total ═══
+  const actionKeys = ['mov','acc','acca','rea'];
+  
+  // Reutilizar shTemp existente o crearlo a partir de los valores del formulario
+  // Si ya existe una variable shTemp en este ámbito, usarla; si no, crearla.
+  // Para evitar redeclaración, verificamos si existe:
+  let shTempLocal;
+  if (typeof shTemp !== 'undefined') {
+    shTempLocal = shTemp;
+  } else {
+    // Construir objeto temporal para calcular bonos
+    shTempLocal = {
+      clase: clase,
+      nivel: nivel,
+      pod: pod, agi: agi, res: res, tec: tec, int: int_,
+      bPod: bPod, bAgi: bAgi, bRes: bRes, bTec: bTec, bInt: bInt,
+      equipo: equipoForm,
+      pasivas: pasivasForm,
+      plus_ultra: cfPUActive
+    };
+  }
+  
+  const bonusMap = getBonosFromPasivasYEquipo(shTempLocal);
+
+  actionKeys.forEach(key => {
+    const base = parseInt(document.getElementById('cf_' + key)?.value) || (key === 'mov' ? 1 : key === 'acc' ? 1 : key === 'rea' ? 1 : 0);
+    const extra = bonusMap[key] || 0;
+    const total = base + extra;
+    const totalEl = document.getElementById('cfT' + key[0].toUpperCase() + key.slice(1));
+    if (totalEl) {
+      totalEl.textContent = total;
+      totalEl.style.background = extra > 0 ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
+      totalEl.style.color = extra > 0 ? '#1a4a1a' : 'var(--ink2)';
+    }
+  });
+
   cfUpdateAttrTotals();
   cfUpdateVitalTotals();
   cfUpdateBars();
   cfRefreshHeader();
+}
+
+// ═══ AUXILIAR: obtener bonos de pasivas y equipo (para personajes) ═══
+function getBonosFromPasivasYEquipo(sh) {
+  const bonus = {};
+  // Equipo
+  Object.values(sh.equipo || {}).forEach(slot => {
+    if (slot && slot.stat && slot.bono) {
+      bonus[slot.stat] = (bonus[slot.stat] || 0) + (parseFloat(slot.bono) || 0);
+    }
+  });
+  // Pasivas activas
+  (sh.pasivas || []).forEach(p => {
+    if (!p.activa) return;
+    if (p.stat && p.bono) {
+      bonus[p.stat] = (bonus[p.stat] || 0) + (parseFloat(p.bono) || 0);
+    }
+    (p.bonos || []).forEach(b => {
+      if (b.tipo === 'stat' && b.stat && b.valor) {
+        bonus[b.stat] = (bonus[b.stat] || 0) + (parseFloat(b.valor) || 0);
+      }
+    });
+  });
+  return bonus;
 }
 
 // ================================================================
@@ -11833,7 +12010,58 @@ function cfUpdateVitalTotals() {
 
 // Atributos (usando los mods finales de stats principales)
 function cfUpdateAttrTotals() {
-  const bc = parseInt(document.getElementById('cfBC')?.textContent?.replace('+',''))||2;
+  const bc = parseInt(document.getElementById('cfBC')?.textContent?.replace('+','')) || 2;
+  
+  // Construir objeto temporal para calcular bonos (sin redeclarar shTemp)
+  const shData = {
+    clase: document.getElementById('cf_clase')?.value || '',
+    nivel: parseInt(document.getElementById('cf_nivel')?.value) || 1,
+    pod: parseInt(document.getElementById('cf_pod')?.value) || 10,
+    agi: parseInt(document.getElementById('cf_agi')?.value) || 10,
+    res: parseInt(document.getElementById('cf_res')?.value) || 10,
+    tec: parseInt(document.getElementById('cf_tec')?.value) || 10,
+    int: parseInt(document.getElementById('cf_int')?.value) || 10,
+    bPod: parseInt(document.getElementById('cf_bPod')?.value) || 0,
+    bAgi: parseInt(document.getElementById('cf_bAgi')?.value) || 0,
+    bRes: parseInt(document.getElementById('cf_bRes')?.value) || 0,
+    bTec: parseInt(document.getElementById('cf_bTec')?.value) || 0,
+    bInt: parseInt(document.getElementById('cf_bInt')?.value) || 0,
+    equipo: {},
+    pasivas: [],
+    plus_ultra: cfPUActive
+  };
+
+  // Recolectar equipo y pasivas del formulario
+  if (editingCharId && myChars[editingCharId]) {
+    shData.equipo = myChars[editingCharId].equipo || {};
+    shData.pasivas = myChars[editingCharId].pasivas || [];
+  } else {
+    // Leer del DOM
+    const eq = {};
+    CF_EQUIP_SLOTS.forEach(slot => {
+      const stat = document.querySelector(`.cfeq-stat[data-slot="${slot.id}"]`)?.value || '';
+      const bono = parseFloat(document.querySelector(`.cfeq-bono[data-slot="${slot.id}"]`)?.value) || 0;
+      eq[slot.id] = { stat, bono };
+    });
+    shData.equipo = eq;
+    
+    const pas = [];
+    document.querySelectorAll('#cfPasivaList .pasiva-row').forEach(row => {
+      const activa = row.querySelector('.pasiva-toggle')?.classList.contains('on') || false;
+      const bonos = [];
+      row.querySelectorAll('.cfp-bono-fila').forEach(fila => {
+        const tipo = fila.querySelector('.cfp-bono-tipo')?.value || 'stat';
+        const stat = fila.querySelector('.cfp-bono-stat')?.value || '';
+        const valor = parseFloat(fila.querySelector('.cfp-bono-valor')?.value) || 0;
+        bonos.push({ tipo, stat, valor });
+      });
+      pas.push({ activa, bonos });
+    });
+    shData.pasivas = pas;
+  }
+
+  const bonusMap = getBonosFromPasivasYEquipo(shData);
+
   const attrMap = [
     {lbl:'Fue', srcStat:'Pod'}, {lbl:'Intim', srcStat:'Pod'},
     {lbl:'Eva', srcStat:'Agi'}, {lbl:'Acr',  srcStat:'Agi'}, {lbl:'Sig', srcStat:'Agi'},
@@ -11841,23 +12069,26 @@ function cfUpdateAttrTotals() {
     {lbl:'Ctq', srcStat:'Tec'}, {lbl:'Ing',  srcStat:'Tec'}, {lbl:'Tac', srcStat:'Tec'},
     {lbl:'Per', srcStat:'Int'}, {lbl:'Eng',  srcStat:'Int'}, {lbl:'Inv', srcStat:'Int'}, {lbl:'Prc', srcStat:'Int'},
   ];
+
   attrMap.forEach(({lbl, srcStat}) => {
-    // Obtener mod final de la stat principal desde el span
     const mfEl = document.getElementById('cfMFinal'+srcStat);
     let base = 0;
     if (mfEl) {
       const txt = mfEl.textContent;
       base = parseInt(txt.replace('+','')) || 0;
     }
-    const bono = parseInt(document.getElementById('cfBa'+lbl)?.value)||0;
+    const bono = parseInt(document.getElementById('cfBa'+lbl)?.value) || 0;
     const comp = document.getElementById('cfComp'+lbl)?.checked ? bc : 0;
-    const total = base + bono + comp;
+    const extra = bonusMap[lbl.toLowerCase()] || 0;
+    const total = base + bono + comp + extra;
+
     const baseInput = document.getElementById('cfA'+lbl);
     if (baseInput) baseInput.value = base;
     const totEl = document.getElementById('cfTA'+lbl);
     if (totEl) {
       totEl.textContent = total >= 0 ? '+'+total : ''+total;
-      totEl.style.background = total > base ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
+      const isBoosted = (extra > 0 || bono > 0 || comp > 0);
+      totEl.style.background = isBoosted ? 'rgba(39,174,96,.2)' : 'rgba(39,174,96,.1)';
       totEl.style.color = total >= 0 ? '#1a4a1a' : 'var(--red)';
     }
   });
