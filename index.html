@@ -3985,6 +3985,19 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
       </div>
     </div>
 
+    <div class="panel admin-only">
+      <div class="ptitle">✦ Añadir Ficha</div>
+      <label>Nombre</label>
+      <input type="text" id="iNombre" placeholder="Ej: Midoriya" maxlength="16">
+      <label>Símbolo</label>
+      <input type="text" id="iSym" placeholder="M" maxlength="2" style="text-align:center;">
+      <label>Color</label>
+      <div class="cgrid" id="cgrid"></div>
+      <label>Contraseña <span style="color:var(--ink3);font-size:.72rem;">(opcional)</span></label>
+      <input type="password" id="iPassword" placeholder="Solo vos podrás editar" maxlength="32" style="letter-spacing:2px;">
+      <button class="btn btn-gld" onclick="addToken()">+ Colocar en mapa</button>
+    </div>
+
     <div class="panel">
       <div class="ptitle">⚔ Fichas</div>
       <div class="tlist" id="tlist">
