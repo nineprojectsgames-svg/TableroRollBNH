@@ -3741,6 +3741,128 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
 /* ── Números de tiradas/mods: peso visual consistente ── */
 .stat-total, .mFinal, [id^="mFinal"] { font-variant-numeric: tabular-nums; }
 
+/* ── MODAL EXPANDIR CHAT / LOG ── */
+#expandModal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+#expandModal.open { display: flex; }
+.expand-box {
+  background: var(--p);
+  max-width: 900px;
+  width: 100%;
+  max-height: 85vh;
+  border: 3px solid var(--ps);
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.expand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #1a0f08;
+  border-bottom: 2px solid var(--ps);
+  flex-shrink: 0;
+}
+.expand-header h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  color: var(--gld);
+  margin: 0;
+}
+.expand-close {
+  background: none;
+  border: none;
+  color: var(--p);
+  font-size: 1.8rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 8px;
+  transition: transform .15s;
+}
+.expand-close:hover { transform: scale(1.2); }
+.expand-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scroll-behavior: smooth;
+}
+.expand-body .chat-msg,
+.expand-body .logentry {
+  font-size: .9rem;
+  padding: 4px 8px;
+}
+.expand-body .chat-msg.chat-me {
+  background: rgba(200,148,26,.1);
+}
+.expand-body .logentry {
+  border-left-width: 4px;
+}
+.expand-body::-webkit-scrollbar {
+  width: 6px;
+}
+.expand-body::-webkit-scrollbar-thumb {
+  background: var(--ps);
+  border-radius: 3px;
+}
+
+/* Botón expandir en los paneles */
+.expand-btn {
+  background: none;
+  border: 1px solid var(--ps);
+  border-radius: 4px;
+  color: var(--ink2);
+  font-size: .9rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  line-height: 1;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.expand-btn:hover {
+  background: var(--gld);
+  color: var(--ink);
+  border-color: var(--gld);
+}
+
+/* ── BOTONES DE LIMPIAR ── */
+.clear-btn {
+  background: none;
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  color: var(--red);
+  font-size: .65rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all .15s;
+  line-height: 1.2;
+  flex-shrink: 0;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.5px;
+}
+.clear-btn:hover {
+  background: var(--red);
+  color: var(--p);
+}
+.clear-btn.admin-only {
+  display: none; /* se muestra con JS si es DM */
+}
+
 </style>
 </head>
 <body>
@@ -3974,16 +4096,18 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
 
     <!-- ── CHAT DE SALA ───────────────────────────────────── -->
     <div class="panel" id="chatPanelWrap">
-      <div class="chat-panel-title">💬 Chat de Sala
-        <div class="chat-unread-dot" id="chatUnreadDot"></div>
-      </div>
-      <div id="chatLog" class="chat-log"></div>
-      <div class="chat-input-row">
-        <input type="text" id="chatInput" placeholder="Escribí un mensaje..." maxlength="200"
-          onkeydown="sendChatOnEnter(event,'chatInput')">
-        <button class="chat-send-btn" onclick="sendChat('chatInput')">→</button>
-      </div>
-    </div>
+  <div class="chat-panel-title" style="display:flex;align-items:center;gap:6px;">
+    💬 Chat de Sala
+    <div class="chat-unread-dot" id="chatUnreadDot"></div>
+    <button class="clear-btn admin-only" id="clearChatBtn" onclick="clearChat()" title="Limpiar todos los mensajes (DM)">🗑 Limpiar</button>
+    <button class="expand-btn" onclick="openExpandModal('💬 Chat de Sala', document.getElementById('chatLog'))" title="Expandir">⤢</button>
+  </div>
+  <div id="chatLog" class="chat-log"></div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Escribí un mensaje..." maxlength="200" onkeydown="sendChatOnEnter(event,'chatInput')">
+    <button class="chat-send-btn" onclick="sendChat('chatInput')">→</button>
+  </div>
+</div>
 
     <div class="panel admin-only">
       <div class="ptitle">✦ Añadir Ficha</div>
@@ -4054,17 +4178,18 @@ button:focus:not(:focus-visible), a:focus:not(:focus-visible) { outline: none; }
     </div>
 
     <div class="panel">
-      <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>📜 Registro</span>
-        <div style="display:flex;gap:4px;align-items:center;">
-          <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;">↩ Deshacer</button>
-          <button class="btn btn-red admin-only" onclick="clearLogs()" style="width:auto;padding:2px 8px;font-size:.65rem;margin-bottom:0;" title="Solo DM">🗑 Limpiar</button>
-        </div>
-      </div>
-      <div class="loglist" id="loglist">
-        <p class="info">Sin movimientos aún.</p>
-      </div>
+  <div class="ptitle" style="display:flex;align-items:center;justify-content:space-between;">
+    <span>📜 Registro</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <button class="clear-btn admin-only" id="clearLogBtn" onclick="clearLogs()" title="Limpiar todo el registro (DM)">🗑 Limpiar</button>
+      <button class="expand-btn" onclick="openExpandModal('📜 Registro de Movimientos', document.getElementById('loglist'))" title="Expandir">⤢</button>
+      <button class="btn btn-grn" onclick="undoMove()" id="btnUndo" style="display:none;width:auto;padding:2px 8px;font-size:.65rem;margin-bottom:0;">↩ Deshacer</button>
     </div>
+  </div>
+  <div class="loglist" id="loglist">
+    <p class="info">Sin movimientos aún.</p>
+  </div>
+</div>
   </div>
 
   <!-- MAP COL (tab: mapa) -->
@@ -9277,6 +9402,8 @@ canvas {
 .token-preview {
   box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
 }
+
+
 
 </style>
 
@@ -15215,6 +15342,306 @@ window.saveFormulasConfig = function() {
   setTimeout(syncCharManagerWithConfig, 300);
 };
 
+// ── EXPANDIR CHAT Y LOG ──────────────────────────────
+function openExpandModal(title, contentClone) {
+  const modal = document.getElementById('expandModal');
+  const body = document.getElementById('expandBody');
+  const titleEl = document.getElementById('expandTitle');
+  if (!modal || !body) return;
+  titleEl.textContent = title;
+  body.innerHTML = '';
+  // Clonar el contenido para no modificar el original
+  const clone = contentClone.cloneNode(true);
+  body.appendChild(clone);
+  modal.classList.add('open');
+  // Scroll al final (útil para chat)
+  setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
+}
+
+function closeExpandModal() {
+  document.getElementById('expandModal').classList.remove('open');
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeExpandModal();
+});
+
+// ── EXPANDIR CHAT Y LOG ──────────────────────────────
+function openExpandModal(title, contentClone) {
+  const modal = document.getElementById('expandModal');
+  const body = document.getElementById('expandBody');
+  const titleEl = document.getElementById('expandTitle');
+  if (!modal || !body) return;
+  titleEl.textContent = title;
+  body.innerHTML = '';
+  const clone = contentClone.cloneNode(true);
+  body.appendChild(clone);
+  modal.classList.add('open');
+  setTimeout(() => { body.scrollTop = body.scrollHeight; }, 50);
+}
+
+function closeExpandModal() {
+  document.getElementById('expandModal').classList.remove('open');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeExpandModal();
+});
+
+// ── Insertar botones de expandir ─────────────────────
+function insertExpandButtons() {
+  // Chat
+  const chatLog = document.getElementById('chatLog');
+  if (chatLog) {
+    const chatWrap = document.getElementById('chatPanelWrap');
+    if (chatWrap) {
+      const title = chatWrap.querySelector('.chat-panel-title');
+      if (title && !title.querySelector('.expand-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'expand-btn';
+        btn.innerHTML = '⤢';
+        btn.title = 'Expandir chat';
+        btn.style.marginLeft = 'auto';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          openExpandModal('💬 Chat de Sala', chatLog);
+        };
+        title.appendChild(btn);
+      }
+    }
+  }
+
+  // Registro
+  const logList = document.getElementById('loglist');
+  if (logList) {
+    const panel = logList.closest('.panel');
+    if (panel) {
+      const ptitle = panel.querySelector('.ptitle');
+      if (ptitle && !ptitle.querySelector('.expand-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'expand-btn';
+        btn.innerHTML = '⤢';
+        btn.title = 'Expandir registro';
+        btn.style.marginLeft = 'auto';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          openExpandModal('📜 Registro de Movimientos', logList);
+        };
+        ptitle.appendChild(btn);
+      }
+    }
+  }
+}
+
+// Ejecutar al cargar y también después de cambios (para el registro que puede aparecer tarde)
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(insertExpandButtons, 300);
+});
+
+// También ejecutar cuando se cambie la sección (por si el DOM se actualiza)
+const observerExpand = new MutationObserver(() => {
+  insertExpandButtons();
+});
+observerExpand.observe(document.body, { childList: true, subtree: true });
+
 </script>
+
+<!-- ── MODAL EXPANDIR ── -->
+<div id="expandModal">
+  <div class="expand-box">
+    <div class="expand-header">
+      <h2 id="expandTitle">📋 Registro</h2>
+      <button class="expand-close" onclick="closeExpandModal()">✕</button>
+    </div>
+    <div class="expand-body" id="expandBody">
+      <!-- Se llena dinámicamente -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PARCHE: EVITAR DUPLICACIÓN DE LOGS ──────────────────────────
+(function patchLogs() {
+  // Bandera para que listenLogs solo se ejecute una vez
+  let _logsListenerRegistered = false;
+  // Set global de claves de logs ya mostradas (para todos los clientes)
+  const _processedLogKeys = new Set();
+
+  // Guardar referencia a las funciones originales
+  const _origAddLog = window.addLog;
+  const _origListenLogs = window.listenLogs;
+  const _origShowLog = window.showLog;
+
+  // Sobrescribir showLog para que registre la clave si se pasa
+  window.showLog = function(type, msg, ts, key) {
+    // Si se proporciona una clave y ya fue procesada, ignorar
+    if (key && _processedLogKeys.has(key)) return;
+    if (key) _processedLogKeys.add(key);
+
+    // Llamar al showLog original (que maneja la UI)
+    if (_origShowLog) {
+      // Necesitamos pasarle los argumentos originales (sin clave)
+      _origShowLog(type, msg, ts);
+    } else {
+      // Fallback: implementación básica
+      const list = document.getElementById('loglist');
+      if (!list) return;
+      const empty = list.querySelector('p.info');
+      if (empty) empty.remove();
+      const el = document.createElement('div');
+      el.className = 'logentry ' + (type || 'move');
+      const time = ts
+        ? (new Date(ts).getHours().toString().padStart(2,'0')+':'+new Date(ts).getMinutes().toString().padStart(2,'0'))
+        : logTime();
+      el.innerHTML = `<span class="logtime">${time}</span>${msg}`;
+      list.appendChild(el);
+      while (list.children.length > 50) list.removeChild(list.firstChild);
+    }
+  };
+
+  // Sobrescribir addLog para incluir la clave en el Set antes de publicar
+  window.addLog = function(type, msg) {
+    const ts = Date.now();
+    const key = (roomRef ? roomRef.child('logs').push().key : null);
+    // Si tenemos clave, añadir al Set de procesados para evitar duplicado local
+    if (key) _processedLogKeys.add(key);
+
+    // Mostrar localmente (pasando la clave para que showLog la registre)
+    window.showLog(type, msg, ts, key);
+
+    // Publicar en Firebase
+    if (roomRef && key) {
+      myLogKeys.add(key); // mantener compatibilidad
+      roomRef.child('logs/' + key).set({ type, msg, ts });
+    } else if (roomRef) {
+      // Fallback: sin clave (no debería ocurrir)
+      const ref = roomRef.child('logs').push();
+      myLogKeys.add(ref.key);
+      ref.set({ type, msg, ts });
+    }
+  };
+
+  // Sobrescribir listenLogs para que solo se registre una vez
+  window.listenLogs = function() {
+    if (_logsListenerRegistered) {
+      // console.log('listenLogs ya registrado, ignorando.');
+      return;
+    }
+    if (!roomRef) return;
+
+    _logsListenerRegistered = true;
+
+    // 1. Cargar últimos 100 logs al conectar
+    roomRef.child('logs').orderByChild('ts').limitToLast(100).once('value', snap => {
+      const entries = [];
+      snap.forEach(child => {
+        const val = child.val();
+        if (val && val.msg) entries.push({ key: child.key, type: val.type||'move', msg: val.msg, ts: val.ts||0 });
+      });
+      // Renderizar en orden cronológico
+      entries.forEach(d => {
+        // Solo mostrar si la clave no está ya procesada (evita duplicados de carga inicial)
+        if (!_processedLogKeys.has(d.key)) {
+          _processedLogKeys.add(d.key);
+          window.showLog(d.type, d.msg, d.ts, d.key);
+        }
+      });
+
+      // 2. Escuchar solo los NUEVOS (ts posterior al último cargado)
+      const lastTs = entries.length > 0 ? entries[entries.length-1].ts : Date.now();
+      roomRef.child('logs').orderByChild('ts').startAt(lastTs + 1).on('child_added', snap => {
+        const d = snap.val();
+        if (!d || !d.msg) return;
+        const key = snap.key;
+        // Si la clave ya fue procesada (por ejemplo, por addLog local), ignorar
+        if (_processedLogKeys.has(key)) {
+          // Limpiar myLogKeys si estaba (por si acaso)
+          myLogKeys.delete(key);
+          return;
+        }
+        // Si es un log propio que ya se mostró localmente, la clave ya estará en _processedLogKeys, así que no entra aquí.
+        // Si llegó aquí, es un log de otro jugador, lo mostramos.
+        _processedLogKeys.add(key);
+        window.showLog(d.type || 'move', d.msg, d.ts || Date.now(), key);
+        // Limpiar myLogKeys por si acaso
+        myLogKeys.delete(key);
+      });
+    });
+  };
+
+  // Si ya existe una función connectRoom, asegurarnos de que llame a nuestro listenLogs
+  const _origConnectRoom = window.connectRoom;
+  window.connectRoom = function(code) {
+    if (_origConnectRoom) _origConnectRoom(code);
+    // Esperar a que roomRef esté listo
+    const check = setInterval(() => {
+      if (roomRef) {
+        clearInterval(check);
+        // Registrar el listener de logs (solo una vez)
+        window.listenLogs();
+      }
+    }, 200);
+  };
+
+  // Si roomRef ya existe al cargar la página, registrar directamente
+  setTimeout(() => {
+    if (roomRef && !_logsListenerRegistered) {
+      window.listenLogs();
+    }
+  }, 1000);
+})();
+
+// ── LIMPIAR CHAT ──────────────────────────────────────────
+function clearChat() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede limpiar el chat.');
+    return;
+  }
+  if (!confirm('¿Eliminar todos los mensajes del chat?')) return;
+  // Limpiar local
+  const log = document.getElementById('chatLog');
+  if (log) log.innerHTML = '';
+  // Limpiar en Firebase
+  if (roomRef) roomRef.child('chat').remove();
+  showActionNotif('🗑 Chat limpiado.');
+}
+
+// ── LIMPIAR REGISTRO (ya existe, la mejoramos) ──────────
+// La función original se llama clearLogs(), la reemplazamos
+const _origClearLogs = window.clearLogs;
+window.clearLogs = function() {
+  if (!isAdmin()) {
+    showActionNotif('🔒 Solo el DM puede limpiar el registro.');
+    return;
+  }
+  if (!confirm('¿Limpiar todo el registro de movimientos?')) return;
+  // Limpiar local
+  const list = document.getElementById('loglist');
+  if (list) list.innerHTML = '<p class="info">Sin movimientos aún.</p>';
+  // Limpiar en Firebase
+  if (roomRef) roomRef.child('logs').remove();
+  myLogKeys.clear();
+  // Limpiar el Set de claves procesadas (para evitar duplicados futuros)
+  if (window._processedLogKeys) window._processedLogKeys.clear();
+  showActionNotif('🗑 Registro limpiado.');
+};
+
+// ── ACTUALIZAR VISIBILIDAD DE BOTONES ADMIN ─────────────
+// Extender applyAdminMode para mostrar/ocultar los botones .admin-only
+const _origApplyAdminMode = window.applyAdminMode;
+window.applyAdminMode = function() {
+  if (_origApplyAdminMode) _origApplyAdminMode();
+  const admin = isAdmin();
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = admin ? '' : 'none';
+  });
+};
+
+// Llamar al inicio para aplicar el estado
+setTimeout(applyAdminMode, 300);
+
+</script>
+
 </body>
 </html>
